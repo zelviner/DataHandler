@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ftplib.h"
 #include "../filesystem/directory.h"
+#include "ftplib.h"
 #include <string>
 #include <vector>
 
@@ -27,8 +27,7 @@ class FtpClient {
     bool connect();
 
     /// @brief 断开FTP服务器
-    /// @return 成功返回true，失败返回false
-    bool disconnect();
+    void disconnect();
 
     /// @brief 登录
     /// @return 成功返回true，失败返回false

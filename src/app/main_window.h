@@ -1,9 +1,8 @@
 #pragma once
-#include "public/ftp/ftp.h"
-#include "public/utility/ini_file.h"
 #include "info/order.h"
 #include "info/person_data.h"
 #include "info/script.h"
+#include "public/utility/ini_file.h"
 #include "ui_main_window.h"
 
 #include <QMainWindow>
@@ -34,9 +33,6 @@ class MainWindow : public QMainWindow {
     /// @brief 初始化配置
     void initConfig();
 
-    /// @brief 初始化FTP
-    void initFtp();
-
     /// @brief 保存按钮点击事件
     void saveBtnClicked();
 
@@ -59,9 +55,8 @@ class MainWindow : public QMainWindow {
     void next();
 
   private:
-    Ui_MainWindow           *ui_;
+    Ui_MainWindow        *ui_;
     zel::utility::IniFile ini_;
-    zel::ftp::FtpClient  *ftp_;
 
     Path           *path_;
     OrderInfo      *order_info_;

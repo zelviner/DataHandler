@@ -12,26 +12,22 @@ FtpClient::FtpClient(const std::string &host, const std::string &user, const std
     , user_(user)
     , password_(password)
     , port_(port)
-    , ftp_(new ftplib()) {
+    , ftp_(new ftplib()) {}
 
-    // // 设置编码格式
-    // ftp_->Raw("OPTS UTF8 ON");
-}
-
-FtpClient::~FtpClient() {
-    if (ftp_) {
-        ftp_->Quit();
-        delete ftp_;
-        ftp_ = nullptr;
-    }
-}
+FtpClient::~FtpClient() { disconnect(); }
 
 bool FtpClient::connect() {
     if (host_.empty() || user_.empty() || password_.empty()) return false;
     return ftp_->Connect(host_.c_str());
 }
 
-bool FtpClient::disconnect() { return ftp_->Quit(); }
+void FtpClient::disconnect() {
+    if (ftp_) {
+        ftp_->Quit();
+        delete ftp_;
+        ftp_ = nullptr;
+    }
+}
 
 bool FtpClient::login() { return ftp_->Login(user_.c_str(), password_.c_str()); }
 

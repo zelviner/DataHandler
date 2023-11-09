@@ -8,6 +8,9 @@ using namespace zel::qtutility;
 #include "public/utility/string.h"
 using namespace zel::utility;
 
+#include "public/ftp/ftp.h"
+using namespace zel::ftp;
+
 #include <QClipboard>
 #include <QDebug>
 #include <QDir>
@@ -24,8 +27,7 @@ MainWindow::MainWindow(QMainWindow *parent)
     , path_(nullptr)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
-    , script_info_(nullptr)
-    , ftp_(nullptr) {
+    , script_info_(nullptr) {
     ui_->setupUi(this);
 
     // 初始化窗口
@@ -39,9 +41,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 
     // 初始化信号和槽
     initSignalSlot();
-
-    // 初始化FTP
-    initFtp();
 }
 
 MainWindow::~MainWindow() {
@@ -178,24 +177,6 @@ void MainWindow::initConfig() {
     }
 }
 
-void MainWindow::initFtp() {
-    std::string host     = ini_["ftp"]["host"];
-    int         port     = ini_["ftp"]["port"];
-    std::string username = ini_["ftp"]["username"];
-    std::string password = ini_["ftp"]["password"];
-
-    ftp_ = new zel::ftp::FtpClient(host, username, password, port);
-    if (!ftp_->connect()) {
-        QMessageBox::critical(NULL, "错误", "FTP连接失败");
-        return;
-    }
-
-    if (!ftp_->login()) {
-        QMessageBox::critical(NULL, "错误", "FTP登录失败");
-        return;
-    }
-}
-
 void MainWindow::saveBtnClicked() {
     std::string host             = ui_->ip_line->text().toStdString();
     int         port             = ui_->port_line->text().toInt();
@@ -219,12 +200,28 @@ void MainWindow::saveBtnClicked() {
 }
 
 void MainWindow::uploadPrdBtnClicked() {
-    std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
-    remote_prd_path += "/" + order_info_->order_id.toStdString();
+
+    std::string host     = ini_["ftp"]["host"];
+    int         port     = ini_["ftp"]["port"];
+    std::string username = ini_["ftp"]["username"];
+    std::string password = ini_["ftp"]["password"];
+
+    FtpClient ftp(host, username, password, port);
+    if (!ftp.connect()) {
+        QMessageBox::critical(NULL, "FTP连接失败", "请检查FTP服务器IP和端口是否正确");
+        return;
+    }
+
+    if (!ftp.login()) {
+        QMessageBox::critical(NULL, "FTP连接失败", "请检查用户名和密码是否正确");
+        return;
+    }
 
     // 将个人化数据上传到FTP服务器
+    std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
+    remote_prd_path += "/" + order_info_->order_id.toStdString();
     std::string local_prd_path = String::wstring2string(path_->ftpDataPath().toStdWString());
-    if (!ftp_->uploadFile(local_prd_path, remote_prd_path)) {
+    if (!ftp.uploadFile(local_prd_path, remote_prd_path)) {
         QMessageBox::critical(NULL, "错误", "上传个人化数据失败,请检查远程路径是否正确");
         return;
     }
@@ -233,8 +230,6 @@ void MainWindow::uploadPrdBtnClicked() {
 }
 
 void MainWindow::uploadTempBtnClicked() {
-
-    std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
 
     // 压缩截图文件
     if (!compressionZipFile(path_->screenshotPath())) {
@@ -260,10 +255,27 @@ void MainWindow::uploadTempBtnClicked() {
         return;
     }
 
+    std::string host     = ini_["ftp"]["host"];
+    int         port     = ini_["ftp"]["port"];
+    std::string username = ini_["ftp"]["username"];
+    std::string password = ini_["ftp"]["password"];
+
+    FtpClient ftp(host, username, password, port);
+    if (!ftp.connect()) {
+        QMessageBox::critical(NULL, "FTP连接失败", "请检查FTP服务器IP和端口是否正确");
+        return;
+    }
+
+    if (!ftp.login()) {
+        QMessageBox::critical(NULL, "FTP连接失败", "请检查用户名和密码是否正确");
+        return;
+    }
+
     // 将临时存放数据上传到FTP服务器
+    std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
     std::string local_temp_path =
         String::wstring2string(path_->tempPath().left(path_->tempPath().lastIndexOf("/")).toStdWString());
-    if (!ftp_->uploadFile(local_temp_path, remote_temp_path)) {
+    if (!ftp.uploadFile(local_temp_path, remote_temp_path)) {
         QMessageBox::critical(NULL, "错误", "上传临时存放失败, 请检查远程路径是否正确");
         return;
     }
