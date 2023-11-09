@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>../image/data.png</file>
+     <file>../image/xh_logo.png</file>
+     <file>../image/logo.png</file>
+     <file>../image/success.png</file>
+ </qresource>
+ </RCC>
+
+
