@@ -42,6 +42,11 @@ class MainWindow : public QMainWindow {
     /// @brief 上传临时存放按钮点击事件
     void uploadTempBtnClicked();
 
+    /// @brief  上传文件到FTP
+    /// @param local_file_path 本地文件路径
+    /// @param remote_file_path  远程文件路径
+    void uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path);
+
     void dragEnterEvent(QDragEnterEvent *event);
 
     void dropEvent(QDropEvent *event);

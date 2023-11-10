@@ -77,9 +77,6 @@ class FtpClient {
     // bool isDirExist(const std::string &remote_dir_path);
 
   private:
-    /// @brief 释放资源
-    void release();
-
     /// @brief 检查返回值
     /// @param[in] result 返回值
     /// @return 成功返回true，失败返回false

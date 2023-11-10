@@ -200,33 +200,13 @@ void MainWindow::saveBtnClicked() {
 }
 
 void MainWindow::uploadPrdBtnClicked() {
-
-    std::string host     = ini_["ftp"]["host"];
-    int         port     = ini_["ftp"]["port"];
-    std::string username = ini_["ftp"]["username"];
-    std::string password = ini_["ftp"]["password"];
-
-    FtpClient ftp(host, username, password, port);
-    if (!ftp.connect()) {
-        QMessageBox::critical(NULL, "FTP连接失败", "请检查FTP服务器IP和端口是否正确");
-        return;
-    }
-
-    if (!ftp.login()) {
-        QMessageBox::critical(NULL, "FTP连接失败", "请检查用户名和密码是否正确");
-        return;
-    }
-
     // 将个人化数据上传到FTP服务器
     std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
     remote_prd_path += "/" + order_info_->order_id.toStdString();
     std::string local_prd_path = String::wstring2string(path_->ftpDataPath().toStdWString());
-    if (!ftp.uploadFile(local_prd_path, remote_prd_path)) {
-        QMessageBox::critical(NULL, "错误", "上传个人化数据失败,请检查远程路径是否正确");
-        return;
-    }
+    uploadFile2FTP(local_prd_path, remote_prd_path);
 
-    QMessageBox::information(NULL, "提示", "上传成功");
+    ui_->upload_temp_btn->setDisabled(false);
 }
 
 void MainWindow::uploadTempBtnClicked() {
@@ -255,6 +235,14 @@ void MainWindow::uploadTempBtnClicked() {
         return;
     }
 
+    // 将临时存放数据上传到FTP服务器
+    std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
+    std::string local_temp_path =
+        String::wstring2string(path_->tempPath().left(path_->tempPath().lastIndexOf("/")).toStdWString());
+    uploadFile2FTP(local_temp_path, remote_temp_path);
+}
+
+void MainWindow::uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path) {
     std::string host     = ini_["ftp"]["host"];
     int         port     = ini_["ftp"]["port"];
     std::string username = ini_["ftp"]["username"];
@@ -271,12 +259,8 @@ void MainWindow::uploadTempBtnClicked() {
         return;
     }
 
-    // 将临时存放数据上传到FTP服务器
-    std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
-    std::string local_temp_path =
-        String::wstring2string(path_->tempPath().left(path_->tempPath().lastIndexOf("/")).toStdWString());
-    if (!ftp.uploadFile(local_temp_path, remote_temp_path)) {
-        QMessageBox::critical(NULL, "错误", "上传临时存放失败, 请检查远程路径是否正确");
+    if (!ftp.uploadFile(local_file_path, remote_file_path)) {
+        QMessageBox::critical(NULL, "上传文件失败", "请检查远程路径是否正确");
         return;
     }
 
