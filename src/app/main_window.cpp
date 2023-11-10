@@ -321,9 +321,8 @@ void MainWindow::dropEvent(QDropEvent *event) {
     // 弹窗提示
     QMessageBox success_box;
     success_box.setWindowTitle("提示");
-    success_box.setWindowIcon(QIcon(":/images/xh_logo.png"));
     success_box.setText(QString("订单处理完成"));
-    QPixmap pix(":/images/success.png");
+    QPixmap pix(":/image/success.png");
     pix = pix.scaled(32, 32);
     success_box.setIconPixmap(pix);
     success_box.setStandardButtons(QMessageBox::Ok);

@@ -349,7 +349,7 @@
               <item>
                <layout class="QVBoxLayout" name="verticalLayout_2">
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_24" stretch="3,7">
+                 <layout class="QHBoxLayout" name="horizontalLayout_24" stretch="1,3">
                   <item>
                    <widget class="QLabel" name="pin1_7">
                     <property name="font">
@@ -388,7 +388,7 @@
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="3,7">
+                 <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,3">
                   <item>
                    <widget class="QLabel" name="pin1_3">
                     <property name="font">
@@ -424,7 +424,7 @@
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="3,7">
+                 <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,3">
                   <item>
                    <widget class="QLabel" name="pin1_4">
                     <property name="font">
@@ -460,7 +460,7 @@
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="3,7">
+                 <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="1,3">
                   <item>
                    <widget class="QLabel" name="pin1_5">
                     <property name="font">
@@ -496,7 +496,7 @@
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="3,7">
+                 <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,3">
                   <item>
                    <widget class="QLabel" name="pin1_6">
                     <property name="font">
