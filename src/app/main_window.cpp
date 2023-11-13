@@ -214,7 +214,7 @@ void MainWindow::uploadTempBtnClicked() {
     // 压缩截图文件夹
     QDir dir(path_->screenshotPath());
     int file_count = dir.count() - 2;
-    if (file_count < 5) {
+    if (file_count < 6) {
         QMessageBox::information(NULL, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个");
     }
     if (!compressionZipFile(path_->screenshotPath())) {
