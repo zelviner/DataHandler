@@ -2,6 +2,7 @@
 #include <QString>
 #include <map>
 
+
 /// @brief 首条个人化数据结构体
 struct PersonDataInfo {
     QString filename;
@@ -10,6 +11,7 @@ struct PersonDataInfo {
     QString pin1;
     QString op;
     QString ki;
+    std::string json_data;
 };
 
 class PersonData {

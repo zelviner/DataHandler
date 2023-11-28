@@ -10,3 +10,15 @@ PUBLIC
 
 )
 
+# # 寻找Qt5库
+# find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
+
+
+
+# add_executable(test-thread test_thread.cpp)
+# target_link_libraries(test-thread
+# PUBLIC
+#     Qt5::Core
+#     Qt5::Gui
+#     Qt5::Widgets
+# )

@@ -1,6 +1,10 @@
 #include "main_window.h"
 #include "do-order/do_order.h"
 
+#include "loading.h"
+#include "task/card.h"
+#include "task/input_card.hpp"
+
 #include "public/qt-utility/qt_utility.h"
 using namespace zel::qtutility;
 
@@ -158,6 +162,8 @@ void MainWindow::initSignalSlot() {
     connect(ui_->ki_btn, &QPushButton::clicked, [=]() { clip->setText(person_data_info_->ki); });
 
     connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
+    connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
+    connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
     connect(ui_->upload_prd_btn, &QPushButton::clicked, this, &MainWindow::uploadPrdBtnClicked);
     connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
 }
@@ -199,6 +205,37 @@ void MainWindow::saveBtnClicked() {
     }
 }
 
+void MainWindow::writeCardBtnClicked() {
+
+    // 弹出loading窗口, 并停留
+    Loading *loading = new Loading(script_info_, person_data_info_->json_data, this);
+    loading->show();
+
+    loading->inputCard();
+}
+
+void MainWindow::clearCardBtnClicked() {
+    Card card(script_info_, person_data_info_->json_data);
+
+    // 连接读卡器
+    if (!card.connectCard()) {
+        QMessageBox::critical(NULL, "错误", "连接读卡器失败");
+        return;
+    }
+
+    // 清卡
+    if (!card.clearCard()) {
+        QMessageBox::critical(NULL, "错误", "清卡失败");
+        card.disconnectCard();
+        return;
+    }
+
+    // 断开读卡器
+    card.disconnectCard();
+
+    QMessageBox::information(NULL, "提示", "清卡成功");
+}
+
 void MainWindow::uploadPrdBtnClicked() {
     // 将个人化数据上传到FTP服务器
     std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
@@ -210,10 +247,9 @@ void MainWindow::uploadPrdBtnClicked() {
 }
 
 void MainWindow::uploadTempBtnClicked() {
-
     // 压缩截图文件夹
     QDir dir(path_->screenshotPath());
-    int file_count = dir.count() - 2;
+    int  file_count = dir.count() - 2;
     if (file_count < 6) {
         QMessageBox::information(NULL, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个");
     }
@@ -346,12 +382,11 @@ void MainWindow::buttonDisabled(bool disabled) {
     ui_->ki_btn->setDisabled(disabled);
     ui_->write_card_btn->setDisabled(disabled);
     ui_->upload_prd_btn->setDisabled(disabled);
-    ui_->clear_card_btn->setDisabled(true);
+    ui_->clear_card_btn->setDisabled(disabled);
     ui_->upload_temp_btn->setDisabled(true);
 }
 
 void MainWindow::showInfo() {
-
     ui_->dir_name_line->setText(order_info_->order_dir_name);
     ui_->order_id_line->setText(order_info_->order_id);
     ui_->project_name_line->setText(order_info_->program_name);

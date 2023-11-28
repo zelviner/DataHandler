@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
-    <height>686</height>
+    <width>825</width>
+    <height>750</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -842,7 +842,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>成卡 ATR：</string>
+                    <string>成卡 ATR:</string>
                    </property>
                   </widget>
                  </item>
@@ -1321,8 +1321,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>822</width>
-     <height>23</height>
+     <width>825</width>
+     <height>26</height>
     </rect>
    </property>
   </widget>
