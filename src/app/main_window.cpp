@@ -224,7 +224,8 @@ void MainWindow::clearCardBtnClicked() {
     }
 
     // 清卡
-    if (!card.clearCard()) {
+    std::string duration;
+    if (!card.clearCard(duration)) {
         QMessageBox::critical(NULL, "错误", "清卡失败");
         card.disconnectCard();
         return;

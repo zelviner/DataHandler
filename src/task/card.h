@@ -8,6 +8,8 @@
 
 class Card {
   public:
+    enum Type { PREPERSONAL, POSTPERSONAL, CHECK, CLEAR, FINISH };
+
     Card(ScriptInfo *script_info, const std::string &personal_data);
     ~Card();
 
@@ -15,16 +17,16 @@ class Card {
     bool connectCard();
 
     /// @brief 预个人化
-    bool prePersonal();
+    bool prePersonal(std::string &duration);
 
     /// @brief 后个人化
-    bool postPersonal();
+    bool postPersonal(std::string &duration);
 
     /// @brief 检测卡片
-    bool checkCard();
+    bool checkCard(std::string &duration);
 
     /// @brief 清卡
-    bool clearCard();
+    bool clearCard(std::string &duration);
 
     /// @brief 断开卡片
     void disconnectCard();

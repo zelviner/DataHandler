@@ -30,7 +30,7 @@ bool Card::connectCard() {
     return true;
 }
 
-bool Card::prePersonal() {
+bool Card::prePersonal(std::string &duration) {
 
     // 计时 - 开始
     auto start = std::chrono::steady_clock::now();
@@ -38,22 +38,19 @@ bool Card::prePersonal() {
     auto result = interpreter_->interpret(script_info_->person_buffer, "", card_reader_);
 
     // 计时 - 结束
-    auto        end          = std::chrono::steady_clock::now();
-    auto        duration     = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::string duration_str = std::to_string(duration.count() * 1000) + "ms";
+    auto end = std::chrono::steady_clock::now();
+    duration = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() * 1000) + " ms";
 
     if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
         std::cout << "script interpreter error: " << std::endl;
         std::cout << result->inspect() << std::endl;
-        std::cout << "duration: " << duration_str << std::endl;
         return false;
     }
 
-    std::cout << "script run success, duration: " << duration_str << std::endl;
     return true;
 }
 
-bool Card::postPersonal() {
+bool Card::postPersonal(std::string &duration) {
 
     // 计时 - 开始
     auto start = std::chrono::steady_clock::now();
@@ -61,22 +58,19 @@ bool Card::postPersonal() {
     auto result = interpreter_->interpret(script_info_->post_person_buffer, personal_data_, card_reader_);
 
     // 计时 - 结束
-    auto        end          = std::chrono::steady_clock::now();
-    auto        duration     = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::string duration_str = std::to_string(duration.count() * 1000) + "ms";
+    auto end = std::chrono::steady_clock::now();
+    duration = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() * 1000) + " ms";
 
     if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
         std::cout << "script interpreter error: " << std::endl;
         std::cout << result->inspect() << std::endl;
-        std::cout << "duration: " << duration_str << std::endl;
         return false;
     }
 
-    std::cout << "script run success, duration: " << duration_str << std::endl;
     return true;
 }
 
-bool Card::checkCard() {
+bool Card::checkCard(std::string &duration) {
 
     // 计时 - 开始
     auto start = std::chrono::steady_clock::now();
@@ -84,40 +78,34 @@ bool Card::checkCard() {
     auto result = interpreter_->interpret(script_info_->check_buffer, personal_data_, card_reader_);
 
     // 计时 - 结束
-    auto        end          = std::chrono::steady_clock::now();
-    auto        duration     = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::string duration_str = std::to_string(duration.count() * 1000) + "ms";
+    auto end = std::chrono::steady_clock::now();
+    duration = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() * 1000) + " ms";
 
     if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
         std::cout << "script interpreter error: " << std::endl;
         std::cout << result->inspect() << std::endl;
-        std::cout << "duration: " << duration_str << std::endl;
         return false;
     }
 
-    std::cout << "script run success, duration: " << duration_str << std::endl;
     return true;
 }
 
-bool Card::clearCard() {
+bool Card::clearCard(std::string &duration) {
     // 计时 - 开始
     auto start = std::chrono::steady_clock::now();
 
     auto result = interpreter_->interpret(script_info_->clear_buffer, "", card_reader_);
 
     // 计时 - 结束
-    auto        end          = std::chrono::steady_clock::now();
-    auto        duration     = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::string duration_str = std::to_string(duration.count() * 1000) + "ms";
+    auto end = std::chrono::steady_clock::now();
+    duration = std::to_string(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() * 1000) + " ms";
 
     if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
         std::cout << "script interpreter error: " << std::endl;
         std::cout << result->inspect() << std::endl;
-        std::cout << "duration: " << duration_str << std::endl;
         return false;
     }
 
-    std::cout << "script run success, duration: " << duration_str << std::endl;
     return true;
 }
 

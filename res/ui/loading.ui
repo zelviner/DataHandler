@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>459</width>
-    <height>282</height>
+    <width>420</width>
+    <height>187</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>40</x>
      <y>30</y>
-     <width>181</width>
-     <height>51</height>
+     <width>121</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="font">
@@ -29,16 +29,16 @@
     </font>
    </property>
    <property name="text">
-    <string>1. 预个人化</string>
+    <string>预个人化</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>110</y>
-     <width>181</width>
-     <height>51</height>
+     <y>80</y>
+     <width>121</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="font">
@@ -48,16 +48,16 @@
     </font>
    </property>
    <property name="text">
-    <string>2. 后个人化</string>
+    <string>后个人化</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>190</y>
-     <width>171</width>
-     <height>51</height>
+     <y>130</y>
+     <width>121</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="font">
@@ -67,16 +67,16 @@
     </font>
    </property>
    <property name="text">
-    <string>3. 检测</string>
+    <string>检测</string>
    </property>
   </widget>
   <widget class="QLabel" name="prepersonal_label">
    <property name="geometry">
     <rect>
-     <x>300</x>
+     <x>200</x>
      <y>30</y>
-     <width>48</width>
-     <height>48</height>
+     <width>32</width>
+     <height>32</height>
     </rect>
    </property>
    <property name="text">
@@ -86,10 +86,10 @@
   <widget class="QLabel" name="postpersonal_label">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>110</y>
-     <width>48</width>
-     <height>48</height>
+     <x>200</x>
+     <y>80</y>
+     <width>32</width>
+     <height>32</height>
     </rect>
    </property>
    <property name="text">
@@ -99,14 +99,71 @@
   <widget class="QLabel" name="check_label">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>190</y>
-     <width>48</width>
-     <height>48</height>
+     <x>200</x>
+     <y>130</y>
+     <width>32</width>
+     <height>32</height>
     </rect>
    </property>
    <property name="text">
     <string>check</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="prepersonal_duration_label">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>30</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="postpersonal_duration_label">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>80</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="check_duration_label">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>130</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

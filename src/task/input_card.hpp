@@ -10,15 +10,10 @@
 class InputCard : public QThread {
     Q_OBJECT
 
-  signals:
-    // 信号函数，用于向外界发射信号
-    void resultReady(const QString &s);
-
-    void success(const int a);
-
   public:
     InputCard(std::shared_ptr<Card> card)
         : card_(card) {}
+
     void run() override {
         // 连接读卡器
         if (!card_->connectCard()) {
@@ -26,35 +21,45 @@ class InputCard : public QThread {
             return;
         }
 
+        std::string duration;
         // 预个人化
-        if (!card_->prePersonal()) {
+        emit success(Card::PREPERSONAL, QString::fromStdString(duration));
+        if (!card_->prePersonal(duration)) {
             card_->disconnectCard();
             emit resultReady("prepersonal card failed");
             return;
         }
-        emit success(1);
 
         // 后个人化
-        if (!card_->postPersonal()) {
+        emit success(Card::POSTPERSONAL, QString::fromStdString(duration));
+        if (!card_->postPersonal(duration)) {
             card_->disconnectCard();
             emit resultReady("postpersonal card failed");
             return;
         }
-        emit success(2);
 
         // 检测卡片
-        if (!card_->checkCard()) {
+        emit success(Card::CHECK, QString::fromStdString(duration));
+        if (!card_->checkCard(duration)) {
             card_->disconnectCard();
             emit resultReady("check card failed");
             return;
         }
-        emit success(3);
+
+        // 完成
+        emit success(Card::FINISH, QString::fromStdString(duration));
 
         // 断开连接
         card_->disconnectCard();
 
         emit resultReady("input card success");
     }
+
+  signals:
+    // 信号函数，用于向外界发射信号
+    void resultReady(const QString &s);
+
+    void success(Card::Type type, const QString &duration);
 
   private:
     std::shared_ptr<Card> card_;

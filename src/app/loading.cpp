@@ -1,5 +1,4 @@
 #include "loading.h"
-#include "task/card.h"
 #include "task/clear_card.hpp"
 #include "task/input_card.hpp"
 
@@ -39,75 +38,96 @@ bool Loading::inputCard() {
     return true;
 }
 
-void Loading::initWindow() {}
+void Loading::initWindow() { qRegisterMetaType<Card::Type>("Card::Type"); }
 
 void Loading::initUI() {
 
-    // 加载gif动画
-    QMovie *prepersonalMovie  = new QMovie(":/image/loading.gif");
-    QMovie *postpersonalMovie = new QMovie(":/image/loading.gif");
-    QMovie *checkMovie        = new QMovie(":/image/loading.gif");
-
-    // 设置动画对象到对应的QLabel
-    ui->prepersonal_label->setMovie(prepersonalMovie);
-    ui->postpersonal_label->setMovie(postpersonalMovie);
-    ui->check_label->setMovie(checkMovie);
-
-    // 设置动画大小
-    prepersonalMovie->setScaledSize(QSize(48, 48));
-    postpersonalMovie->setScaledSize(QSize(48, 48));
-    checkMovie->setScaledSize(QSize(48, 48));
-
-    ui->prepersonal_label->setFixedSize(48, 48);
-    ui->postpersonal_label->setFixedSize(48, 48);
-    ui->check_label->setFixedSize(48, 48);
-
-    // // 设置动画速度
-    // movie->setSpeed(100);
-
-    // // 开始播放动画
-    // movie->start();
-
-    ui->prepersonal_label->movie()->start();
-
-
     // 新增图片
-    QPixmap pixmap(":/image/not_started.png");
+    QPixmap pixmap(":/image/waiting.png");
     // 设置图片大小
-    pixmap = pixmap.scaled(48, 48);
+    ui->prepersonal_label->setPixmap(pixmap);
     ui->postpersonal_label->setPixmap(pixmap);
     ui->check_label->setPixmap(pixmap);
 }
 
 void Loading::initSignalSlot() {}
 
+void Loading::startPrePersonal(const QString &duration) {
+    // 加载动画
+    QMovie *movie = new QMovie(":/image/loading.gif");
+    ui->prepersonal_label->setMovie(movie);
+
+    movie->setScaledSize(QSize(32, 32));
+    movie->start();
+}
+
+void Loading::startPostPersonal(const QString &duration) {
+
+    // 插入图片
+    QPixmap pixmap(":/image/success.png");
+    ui->prepersonal_label->setPixmap(pixmap);
+
+    // 加载动画
+    QMovie *movie = new QMovie(":/image/loading.gif");
+    ui->postpersonal_label->setMovie(movie);
+
+    movie->setScaledSize(QSize(32, 32));
+    movie->start();
+
+    ui->prepersonal_duration_label->setText(duration);
+}
+
+void Loading::startCheck(const QString &duration) {
+
+    // 插入图片
+    QPixmap pixmap(":/image/success.png");
+    ui->postpersonal_label->setPixmap(pixmap);
+
+    // 加载动画
+    QMovie *movie = new QMovie(":/image/loading.gif");
+    ui->check_label->setMovie(movie);
+
+    movie->setScaledSize(QSize(32, 32));
+    movie->start();
+
+    ui->postpersonal_duration_label->setText(duration);
+}
+
+void Loading::finish(const QString &duration) {
+
+    // 插入图片
+    QPixmap pixmap(":/image/success.png");
+    ui->check_label->setPixmap(pixmap);
+
+    ui->check_duration_label->setText(duration);
+}
+
 void Loading::resultReady(const QString &s) { qDebug() << s; }
 
-void Loading::success(const int a) {
-    switch (a) {
-    case 1: {
-        // ui->prepersonal_label->movie()->stop();
-        QPixmap pixmap(":/image/success.png");
-        pixmap = pixmap.scaled(48, 48);
-        ui->prepersonal_label->setPixmap(pixmap);
-        ui->postpersonal_label->movie()->start();
+void Loading::success(Card::Type type, const QString &duration) {
+
+    switch (type) {
+
+    case Card::PREPERSONAL: {
+        startPrePersonal(duration);
         break;
     }
-    case 2: {
-        // ui->postpersonal_label->movie()->stop();
-        QPixmap pixmap(":/image/success.png");
-        pixmap = pixmap.scaled(48, 48);
-        ui->postpersonal_label->setPixmap(pixmap);
-        ui->check_label->movie()->start();
+
+    case Card::POSTPERSONAL: {
+        startPostPersonal(duration);
         break;
     }
-    case 3: {
-        // ui->check_label->movie()->stop();
-        QPixmap pixmap(":/image/success.png");
-        pixmap = pixmap.scaled(48, 48);
-        ui->check_label->setPixmap(pixmap);
+
+    case Card::CHECK: {
+        startCheck(duration);
         break;
     }
+
+    case Card::FINISH: {
+        finish(duration);
+        break;
+    }
+
     default:
         break;
     }

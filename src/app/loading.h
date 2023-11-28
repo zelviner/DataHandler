@@ -3,6 +3,7 @@
 
 #include "info/person_data.h"
 #include "info/script.h"
+#include "task/card.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -27,10 +28,18 @@ class Loading : public QMainWindow {
     /// @brief 初始化信号槽
     void initSignalSlot();
 
+    void startPrePersonal(const QString &duration);
+
+    void startPostPersonal(const QString &duration);
+
+    void startCheck(const QString &duration);
+
+    void finish(const QString &duration);
+
   private slots:
     void resultReady(const QString &s);
 
-    void success(const int a);
+    void success(Card::Type type, const QString &duration);
 
   private:
     Ui_Loading *ui;

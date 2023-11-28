@@ -4,8 +4,9 @@
      <file>../image/xh_logo.png</file>
      <file>../image/logo.png</file>
      <file>../image/success.png</file>
+     <file>../image/failure.png</file>
+     <file>../image/waiting.png</file>
      <file>../image/loading.gif</file>
-     <file>../image/not_started.png</file>
  </qresource>
  </RCC>
 
