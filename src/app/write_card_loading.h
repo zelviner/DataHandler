@@ -1,22 +1,18 @@
 #pragma once
-#include "ui_loading.h"
+#include "ui_write_card_loading.h"
 
-#include "info/person_data.h"
-#include "info/script.h"
-#include "task/card.h"
+#include "task/write_card.hpp"
 
 #include <QApplication>
 #include <QMainWindow>
 #include <QPushButton>
 
-class Loading : public QMainWindow {
+class WriteCardLoading : public QMainWindow {
     Q_OBJECT
 
   public:
-    Loading(ScriptInfo *script_info, const std::string &personal_data, QMainWindow *parent = nullptr);
-    ~Loading();
-
-    bool inputCard();
+    WriteCardLoading(QMainWindow *parent = nullptr);
+    ~WriteCardLoading();
 
   private:
     // 初始化窗口
@@ -36,13 +32,11 @@ class Loading : public QMainWindow {
 
     void finish(const QString &duration);
 
-  private slots:
-    void resultReady(const QString &s);
+  public slots:
+    void failure(WriteCard::Type type, const QString &err_msg);
 
-    void success(Card::Type type, const QString &duration);
+    void success(WriteCard::Type type, const QString &duration);
 
   private:
-    Ui_Loading *ui;
-    ScriptInfo *script_info_;
-    std::string personal_data_;
+    Ui_WriteCardLoading *ui_;
 };

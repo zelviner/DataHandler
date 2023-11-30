@@ -16,8 +16,8 @@
 #endif
 
 #if defined(_WIN32)
-#include <windows.h>
 #include <winsock.h>
+#include <windows.h>
 #pragma comment(lib, "ws2_32")
 #else
 #include <arpa/inet.h>

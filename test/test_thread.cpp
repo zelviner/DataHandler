@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
     MyThread mThread;
     mThread.start();
+
+    // 计时 - 开始
+    auto start = std::chrono::steady_clock::now();
  
     while(1)
     {
@@ -52,6 +55,10 @@ int main(int argc, char *argv[])
             break;
         }
     }
+
+    // 计时 - 结束
+    auto end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     return a.exec();
 }
 // #include "main.moc"

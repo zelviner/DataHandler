@@ -1,9 +1,11 @@
 #include "main_window.h"
 #include "do-order/do_order.h"
 
-#include "loading.h"
-#include "task/card.h"
-#include "task/input_card.hpp"
+#include "clear_card_loading.h"
+#include "task/clear_card.hpp"
+
+#include "task/write_card.hpp"
+#include "write_card_loading.h"
 
 #include "public/qt-utility/qt_utility.h"
 using namespace zel::qtutility;
@@ -199,42 +201,47 @@ void MainWindow::saveBtnClicked() {
     ini_.set("ftp", "remote_temp_path", remote_temp_path);
 
     if (ini_.save("config.ini")) {
-        QMessageBox::information(NULL, "提示", "保存成功");
+        QMessageBox::information(this, "提示", "保存成功");
     } else {
-        QMessageBox::critical(NULL, "错误", "保存失败");
+        QMessageBox::critical(this, "错误", "保存失败");
     }
 }
 
 void MainWindow::writeCardBtnClicked() {
 
-    // 弹出loading窗口, 并停留
-    Loading *loading = new Loading(script_info_, person_data_info_->json_data, this);
-    loading->show();
+    // 弹出写卡加载窗口, 并停留
+    WriteCardLoading *write_card_loading = new WriteCardLoading(this);
+    write_card_loading->show();
 
-    loading->inputCard();
+    // 创建工作线程
+    auto write_card = new WriteCard();
+    write_card->scriptInfo(script_info_);
+    write_card->personalData(person_data_info_->json_data);
+
+    // 连接信号槽
+    connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
+    connect(write_card, &WriteCard::success, write_card_loading, &WriteCardLoading::success);
+
+    // 启动工作线程
+    write_card->start();
 }
 
 void MainWindow::clearCardBtnClicked() {
-    Card card(script_info_, person_data_info_->json_data);
 
-    // 连接读卡器
-    if (!card.connectCard()) {
-        QMessageBox::critical(NULL, "错误", "连接读卡器失败");
-        return;
-    }
+    // 弹出清卡加载窗口, 并停留
+    ClearCardLoading *clear_card_loading = new ClearCardLoading(this);
+    clear_card_loading->show();
 
-    // 清卡
-    std::string duration;
-    if (!card.clearCard(duration)) {
-        QMessageBox::critical(NULL, "错误", "清卡失败");
-        card.disconnectCard();
-        return;
-    }
+    // 创建工作线程
+    auto clear_card = new ClearCard();
+    clear_card->scriptInfo(script_info_);
 
-    // 断开读卡器
-    card.disconnectCard();
+    // 连接信号槽
+    connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
+    connect(clear_card, &ClearCard::success, clear_card_loading, &ClearCardLoading::success);
 
-    QMessageBox::information(NULL, "提示", "清卡成功");
+    // 启动工作线程
+    clear_card->start();
 }
 
 void MainWindow::uploadPrdBtnClicked() {
@@ -252,28 +259,28 @@ void MainWindow::uploadTempBtnClicked() {
     QDir dir(path_->screenshotPath());
     int  file_count = dir.count() - 2;
     if (file_count < 6) {
-        QMessageBox::information(NULL, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个");
+        QMessageBox::information(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个");
     }
     if (!compressionZipFile(path_->screenshotPath())) {
-        QMessageBox::critical(NULL, "错误", "压缩截图文件失败");
+        QMessageBox::critical(this, "错误", "压缩截图文件失败");
         return;
     }
 
     // 删除原截图文件夹
     if (!deleteFileOrFolder(path_->screenshotPath())) {
-        QMessageBox::critical(NULL, "错误", "删除截图文件失败");
+        QMessageBox::critical(this, "错误", "删除截图文件失败");
         return;
     }
 
     // 压缩文件
     if (!compressionZipFile(path_->tempPath())) {
-        QMessageBox::critical(NULL, "错误", "压缩文件失败");
+        QMessageBox::critical(this, "错误", "压缩文件失败");
         return;
     }
 
     // 删除原文件
     if (!deleteFileOrFolder(path_->tempPath())) {
-        QMessageBox::critical(NULL, "错误", "删除文件失败");
+        QMessageBox::critical(this, "错误", "删除文件失败");
         return;
     }
 
@@ -292,21 +299,21 @@ void MainWindow::uploadFile2FTP(const std::string &local_file_path, const std::s
 
     FtpClient ftp(host, username, password, port);
     if (!ftp.connect()) {
-        QMessageBox::critical(NULL, "FTP连接失败", "请检查FTP服务器IP和端口是否正确");
+        QMessageBox::critical(this, "FTP连接失败", "请检查FTP服务器IP和端口是否正确");
         return;
     }
 
     if (!ftp.login()) {
-        QMessageBox::critical(NULL, "FTP连接失败", "请检查用户名和密码是否正确");
+        QMessageBox::critical(this, "FTP连接失败", "请检查用户名和密码是否正确");
         return;
     }
 
     if (!ftp.uploadFile(local_file_path, remote_file_path)) {
-        QMessageBox::critical(NULL, "上传文件失败", "请检查远程路径是否正确");
+        QMessageBox::critical(this, "上传文件失败", "请检查远程路径是否正确");
         return;
     }
 
-    QMessageBox::information(NULL, "提示", "上传成功");
+    QMessageBox::information(this, "提示", "上传成功");
 }
 
 bool MainWindow::isOrder() {
@@ -342,7 +349,7 @@ void MainWindow::dropEvent(QDropEvent *event) {
 
     QString error = "";
     if (!getInfo(error)) {
-        QMessageBox::critical(NULL, "错误", error);
+        QMessageBox::critical(this, "错误", error);
         return;
     }
 
@@ -350,7 +357,7 @@ void MainWindow::dropEvent(QDropEvent *event) {
     // path_->show();
 
     if (!doOrder(error)) {
-        QMessageBox::critical(NULL, "错误", error);
+        QMessageBox::critical(this, "错误", error);
         return;
     }
 
@@ -361,7 +368,7 @@ void MainWindow::dropEvent(QDropEvent *event) {
     buttonDisabled(false);
 
     // 弹窗提示
-    QMessageBox success_box;
+    QMessageBox success_box(this);
     success_box.setWindowTitle("提示");
     success_box.setText(QString("订单处理完成"));
     QPixmap pix(":/image/success.png");
@@ -389,15 +396,21 @@ void MainWindow::buttonDisabled(bool disabled) {
 
 void MainWindow::showInfo() {
     ui_->dir_name_line->setText(order_info_->order_dir_name);
+    ui_->dir_name_line->setCursorPosition(0);
     ui_->order_id_line->setText(order_info_->order_id);
     ui_->project_name_line->setText(order_info_->program_name);
     ui_->rf_code_line->setText(order_info_->rf_code);
     ui_->script_package_line->setText(order_info_->script_package);
+    ui_->script_package_line->setCursorPosition(0);
 
     ui_->person_script_line->setText(script_info_->person_filename);
+    ui_->person_script_line->setCursorPosition(0);
     ui_->post_person_script_line->setText(script_info_->post_person_filename);
+    ui_->post_person_script_line->setCursorPosition(0);
     ui_->check_script_line->setText(script_info_->check_filename);
+    ui_->check_script_line->setCursorPosition(0);
     ui_->clear_script_line->setText(script_info_->clear_filename);
+    ui_->clear_script_line->setCursorPosition(0);
 
     ui_->ki_line->setText(person_data_info_->ki);
     ui_->op_line->setText(person_data_info_->op);

@@ -68,9 +68,8 @@ class MainWindow : public QMainWindow {
   private:
     Ui_MainWindow        *ui_;
     zel::utility::IniFile ini_;
-
-    Path           *path_;
-    OrderInfo      *order_info_;
-    PersonDataInfo *person_data_info_;
-    ScriptInfo     *script_info_;
+    Path                 *path_;
+    OrderInfo            *order_info_;
+    PersonDataInfo       *person_data_info_;
+    ScriptInfo           *script_info_;
 };
