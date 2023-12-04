@@ -6,17 +6,22 @@ using namespace zel::filesystem;
 #include "public/utility/string.h"
 using namespace zel::utility;
 
-Script::Script(Path *path)
+Script::Script(std::string script_path)
     : script_info_(nullptr)
-    , path_(path) {}
+    , script_path_(script_path) {}
 
 Script::~Script() {}
 
 ScriptInfo *Script::scriptInfo(QString &error) {
-    script_info_       = new ScriptInfo();
-    auto      dir_name = String::wstring2string(path_->scriptPath().toStdWString());
-    Directory script_dir(dir_name);
-    auto      files = script_dir.files();
+    script_info_ = new ScriptInfo();
+    Directory script_dir(script_path_);
+
+    if (!script_dir.exists()) {
+        error = "script dir not exists";
+        return nullptr;
+    }
+
+    auto files = script_dir.files();
 
     for (auto file : files) {
         if (file.name().find("ClearCard") != std::string::npos || file.name().find("Restore") != std::string::npos) {

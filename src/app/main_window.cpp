@@ -8,6 +8,7 @@
 #include "write_card_loading.h"
 
 #include "public/qt-utility/qt_utility.h"
+#include <iostream>
 using namespace zel::qtutility;
 
 #include "public/utility/logger.h"
@@ -80,11 +81,6 @@ bool MainWindow::getInfo(QString &error) {
     person_data_info_ = person_data.personDataInfo(error);
     if (error != "") return false;
 
-    // 获取脚本信息
-    Script script(path_);
-    script_info_ = script.scriptInfo(error);
-    if (error != "") return false;
-
     return true;
 }
 
@@ -123,6 +119,12 @@ bool MainWindow::doOrder(QString &error) {
         renameFolder(path_->dirPath(), new_name);
         path_->dirPath(new_name);
     }
+
+    // 获取脚本信息
+    std::string script_path = String::wstring2string(path_->scriptPath().toStdWString());
+    Script      script(script_path);
+    script_info_ = script.scriptInfo(error);
+    if (error != "") return false;
 
     return true;
 }
@@ -232,6 +234,14 @@ void MainWindow::clearCardBtnClicked() {
     ClearCardLoading *clear_card_loading = new ClearCardLoading(this);
     clear_card_loading->show();
 
+    // 获取脚本信息
+    std::string script_path = String::wstring2string(path_->dirPath().toStdWString() + L"/鉴权/" +
+                                                     order_info_->script_package.toStdWString());
+    Script      script(script_path);
+    QString     error;
+    script_info_ = script.scriptInfo(error);
+    if (error != "") return;
+
     // 创建工作线程
     auto clear_card = new ClearCard();
     clear_card->scriptInfo(script_info_);
@@ -248,7 +258,7 @@ void MainWindow::uploadPrdBtnClicked() {
     // 将个人化数据上传到FTP服务器
     std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
     remote_prd_path += "/" + order_info_->order_id.toStdString();
-    std::string local_prd_path = String::wstring2string(path_->ftpDataPath().toStdWString());
+    std::string local_prd_path = String::wstring2string(path_->zhDataPath().toStdWString());
     uploadFile2FTP(local_prd_path, remote_prd_path);
 
     ui_->upload_temp_btn->setDisabled(false);

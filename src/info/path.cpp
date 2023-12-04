@@ -8,30 +8,35 @@ Path::~Path() {}
 void Path::show() {
     qDebug() << "dir_path: " << dir_path_;
 
-    qDebug() << "order_path: " << path_.order_path;
-    qDebug() << "ftp_data_path: " << path_.ftp_data_path;
-    qDebug() << "script_path: " << path_.script_path;
-    qDebug() << "src_tag_data_path: " << path_.src_tag_data_path;
+    qDebug() << "zh_order_path: " << path_.zh_order_path;
+    qDebug() << "zh_data_path: " << path_.zh_data_path;
+    qDebug() << "zh_script_path: " << path_.zh_script_path;
+    qDebug() << "zh_tag_data_path: " << path_.zh_tag_data_path;
 
     qDebug() << "data_path: " << path_.data_path;
 
     qDebug() << "temp_path: " << path_.temp_path;
     qDebug() << "screenshot_path: " << path_.screenshot_path;
     qDebug() << "print_path: " << path_.print_path;
-    qDebug() << "dest_tag_data_path: " << path_.dest_tag_data_path;
+    qDebug() << "tag_data_path: " << path_.tag_data_path;
 
     qDebug() << "authentication_path: " << path_.authentication_path;
+    qDebug() << "script_path: " << path_.script_path;
 
     qDebug() << "clear_card_path: " << path_.clear_card_path;
 }
 
 QString Path::dirPath() { return dir_path_; }
 
-QString Path::orderPath() { return abslutePath(path_.order_path); }
+QString Path::zhDataPath() { return abslutePath(path_.zh_data_path); }
+
+QString Path::zhScriptPath() { return abslutePath(path_.zh_script_path); }
+
+QString Path::zhTagDataPath() { return abslutePath(path_.zh_tag_data_path); }
+
+QString Path::zhOrderPath() { return abslutePath(path_.zh_order_path); }
 
 QString Path::dataPath() { return abslutePath(path_.data_path); }
-
-QString Path::ftpDataPath() { return abslutePath(path_.ftp_data_path); }
 
 QString Path::scriptPath() { return abslutePath(path_.script_path); }
 
@@ -41,9 +46,7 @@ QString Path::authenticationPath() { return abslutePath(path_.authentication_pat
 
 QString Path::tempPath() { return abslutePath(path_.temp_path); }
 
-QString Path::srcTagDataPath() { return abslutePath(path_.src_tag_data_path); }
-
-QString Path::destTagDataPath() { return abslutePath(path_.dest_tag_data_path); }
+QString Path::tagDataPath() { return abslutePath(path_.tag_data_path); }
 
 QString Path::clearCardPath() { return abslutePath(path_.clear_card_path); }
 
@@ -59,11 +62,15 @@ QStringList Path::printsPath() {
 
 void Path::dirPath(QString path) { dir_path_ = path; }
 
-void Path::orderPath(QString path) { path_.order_path = path; }
+void Path::zhDataPath(QString path) { path_.zh_data_path = path; }
+
+void Path::zhScriptPath(QString path) { path_.zh_script_path = path; }
+
+void Path::zhTagDataPath(QString path) { path_.zh_tag_data_path = path; }
+
+void Path::zhOrderPath(QString path) { path_.zh_order_path = path; }
 
 void Path::dataPath(QString path) { path_.data_path = path; }
-
-void Path::ftpDataPath(QString path) { path_.ftp_data_path = path; }
 
 void Path::scriptPath(QString path) { path_.script_path = path; }
 
@@ -73,9 +80,7 @@ void Path::authenticationPath(QString path) { path_.authentication_path = path; 
 
 void Path::tempPath(QString path) { path_.temp_path = path; }
 
-void Path::srcTagDataPath(QString path) { path_.src_tag_data_path = path; }
-
-void Path::destTagDataPath(QString path) { path_.dest_tag_data_path = path; }
+void Path::tagDataPath(QString path) { path_.tag_data_path = path; }
 
 void Path::clearCardPath(QString path) { path_.clear_card_path = path; }
 

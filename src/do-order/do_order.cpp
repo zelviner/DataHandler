@@ -56,16 +56,16 @@ bool DoOrder::printDir() {
 }
 
 bool DoOrder::tagDataDir() {
-    createFolder(path_->destTagDataPath());
+    createFolder(path_->tagDataPath());
 
     // 拷贝标签数据
-    copyFolder(path_->srcTagDataPath(), path_->destTagDataPath(), true);
+    copyFolder(path_->zhTagDataPath(), path_->tagDataPath(), true);
 
     // 压缩文件
-    if (!compressionZipFile(path_->destTagDataPath())) return false;
+    if (!compressionZipFile(path_->tagDataPath())) return false;
 
     // 删除原文件
-    if (!deleteFileOrFolder(path_->destTagDataPath())) return false;
+    if (!deleteFileOrFolder(path_->tagDataPath())) return false;
 
     return true;
 }

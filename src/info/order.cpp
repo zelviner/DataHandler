@@ -34,7 +34,7 @@ OrderInfo *Order::orderInfo(QString &error) {
         return nullptr;
     }
 
-    path_->orderPath("DATA/" + dir_name);
+    path_->zhOrderPath("DATA/" + dir_name);
 
     int index = 0;
     if (dir_name.indexOf("更新") != -1) index++;
@@ -56,20 +56,24 @@ OrderInfo *Order::orderInfo(QString &error) {
     path_->printPath(temp + "/打印 " + splitFormt(dir_name, " ", 1 + index, 3 + index));
 
     dir.setPath(path_->dirPath() + "/DATA/" + dir_name);
-    dir_names = dir.entryList();
-    auto order_path      = "DATA/" + dir_name;
+    dir_names              = dir.entryList();
+    auto        order_path = "DATA/" + dir_name;
     QStringList temp_list;
     for (auto dir_name : dir_names) {
         if (dir_name.indexOf(".") == -1) {
             if (dir_name.indexOf("Tag_data") != -1) {
-                path_->srcTagDataPath(order_path + "/" + dir_name);
-                path_->destTagDataPath(temp + "/" + dir_name);
+                // 标签数据
+                path_->zhTagDataPath(order_path + "/" + dir_name);
+                path_->tagDataPath(temp + "/" + dir_name);
             } else if (dir_name.indexOf("_") != -1) {
+                // 脚本包
                 order_info_->script_package = dir_name;
                 order_info_->rf_code        = "XH_RF_" + splitFormt(dir_name, "_", 2, 4);
-                path_->scriptPath(order_path + "/" + dir_name);
+                path_->zhScriptPath(order_path + "/" + dir_name);
+                path_->scriptPath("鉴权/" + dir_name);
             } else if (dir_name == "DATA") {
-                path_->ftpDataPath(order_path + "/" + dir_name);
+                // 个人化数据
+                path_->zhDataPath(order_path + "/" + dir_name);
             } else {
                 continue;
             }

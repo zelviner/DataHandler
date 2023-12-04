@@ -21,12 +21,12 @@ struct ScriptInfo {
 class Script {
 
   public:
-    Script(Path *path);
+    Script(std::string script_path);
     ~Script();
 
     ScriptInfo *scriptInfo(QString &error);
 
   private:
     ScriptInfo *script_info_;
-    Path       *path_;
+    std::string script_path_;
 };
