@@ -33,7 +33,7 @@ void WriteCardLoading::initUI() {
 
 void WriteCardLoading::initSignalSlot() {}
 
-void WriteCardLoading::startPrePersonal(const QString &duration) {
+void WriteCardLoading::startPrePersonal(const QString &duration, const QString &atr) {
     // 加载动画
     QMovie *movie = new QMovie(":/image/loading.gif");
     ui_->prepersonal_label->setMovie(movie);
@@ -42,7 +42,7 @@ void WriteCardLoading::startPrePersonal(const QString &duration) {
     movie->start();
 }
 
-void WriteCardLoading::startPostPersonal(const QString &duration) {
+void WriteCardLoading::startPostPersonal(const QString &duration, const QString &atr) {
 
     // 插入图片
     QPixmap pixmap(":/image/success.png");
@@ -58,7 +58,7 @@ void WriteCardLoading::startPostPersonal(const QString &duration) {
     ui_->prepersonal_duration_label->setText(duration);
 }
 
-void WriteCardLoading::startCheck(const QString &duration) {
+void WriteCardLoading::startCheck(const QString &duration, const QString &atr) {
 
     // 插入图片
     QPixmap pixmap(":/image/success.png");
@@ -116,22 +116,22 @@ void WriteCardLoading::failure(WriteCard::Type type, const QString &err_msg) {
     }
 }
 
-void WriteCardLoading::success(WriteCard::Type type, const QString &duration) {
+void WriteCardLoading::success(WriteCard::Type type, const QString &atr, const QString &duration) {
 
     switch (type) {
 
     case WriteCard::PREPERSONAL: {
-        startPrePersonal(duration);
+        startPrePersonal(duration, atr);
         break;
     }
 
     case WriteCard::POSTPERSONAL: {
-        startPostPersonal(duration);
+        startPostPersonal(duration, atr);
         break;
     }
 
     case WriteCard::CHECK: {
-        startCheck(duration);
+        startCheck(duration, atr);
         break;
     }
 

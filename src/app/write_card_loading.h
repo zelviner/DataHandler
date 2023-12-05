@@ -1,7 +1,7 @@
 #pragma once
-#include "ui_write_card_loading.h"
 
 #include "task/write_card.hpp"
+#include "ui_write_card_loading.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -24,18 +24,18 @@ class WriteCardLoading : public QMainWindow {
     /// @brief 初始化信号槽
     void initSignalSlot();
 
-    void startPrePersonal(const QString &duration);
+    void startPrePersonal(const QString &duration, const QString &atr);
 
-    void startPostPersonal(const QString &duration);
+    void startPostPersonal(const QString &duration, const QString &atr);
 
-    void startCheck(const QString &duration);
+    void startCheck(const QString &duration, const QString &atr);
 
     void finish(const QString &duration);
 
   public slots:
     void failure(WriteCard::Type type, const QString &err_msg);
 
-    void success(WriteCard::Type type, const QString &duration);
+    void success(WriteCard::Type type, const QString &duration, const QString &atr = "");
 
   private:
     Ui_WriteCardLoading *ui_;

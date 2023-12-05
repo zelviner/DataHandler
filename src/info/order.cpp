@@ -1,13 +1,14 @@
 #include "order.h"
 #include "public/qt-utility/qt_utility.h"
+#include <qdebug.h>
 using namespace zel::qtutility;
+
+#include <utility/logger.h>
 
 #include <QDebug>
 #include <QDir>
 #include <QRegExp>
 #include <QStringList>
-
-#include <utility/logger.h>
 
 Order::Order(Path *path)
     : path_(path)
@@ -68,9 +69,11 @@ OrderInfo *Order::orderInfo(QString &error) {
             } else if (dir_name.indexOf("_") != -1) {
                 // 脚本包
                 order_info_->script_package = dir_name;
-                order_info_->rf_code        = "XH_RF_" + splitFormt(dir_name, "_", 2, 4);
+                QString card_type           = splitFormt(dir_name, "_", 5, 5).remove(0, 1);
+                order_info_->rf_code        = "XH_RF_" + splitFormt(dir_name, "_", 2, 4) + " " + card_type;
                 path_->zhScriptPath(order_path + "/" + dir_name);
                 path_->scriptPath("鉴权/" + dir_name);
+                std::string a;
             } else if (dir_name == "DATA") {
                 // 个人化数据
                 path_->zhDataPath(order_path + "/" + dir_name);
@@ -81,7 +84,7 @@ OrderInfo *Order::orderInfo(QString &error) {
             temp_list.push_back(order_path + "/" + dir_name);
         }
     }
-    path_->printsPath(temp_list);
+    path_->zhPrintPaths(temp_list);
 
     return order_info_;
 }

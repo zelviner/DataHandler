@@ -1,6 +1,5 @@
 #pragma once
 
-#include "path.h"
 #include <QString>
 
 struct ScriptInfo {

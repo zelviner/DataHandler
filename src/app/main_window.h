@@ -1,4 +1,5 @@
 #pragma once
+
 #include "info/order.h"
 #include "info/person_data.h"
 #include "info/script.h"
@@ -64,6 +65,9 @@ class MainWindow : public QMainWindow {
     void showInfo();
 
     void next();
+
+  public slots:
+    void atr(const QString &atr);
 
   private:
     Ui_MainWindow        *ui_;

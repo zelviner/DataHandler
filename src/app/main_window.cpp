@@ -1,14 +1,7 @@
 #include "main_window.h"
-#include "do-order/do_order.h"
 
-#include "clear_card_loading.h"
-#include "task/clear_card.hpp"
-
-#include "task/write_card.hpp"
-#include "write_card_loading.h"
-
+#include "app/main_window.h"
 #include "public/qt-utility/qt_utility.h"
-#include <iostream>
 using namespace zel::qtutility;
 
 #include "public/utility/logger.h"
@@ -17,6 +10,12 @@ using namespace zel::utility;
 
 #include "public/ftp/ftp.h"
 using namespace zel::ftp;
+
+#include "clear_card_loading.h"
+#include "do-order/do_order.h"
+#include "task/clear_card.hpp"
+#include "task/write_card.hpp"
+#include "write_card_loading.h"
 
 #include <QClipboard>
 #include <QDebug>
@@ -218,7 +217,7 @@ void MainWindow::writeCardBtnClicked() {
     // 创建工作线程
     auto write_card = new WriteCard();
     write_card->scriptInfo(script_info_);
-    write_card->personalData(person_data_info_->json_data);
+    write_card->jsonData(person_data_info_->json_data);
 
     // 连接信号槽
     connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
@@ -444,3 +443,5 @@ void MainWindow::next() {
     delete order_info_;
     order_info_ = nullptr;
 }
+
+void MainWindow::atr(const QString &atr) {}

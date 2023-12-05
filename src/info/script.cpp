@@ -3,9 +3,6 @@
 #include "public/filesystem/directory.h"
 using namespace zel::filesystem;
 
-#include "public/utility/string.h"
-using namespace zel::utility;
-
 Script::Script(std::string script_path)
     : script_info_(nullptr)
     , script_path_(script_path) {}
@@ -60,5 +57,6 @@ ScriptInfo *Script::scriptInfo(QString &error) {
             }
         }
     }
+
     return script_info_;
 }

@@ -7,11 +7,11 @@
 
 /// @brief 订单信息结构体
 struct OrderInfo {
-    QString order_dir_name;
-    QString order_id;
-    QString program_name;
-    QString script_package;
-    QString rf_code;
+    QString order_dir_name; // 订单文件夹名称
+    QString order_id;       // 工程单号
+    QString program_name;   // 项目名称
+    QString rf_code;        // 需求编码 + 卡片型号
+    QString script_package; // 脚本包
 };
 
 class Order {

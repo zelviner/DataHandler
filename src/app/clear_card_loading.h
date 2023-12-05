@@ -1,7 +1,7 @@
 #pragma once
-#include "ui_clear_card_loading.h"
 
 #include "task/clear_card.hpp"
+#include "ui_clear_card_loading.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -13,6 +13,10 @@ class ClearCardLoading : public QMainWindow {
   public:
     ClearCardLoading(QMainWindow *parent = nullptr);
     ~ClearCardLoading();
+
+  signals:
+    // 信号函数，用于向外界发射信号
+    void atr(const QString &atr);
 
   private:
     // 初始化窗口

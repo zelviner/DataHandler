@@ -4,6 +4,8 @@
 #include "../utility/string.h"
 using namespace zel::utility;
 
+#include "../filesystem/directory.h"
+
 namespace zel {
 namespace ftp {
 

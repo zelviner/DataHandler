@@ -1,6 +1,6 @@
 #pragma once
-#include "ui_ftp_loading.h"
 
+#include "ui_ftp_loading.h"
 #include "task/upload_prd.hpp"
 
 #include <QApplication>

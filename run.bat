@@ -40,7 +40,7 @@ rem 进入编译目录
 cd %BUILD_DIR%
 
 rem 使用 CMake 生成项目文件
-"cmake" -G "Ninja"  .. -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+"cmake" -G "Ninja"  .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
 
 rem 使用 Ninja 进行编译
 ninja

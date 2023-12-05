@@ -6,6 +6,9 @@
 #include <interpreter/interpreter.h>
 using namespace xhlanguage::interpreter;
 
+#include <public/json/json.h>
+using namespace zel::json;
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QThread>
@@ -21,7 +24,7 @@ class WriteCard : public QThread {
 
     void scriptInfo(ScriptInfo *script_info) { script_info_ = script_info; }
 
-    void personalData(const std::string &personal_data) { personal_data_ = personal_data; }
+    void jsonData(const Json &json_data) { json_data_ = json_data; }
 
     void run() override {
 
@@ -40,10 +43,13 @@ class WriteCard : public QThread {
             return;
         }
 
+        json_data_["has_ds"] = script_info_->has_ds;
+        auto personal_data   = json_data_.str();
+
         // 创建脚本解释器
         Interpreter interpreter;
 
-        std::string duration;
+        std::string duration, atr;
         // 预个人化
         emit success(PREPERSONAL, QString::fromStdString(duration));
 
@@ -69,7 +75,7 @@ class WriteCard : public QThread {
         // 计时 - 开始
         start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->post_person_buffer, personal_data_, card_reader);
+        result = interpreter.interpret(script_info_->post_person_buffer, personal_data, card_reader);
         if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
             std::cout << "script interpreter error: " << std::endl;
             std::cout << result->inspect() << std::endl;
@@ -88,7 +94,7 @@ class WriteCard : public QThread {
         // 计时 - 开始
         start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->check_buffer, personal_data_, card_reader);
+        result = interpreter.interpret(script_info_->check_buffer, personal_data, card_reader);
         if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
             std::cout << "script interpreter error: " << std::endl;
             std::cout << result->inspect() << std::endl;
@@ -112,9 +118,9 @@ class WriteCard : public QThread {
     // 信号函数，用于向外界发射信号
     void failure(WriteCard::Type type, const QString &err_msg);
 
-    void success(WriteCard::Type type, const QString &duration);
+    void success(WriteCard::Type type, const QString &duration, const QString &atr = "");
 
   private:
     ScriptInfo *script_info_;
-    std::string personal_data_;
+    Json        json_data_;
 };

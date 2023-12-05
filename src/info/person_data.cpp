@@ -1,7 +1,5 @@
 #include "person_data.h"
-
 #include "public/json/json.h"
-using namespace zel::json;
 
 #include <QDebug>
 #include <QDir>
@@ -39,16 +37,18 @@ PersonDataInfo *PersonData::personDataInfo(QString &error) {
 
     auto headers = person_data_info_->header.split("/");
     auto datas   = person_data_info_->data.split(" ");
-    Json json;
     for (int i = 0; i < headers.size(); i++) {
-        m_data_[headers[i]]            = datas[i];
-        json[headers[i].toStdString()] = datas[i].toStdString();
+        person_data_info_->json_data[headers[i].toStdString()] = datas[i].toStdString();
     }
 
-    person_data_info_->json_data = json.str();
-    person_data_info_->ki   = m_data_["KI"];
-    person_data_info_->op   = m_data_["OP"].isEmpty() ? m_data_["OPC"] : m_data_["OP"];
-    person_data_info_->pin1 = m_data_["PIN1"];
+    std::string pin1 = person_data_info_->json_data["PIN1"];
+    std::string ki   = person_data_info_->json_data["KI"];
+    std::string op   = person_data_info_->json_data["OP"].empty() ? person_data_info_->json_data["OPC"]
+                                                                  : person_data_info_->json_data["OP"];
+
+    person_data_info_->pin1 = QString::fromStdString(pin1);
+    person_data_info_->ki   = QString::fromStdString(ki);
+    person_data_info_->op   = QString::fromStdString(op);
 
     return person_data_info_;
 }
