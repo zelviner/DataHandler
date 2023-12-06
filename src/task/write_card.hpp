@@ -50,13 +50,18 @@ class WriteCard : public QThread {
         Interpreter interpreter;
 
         std::string duration, atr;
+
+        // 获取裸卡 ATR
+        auto result = interpreter.interpret("RST()", "", card_reader);
+        atr         = result->inspect().substr(10);
+
         // 预个人化
-        emit success(PREPERSONAL, QString::fromStdString(duration));
+        emit success(PREPERSONAL, QString::fromStdString(duration), QString::fromStdString(atr));
 
         // 计时 - 开始
         auto start = std::chrono::steady_clock::now();
 
-        auto result = interpreter.interpret(script_info_->person_buffer, "", card_reader);
+        result = interpreter.interpret(script_info_->person_buffer, "", card_reader);
         if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
             std::cout << "script interpreter error: " << std::endl;
             std::cout << result->inspect() << std::endl;
@@ -69,8 +74,12 @@ class WriteCard : public QThread {
         auto end = std::chrono::steady_clock::now();
         duration = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
 
+        // 获取白卡 ATR
+        result = interpreter.interpret("RST()", "", card_reader);
+        atr    = result->inspect().substr(10);
+
         // 后个人化
-        emit success(POSTPERSONAL, QString::fromStdString(duration));
+        emit success(POSTPERSONAL, QString::fromStdString(duration), QString::fromStdString(atr));
 
         // 计时 - 开始
         start = std::chrono::steady_clock::now();
@@ -88,8 +97,12 @@ class WriteCard : public QThread {
         end      = std::chrono::steady_clock::now();
         duration = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
 
+        // 获取成卡 ATR
+        result = interpreter.interpret("RST()", "", card_reader);
+        atr    = result->inspect().substr(10);
+
         // 检测卡片
-        emit success(CHECK, QString::fromStdString(duration));
+        emit success(CHECK, QString::fromStdString(duration), QString::fromStdString(atr));
 
         // 计时 - 开始
         start = std::chrono::steady_clock::now();

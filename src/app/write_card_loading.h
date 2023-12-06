@@ -14,6 +14,12 @@ class WriteCardLoading : public QMainWindow {
     WriteCardLoading(QMainWindow *parent = nullptr);
     ~WriteCardLoading();
 
+  signals:
+    // 信号函数，用于向外界发射信号
+    void bareAtr(const QString &bare_atr);
+    void whiteAtr(const QString &white_atr);
+    void finishedAtr(const QString &finished_atr);
+
   private:
     // 初始化窗口
     void initWindow();

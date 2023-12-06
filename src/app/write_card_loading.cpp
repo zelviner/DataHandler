@@ -40,6 +40,7 @@ void WriteCardLoading::startPrePersonal(const QString &duration, const QString &
 
     movie->setScaledSize(QSize(32, 32));
     movie->start();
+    emit bareAtr(atr);
 }
 
 void WriteCardLoading::startPostPersonal(const QString &duration, const QString &atr) {
@@ -56,6 +57,7 @@ void WriteCardLoading::startPostPersonal(const QString &duration, const QString 
     movie->start();
 
     ui_->prepersonal_duration_label->setText(duration);
+    emit whiteAtr(atr);
 }
 
 void WriteCardLoading::startCheck(const QString &duration, const QString &atr) {
@@ -72,6 +74,8 @@ void WriteCardLoading::startCheck(const QString &duration, const QString &atr) {
     movie->start();
 
     ui_->postpersonal_duration_label->setText(duration);
+
+    emit finishedAtr(atr);
 }
 
 void WriteCardLoading::finish(const QString &duration) {
@@ -116,7 +120,7 @@ void WriteCardLoading::failure(WriteCard::Type type, const QString &err_msg) {
     }
 }
 
-void WriteCardLoading::success(WriteCard::Type type, const QString &atr, const QString &duration) {
+void WriteCardLoading::success(WriteCard::Type type, const QString &duration, const QString &atr) {
 
     switch (type) {
 

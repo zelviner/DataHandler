@@ -67,7 +67,9 @@ class MainWindow : public QMainWindow {
     void next();
 
   public slots:
-    void atr(const QString &atr);
+    void bareAtr(const QString &bare_atr);
+    void whiteAtr(const QString &white_atr);
+    void finishedAtr(const QString &finished_atr);
 
   private:
     Ui_MainWindow        *ui_;

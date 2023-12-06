@@ -222,6 +222,9 @@ void MainWindow::writeCardBtnClicked() {
     // 连接信号槽
     connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
     connect(write_card, &WriteCard::success, write_card_loading, &WriteCardLoading::success);
+    connect(write_card_loading, &WriteCardLoading::bareAtr, this, &MainWindow::bareAtr);
+    connect(write_card_loading, &WriteCardLoading::whiteAtr, this, &MainWindow::whiteAtr);
+    connect(write_card_loading, &WriteCardLoading::finishedAtr, this, &MainWindow::finishedAtr);
 
     // 启动工作线程
     write_card->start();
@@ -444,4 +447,17 @@ void MainWindow::next() {
     order_info_ = nullptr;
 }
 
-void MainWindow::atr(const QString &atr) {}
+void MainWindow::bareAtr(const QString &bare_atr) {
+    ui_->bare_card_line->setText(bare_atr);
+    ui_->bare_card_line->setCursorPosition(0);
+}
+
+void MainWindow::whiteAtr(const QString &white_atr) {
+    ui_->white_card_line->setText(white_atr);
+    ui_->white_card_line->setCursorPosition(0);
+}
+
+void MainWindow::finishedAtr(const QString &finished_atr) {
+    ui_->finished_card_line->setText(finished_atr);
+    ui_->finished_card_line->setCursorPosition(0);
+}

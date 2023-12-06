@@ -14,10 +14,6 @@ class ClearCardLoading : public QMainWindow {
     ClearCardLoading(QMainWindow *parent = nullptr);
     ~ClearCardLoading();
 
-  signals:
-    // 信号函数，用于向外界发射信号
-    void atr(const QString &atr);
-
   private:
     // 初始化窗口
     void initWindow();

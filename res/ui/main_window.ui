@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>825</width>
-    <height>750</height>
+    <height>755</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -574,7 +574,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>71</width>
+                 <width>20</width>
                  <height>20</height>
                 </size>
                </property>
@@ -583,7 +583,7 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_5">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="2,8">
+                <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="1,9">
                  <item>
                   <widget class="QLabel" name="pin1_2">
                    <property name="font">
@@ -616,7 +616,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2,8">
+                <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,9">
                  <item>
                   <widget class="QLabel" name="ki_2">
                    <property name="font">
@@ -649,7 +649,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="2,8">
+                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,9">
                  <item>
                   <widget class="QLabel" name="op_2">
                    <property name="font">
