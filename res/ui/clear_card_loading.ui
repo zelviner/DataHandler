@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>618</width>
+    <width>706</width>
     <height>187</height>
    </rect>
   </property>
@@ -17,8 +17,8 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>80</y>
-     <width>121</width>
+     <y>70</y>
+     <width>71</width>
      <height>31</height>
     </rect>
    </property>
@@ -35,8 +35,8 @@
   <widget class="QLabel" name="clear_label">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>80</y>
+     <x>110</x>
+     <y>70</y>
      <width>32</width>
      <height>32</height>
     </rect>
@@ -48,9 +48,9 @@
   <widget class="QLabel" name="clear_duration_label">
    <property name="geometry">
     <rect>
-     <x>230</x>
-     <y>80</y>
-     <width>341</width>
+     <x>160</x>
+     <y>70</y>
+     <width>531</width>
      <height>31</height>
     </rect>
    </property>

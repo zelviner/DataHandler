@@ -37,6 +37,18 @@ class MainWindow : public QMainWindow {
     /// @brief 保存按钮点击事件
     void saveBtnClicked();
 
+    /// @brief 打开预个人化脚本按钮点击事件
+    void openPersonalBtnClicked();
+
+    /// @brief 打开后个人化脚本按钮点击事件
+    void openPostPersonalBtnClicked();
+
+    /// @brief 打开检测脚本按钮点击事件
+    void openCheckBtnClicked();
+
+    /// @brief 打开清卡脚本按钮点击事件
+    void openClearCardBtnClicked();
+
     /// @brief 写卡按钮点击事件
     void writeCardBtnClicked();
 

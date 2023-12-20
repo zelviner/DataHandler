@@ -388,7 +388,7 @@
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,3">
+                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                   <item>
                    <widget class="QLabel" name="pin1_3">
                     <property name="font">
@@ -398,7 +398,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>预个人化脚本：</string>
+                     <string>预个人化:</string>
                     </property>
                    </widget>
                   </item>
@@ -421,10 +421,23 @@
                     </property>
                    </widget>
                   </item>
+                  <item>
+                   <widget class="QPushButton" name="open_personal_btn">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>打开</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,3">
+                 <layout class="QHBoxLayout" name="horizontalLayout_8">
                   <item>
                    <widget class="QLabel" name="pin1_4">
                     <property name="font">
@@ -434,7 +447,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>后个人化脚本：</string>
+                     <string>后个人化:</string>
                     </property>
                    </widget>
                   </item>
@@ -457,10 +470,23 @@
                     </property>
                    </widget>
                   </item>
+                  <item>
+                   <widget class="QPushButton" name="open_postpersonal_btn">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>打开</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="1,3">
+                 <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <item>
                    <widget class="QLabel" name="pin1_5">
                     <property name="font">
@@ -470,7 +496,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>检测脚本：</string>
+                     <string>检测脚本:</string>
                     </property>
                    </widget>
                   </item>
@@ -493,10 +519,23 @@
                     </property>
                    </widget>
                   </item>
+                  <item>
+                   <widget class="QPushButton" name="open_check_btn">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>打开</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,3">
+                 <layout class="QHBoxLayout" name="horizontalLayout_10">
                   <item>
                    <widget class="QLabel" name="pin1_6">
                     <property name="font">
@@ -506,7 +545,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>清卡脚本：</string>
+                     <string>清卡脚本:</string>
                     </property>
                    </widget>
                   </item>
@@ -526,6 +565,19 @@
                     </property>
                     <property name="readOnly">
                      <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="open_clear_btn">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>打开</string>
                     </property>
                    </widget>
                   </item>

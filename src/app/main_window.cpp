@@ -19,6 +19,7 @@ using namespace zel::ftp;
 
 #include <QClipboard>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QMessageBox>
@@ -164,6 +165,11 @@ void MainWindow::initSignalSlot() {
     connect(ui_->op_btn, &QPushButton::clicked, [=]() { clip->setText(person_data_info_->op); });
     connect(ui_->ki_btn, &QPushButton::clicked, [=]() { clip->setText(person_data_info_->ki); });
 
+    connect(ui_->open_personal_btn, &QPushButton::clicked, this, &MainWindow::openPersonalBtnClicked);
+    connect(ui_->open_postpersonal_btn, &QPushButton::clicked, this, &MainWindow::openPostPersonalBtnClicked);
+    connect(ui_->open_check_btn, &QPushButton::clicked, this, &MainWindow::openCheckBtnClicked);
+    connect(ui_->open_clear_btn, &QPushButton::clicked, this, &MainWindow::openClearCardBtnClicked);
+
     connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
     connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
     connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
@@ -206,6 +212,26 @@ void MainWindow::saveBtnClicked() {
     } else {
         QMessageBox::critical(this, "错误", "保存失败");
     }
+}
+
+void MainWindow::openPersonalBtnClicked() {
+    QString path = path_->scriptPath() + "/" + script_info_->person_filename;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+}
+
+void MainWindow::openPostPersonalBtnClicked() {
+    QString path = path_->scriptPath() + "/" + script_info_->post_person_filename;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+}
+
+void MainWindow::openCheckBtnClicked() {
+    QString path = path_->scriptPath() + "/" + script_info_->check_filename;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+}
+
+void MainWindow::openClearCardBtnClicked() {
+    QString path = path_->scriptPath() + "/" + script_info_->clear_filename;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
 void MainWindow::writeCardBtnClicked() {
@@ -403,6 +429,11 @@ void MainWindow::buttonDisabled(bool disabled) {
     ui_->write_card_btn->setDisabled(disabled);
     ui_->upload_prd_btn->setDisabled(disabled);
     ui_->clear_card_btn->setDisabled(disabled);
+    ui_->open_personal_btn->setDisabled(disabled);
+    ui_->open_postpersonal_btn->setDisabled(disabled);
+    ui_->open_check_btn->setDisabled(disabled);
+    ui_->open_clear_btn->setDisabled(disabled);
+
     ui_->upload_temp_btn->setDisabled(true);
 }
 
