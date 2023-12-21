@@ -6,6 +6,9 @@
 #include <interpreter/interpreter.h>
 using namespace xhlanguage::interpreter;
 
+#include <public/json/json.h>
+using namespace zel::json;
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QThread>
@@ -20,6 +23,8 @@ class ClearCard : public QThread {
     ClearCard() {}
 
     void scriptInfo(ScriptInfo *script_info) { script_info_ = script_info; }
+
+    void jsonData(const Json &json_data) { json_data_ = json_data; }
 
     // 重写run函数，在这里执行线程的工作
     void run() override {
@@ -39,6 +44,9 @@ class ClearCard : public QThread {
             return;
         }
 
+        json_data_["has_ds"] = script_info_->has_ds;
+        auto personal_data   = json_data_.str();
+
         // 创建脚本解释器
         Interpreter interpreter;
 
@@ -48,9 +56,8 @@ class ClearCard : public QThread {
         emit success(CLEAR, QString::fromStdString(duration));
 
         // 计时 - 开始
-        auto start = std::chrono::steady_clock::now();
-
-        auto result = interpreter.interpret(script_info_->clear_buffer, "", card_reader);
+        auto start  = std::chrono::steady_clock::now();
+        auto result = interpreter.interpret(script_info_->clear_buffer, personal_data, card_reader);
         if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
             std::cout << "script interpreter error: " << std::endl;
             std::cout << result->inspect() << std::endl;
@@ -78,4 +85,5 @@ class ClearCard : public QThread {
 
   private:
     ScriptInfo *script_info_;
+    Json        json_data_;
 };

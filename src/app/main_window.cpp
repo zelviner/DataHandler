@@ -273,6 +273,7 @@ void MainWindow::clearCardBtnClicked() {
     // 创建工作线程
     auto clear_card = new ClearCard();
     clear_card->scriptInfo(script_info_);
+    clear_card->jsonData(person_data_info_->json_data);
 
     // 连接信号槽
     connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
@@ -401,6 +402,8 @@ void MainWindow::dropEvent(QDropEvent *event) {
 
     // 显示订单信息
     showInfo();
+
+    printf("data: %s\n", person_data_info_->json_data.str().c_str());
 
     // 打开复制按钮
     buttonDisabled(false);
