@@ -34,7 +34,8 @@ MainWindow::MainWindow(QMainWindow *parent)
     , path_(nullptr)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
-    , script_info_(nullptr) {
+    , script_info_(nullptr)
+    , card_reader_(nullptr) {
     ui_->setupUi(this);
 
     // 初始化窗口
@@ -66,6 +67,16 @@ MainWindow::~MainWindow() {
     if (script_info_ != nullptr) {
         delete script_info_;
         script_info_ = nullptr;
+    }
+
+    if (person_data_info_ != nullptr) {
+        delete person_data_info_;
+        person_data_info_ = nullptr;
+    }
+
+    if (card_reader_ != nullptr) {
+        card_reader_->disconnect();
+        card_reader_ = nullptr;
     }
 }
 
@@ -152,6 +163,9 @@ void MainWindow::initUI() {
     ui_->password_line->setText(QString::fromStdString(password));
     ui_->prd_line->setText(QString::fromStdString(remote_prd_path));
     ui_->temp_line->setText(QString::fromStdString(remote_temp_path));
+
+    ui_->clear_card_btn->setDisabled(true);
+    ui_->write_card_btn->setDisabled(true);
 }
 
 void MainWindow::initSignalSlot() {
@@ -173,6 +187,7 @@ void MainWindow::initSignalSlot() {
     connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
     connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
     connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
+    connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
     connect(ui_->upload_prd_btn, &QPushButton::clicked, this, &MainWindow::uploadPrdBtnClicked);
     connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
 }
@@ -234,6 +249,37 @@ void MainWindow::openClearCardBtnClicked() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
+void MainWindow::resetCardBtnClicked() {
+    if (card_reader_ == nullptr) {
+        // 创建 PCSC 读卡器工厂
+        std::unique_ptr<CardReaderFactory> card_reader_factory = std::make_unique<PCSCReaderFactory>();
+
+        // 使用工厂创建 PCSC 读卡器
+        card_reader_ = card_reader_factory->createCardReader();
+
+        try {
+            // 连接读卡器
+            card_reader_->connect(0);
+        } catch (std::exception &e) {
+            QString err_msg = "connect card reader error: " + QString::fromStdString(e.what());
+            QMessageBox::critical(this, "错误", err_msg);
+            return;
+        }
+    }
+
+    // 复位卡片
+    try {
+        auto atr = card_reader_->reset();
+        ui_->current_card_line->setText(QString::fromStdString(atr));
+        ui_->write_card_btn->setDisabled(false);
+        ui_->clear_card_btn->setDisabled(false);
+    } catch (std::exception &e) {
+        QString err_msg = "reset card error: " + QString::fromStdString(e.what());
+        QMessageBox::critical(this, "错误", err_msg);
+        return;
+    }
+}
+
 void MainWindow::writeCardBtnClicked() {
 
     // 弹出写卡加载窗口, 并停留
@@ -242,6 +288,7 @@ void MainWindow::writeCardBtnClicked() {
 
     // 创建工作线程
     auto write_card = new WriteCard();
+    write_card->cardReader(card_reader_);
     write_card->scriptInfo(script_info_);
     write_card->jsonData(person_data_info_->json_data);
 
@@ -272,6 +319,7 @@ void MainWindow::clearCardBtnClicked() {
 
     // 创建工作线程
     auto clear_card = new ClearCard();
+    clear_card->cardReader(card_reader_);
     clear_card->scriptInfo(script_info_);
     clear_card->jsonData(person_data_info_->json_data);
 
@@ -281,6 +329,10 @@ void MainWindow::clearCardBtnClicked() {
 
     // 启动工作线程
     clear_card->start();
+
+    ui_->bare_card_line->setText("");
+    ui_->white_card_line->setText("");
+    ui_->finished_card_line->setText("");
 }
 
 void MainWindow::uploadPrdBtnClicked() {
@@ -429,9 +481,7 @@ void MainWindow::buttonDisabled(bool disabled) {
     ui_->pin1_btn->setDisabled(disabled);
     ui_->op_btn->setDisabled(disabled);
     ui_->ki_btn->setDisabled(disabled);
-    ui_->write_card_btn->setDisabled(disabled);
     ui_->upload_prd_btn->setDisabled(disabled);
-    ui_->clear_card_btn->setDisabled(disabled);
     ui_->open_personal_btn->setDisabled(disabled);
     ui_->open_postpersonal_btn->setDisabled(disabled);
     ui_->open_check_btn->setDisabled(disabled);

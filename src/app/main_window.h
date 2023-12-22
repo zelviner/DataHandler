@@ -1,5 +1,6 @@
 #pragma once
 
+#include "card-reader/card_reader.hpp"
 #include "info/order.h"
 #include "info/person_data.h"
 #include "info/script.h"
@@ -7,6 +8,7 @@
 #include "ui_main_window.h"
 
 #include <QMainWindow>
+#include <memory>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -49,6 +51,9 @@ class MainWindow : public QMainWindow {
     /// @brief 打开清卡脚本按钮点击事件
     void openClearCardBtnClicked();
 
+    /// @brief 卡片复位按钮点击事件
+    void resetCardBtnClicked();
+
     /// @brief 写卡按钮点击事件
     void writeCardBtnClicked();
 
@@ -61,9 +66,6 @@ class MainWindow : public QMainWindow {
     /// @brief 上传临时存放按钮点击事件
     void uploadTempBtnClicked();
 
-    /// @brief  上传文件到FTP
-    /// @param local_file_path 本地文件路径
-    /// @param remote_file_path  远程文件路径
     void uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path);
 
     void dragEnterEvent(QDragEnterEvent *event);
@@ -90,4 +92,6 @@ class MainWindow : public QMainWindow {
     OrderInfo            *order_info_;
     PersonDataInfo       *person_data_info_;
     ScriptInfo           *script_info_;
+
+    std::shared_ptr<CardReader> card_reader_;
 };

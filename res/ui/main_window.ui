@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>825</width>
-    <height>755</height>
+    <height>759</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -618,7 +618,7 @@
             <property name="title">
              <string>写卡</string>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_29" stretch="1,7,1,1">
+            <layout class="QHBoxLayout" name="horizontalLayout_36" stretch="1,8,1,1">
              <item>
               <spacer name="horizontalSpacer_7">
                <property name="orientation">
@@ -633,7 +633,40 @@
               </spacer>
              </item>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,9">
+                 <item>
+                  <widget class="QLabel" name="pin1_8">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>当前 ATR:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="current_card_line">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="1,9">
                  <item>
@@ -701,7 +734,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,9">
+                <layout class="QHBoxLayout" name="horizontalLayout_29" stretch="1,9">
                  <item>
                   <widget class="QLabel" name="op_2">
                    <property name="font">
@@ -736,7 +769,14 @@
               </layout>
              </item>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <widget class="QPushButton" name="reset_card_btn">
+                 <property name="text">
+                  <string>复位</string>
+                 </property>
+                </widget>
+               </item>
                <item>
                 <widget class="QPushButton" name="write_card_btn">
                  <property name="text">

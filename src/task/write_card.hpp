@@ -26,22 +26,9 @@ class WriteCard : public QThread {
 
     void jsonData(const Json &json_data) { json_data_ = json_data; }
 
+    void cardReader(std::shared_ptr<CardReader> card_reader) { card_reader_ = card_reader; }
+
     void run() override {
-
-        // 创建 PCSC 读卡器工厂
-        std::unique_ptr<CardReaderFactory> card_reader_factory = std::make_unique<PCSCReaderFactory>();
-
-        // 使用工厂创建 PCSC 读卡器
-        auto card_reader = card_reader_factory->createCardReader();
-
-        try {
-            // 连接读卡器
-            card_reader->connect(0);
-        } catch (std::exception &e) {
-            QString err_msg = "connect card reader error: " + QString::fromStdString(e.what());
-            emit    failure(CONNECT, err_msg);
-            return;
-        }
 
         json_data_["has_ds"] = script_info_->has_ds;
         auto personal_data   = json_data_.str();
@@ -52,7 +39,7 @@ class WriteCard : public QThread {
         std::string duration, atr;
 
         // 获取裸卡 ATR
-        auto result = interpreter.interpret("RST()", "", card_reader);
+        auto result = interpreter.interpret("RST()", "", card_reader_);
         atr         = result->inspect().substr(10);
 
         // 预个人化
@@ -61,11 +48,11 @@ class WriteCard : public QThread {
         // 计时 - 开始
         auto start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->person_buffer, "", card_reader);
+        result = interpreter.interpret(script_info_->person_buffer, "", card_reader_);
         if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
             std::cout << "script interpreter error: " << std::endl;
             std::cout << result->inspect() << std::endl;
-            card_reader->disconnect();
+            card_reader_->disconnect();
             emit failure(PREPERSONAL, QString::fromStdString(result->inspect()));
             return;
         }
@@ -75,7 +62,7 @@ class WriteCard : public QThread {
         duration = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
 
         // 获取白卡 ATR
-        result = interpreter.interpret("RST()", "", card_reader);
+        result = interpreter.interpret("RST()", "", card_reader_);
         atr    = result->inspect().substr(10);
 
         // 后个人化
@@ -84,11 +71,11 @@ class WriteCard : public QThread {
         // 计时 - 开始
         start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->post_person_buffer, personal_data, card_reader);
+        result = interpreter.interpret(script_info_->post_person_buffer, personal_data, card_reader_);
         if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
             std::cout << "script interpreter error: " << std::endl;
             std::cout << result->inspect() << std::endl;
-            card_reader->disconnect();
+            card_reader_->disconnect();
             emit failure(POSTPERSONAL, QString::fromStdString(result->inspect()));
             return;
         }
@@ -98,7 +85,7 @@ class WriteCard : public QThread {
         duration = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
 
         // 获取成卡 ATR
-        result = interpreter.interpret("RST()", "", card_reader);
+        result = interpreter.interpret("RST()", "", card_reader_);
         atr    = result->inspect().substr(10);
 
         // 检测卡片
@@ -107,11 +94,11 @@ class WriteCard : public QThread {
         // 计时 - 开始
         start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->check_buffer, personal_data, card_reader);
+        result = interpreter.interpret(script_info_->check_buffer, personal_data, card_reader_);
         if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
             std::cout << "script interpreter error: " << std::endl;
             std::cout << result->inspect() << std::endl;
-            card_reader->disconnect();
+            card_reader_->disconnect();
             emit failure(POSTPERSONAL, QString::fromStdString(result->inspect()));
             return;
         }
@@ -122,9 +109,6 @@ class WriteCard : public QThread {
 
         // 完成
         emit success(FINISH, QString::fromStdString(duration));
-
-        // 断开连接
-        card_reader->disconnect();
     }
 
   signals:
@@ -134,6 +118,7 @@ class WriteCard : public QThread {
     void success(WriteCard::Type type, const QString &duration, const QString &atr = "");
 
   private:
-    ScriptInfo *script_info_;
-    Json        json_data_;
+    ScriptInfo                 *script_info_;
+    Json                        json_data_;
+    std::shared_ptr<CardReader> card_reader_;
 };
