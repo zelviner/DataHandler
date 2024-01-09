@@ -1,6 +1,6 @@
 #pragma once
 
-#include "public/json/json.h"
+#include <json/json.h>
 
 #include <QString>
 #include <map>

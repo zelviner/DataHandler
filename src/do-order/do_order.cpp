@@ -1,7 +1,6 @@
 #include "do_order.h"
 
-#include "public/qt-utility/qt_utility.h"
-using namespace zel::qtutility;
+#include "public/public.h"
 
 #include <QDebug>
 #include <QDir>

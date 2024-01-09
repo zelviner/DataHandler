@@ -4,9 +4,6 @@
 #include <QString>
 #include <QStringList>
 
-namespace zel {
-namespace qtutility {
-
 #define FILE_MAX_SIZE 1024
 
 /// @brief 截取待分隔符的字符串
@@ -58,5 +55,3 @@ bool compressionZipFile(const QString &selectFile2DirPath);
 /// @param selectZipFilePath
 /// @param savePath
 bool decompressionZipFile(const QString &selectZipFilePath, const QString &savePath);
-} // namespace qt
-} // namespace zel

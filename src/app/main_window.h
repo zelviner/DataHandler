@@ -4,11 +4,11 @@
 #include "info/order.h"
 #include "info/person_data.h"
 #include "info/script.h"
-#include "public/utility/ini_file.h"
 #include "ui_main_window.h"
 
 #include <QMainWindow>
 #include <memory>
+#include <utility/ini_file.h>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT

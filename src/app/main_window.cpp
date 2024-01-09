@@ -1,14 +1,13 @@
 #include "main_window.h"
 
 #include "app/main_window.h"
-#include "public/qt-utility/qt_utility.h"
-using namespace zel::qtutility;
+#include "public/public.h"
 
-#include "public/utility/logger.h"
-#include "public/utility/string.h"
+#include <utility/logger.h>
+#include <utility/string.h>
 using namespace zel::utility;
 
-#include "public/ftp/ftp.h"
+#include <ftp/ftp.h>
 using namespace zel::ftp;
 
 #include "clear_card_loading.h"
@@ -205,6 +204,12 @@ void MainWindow::initConfig() {
     } else {
         ini_.load("config.ini");
     }
+
+    // 初始化日志
+    auto log = Logger::instance();
+    log->open("xhlanguage.log");
+    log->setLevel(zel::utility::Logger::LOG_ERROR);
+    log->setFormat(false);
 }
 
 void MainWindow::saveBtnClicked() {
@@ -430,9 +435,6 @@ void MainWindow::dropEvent(QDropEvent *event) {
 
     next();
 
-    // // 初始化日志
-    // common::utility::Logger::instance()->open("order_info.log");
-
     path_ = new Path(urls.first().toLocalFile());
     path_->dataPath("INP");
     path_->authenticationPath("鉴权");
@@ -454,8 +456,6 @@ void MainWindow::dropEvent(QDropEvent *event) {
 
     // 显示订单信息
     showInfo();
-
-    printf("data: %s\n", person_data_info_->json_data.str().c_str());
 
     // 打开复制按钮
     buttonDisabled(false);

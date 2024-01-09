@@ -1,11 +1,8 @@
-#include "qt_utility.h"
+#include "public.h"
 #include "QtGui/private/qzipreader_p.h"
 
 #include <QDir>
 #include <QFileInfo>
-
-namespace zel {
-namespace qtutility {
 
 QString splitFormt(const QString &str, const QString &sep, int start, int end) {
 
@@ -255,6 +252,3 @@ bool decompressionZipFile(const QString &selectZipFilePath, const QString &saveP
     zipReader.close();
     return ret;
 }
-
-} // namespace qt
-} // namespace zel

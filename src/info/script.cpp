@@ -1,6 +1,6 @@
 #include "script.h"
 
-#include "public/filesystem/directory.h"
+#include <filesystem/directory.h>
 using namespace zel::filesystem;
 
 Script::Script(std::string script_path)

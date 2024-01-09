@@ -1,5 +1,5 @@
 #include "person_data.h"
-#include "public/json/json.h"
+#include <json/json.h>
 
 #include <QDebug>
 #include <QDir>

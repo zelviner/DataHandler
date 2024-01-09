@@ -1,17 +1,16 @@
 #pragma once
 
-#include "card-reader/card_reader_factory.hpp"
 #include "info/script.h"
-
-#include <interpreter/interpreter.h>
-using namespace xhlanguage::interpreter;
-
-#include <public/json/json.h>
-using namespace zel::json;
 
 #include <QCoreApplication>
 #include <QDebug>
 #include <QThread>
+
+#include <interpreter/interpreter.h>
+using namespace xhlanguage::interpreter;
+
+#include <json/json.h>
+using namespace zel::json;
 
 // 自定义的工作线程类
 class WriteCard : public QThread {
@@ -36,11 +35,10 @@ class WriteCard : public QThread {
         // 创建脚本解释器
         Interpreter interpreter;
 
-        std::string duration, atr;
+        std::string duration;
 
         // 获取裸卡 ATR
-        auto result = interpreter.interpret("RST()", "", card_reader_);
-        atr         = result->inspect().substr(10);
+        auto atr = card_reader_->reset();
 
         // 预个人化
         emit success(PREPERSONAL, QString::fromStdString(duration), QString::fromStdString(atr));
@@ -48,12 +46,8 @@ class WriteCard : public QThread {
         // 计时 - 开始
         auto start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->person_buffer, "", card_reader_);
-        if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
-            std::cout << "script interpreter error: " << std::endl;
-            std::cout << result->inspect() << std::endl;
-            card_reader_->disconnect();
-            emit failure(PREPERSONAL, QString::fromStdString(result->inspect()));
+        if (!interpreter.interpret(script_info_->person_buffer, "", card_reader_)) {
+            emit failure(PREPERSONAL, QString::fromStdString(""));
             return;
         }
 
@@ -62,8 +56,7 @@ class WriteCard : public QThread {
         duration = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
 
         // 获取白卡 ATR
-        result = interpreter.interpret("RST()", "", card_reader_);
-        atr    = result->inspect().substr(10);
+        atr = card_reader_->reset();
 
         // 后个人化
         emit success(POSTPERSONAL, QString::fromStdString(duration), QString::fromStdString(atr));
@@ -71,12 +64,8 @@ class WriteCard : public QThread {
         // 计时 - 开始
         start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->post_person_buffer, personal_data, card_reader_);
-        if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
-            std::cout << "script interpreter error: " << std::endl;
-            std::cout << result->inspect() << std::endl;
-            card_reader_->disconnect();
-            emit failure(POSTPERSONAL, QString::fromStdString(result->inspect()));
+        if (!interpreter.interpret(script_info_->post_person_buffer, personal_data, card_reader_)) {
+            emit failure(POSTPERSONAL, QString::fromStdString(""));
             return;
         }
 
@@ -85,8 +74,7 @@ class WriteCard : public QThread {
         duration = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
 
         // 获取成卡 ATR
-        result = interpreter.interpret("RST()", "", card_reader_);
-        atr    = result->inspect().substr(10);
+        atr = card_reader_->reset();
 
         // 检测卡片
         emit success(CHECK, QString::fromStdString(duration), QString::fromStdString(atr));
@@ -94,12 +82,8 @@ class WriteCard : public QThread {
         // 计时 - 开始
         start = std::chrono::steady_clock::now();
 
-        result = interpreter.interpret(script_info_->check_buffer, personal_data, card_reader_);
-        if (result->type() == xhlanguage::object::Object::OBJECT_ERROR) {
-            std::cout << "script interpreter error: " << std::endl;
-            std::cout << result->inspect() << std::endl;
-            card_reader_->disconnect();
-            emit failure(POSTPERSONAL, QString::fromStdString(result->inspect()));
+        if (!interpreter.interpret(script_info_->check_buffer, personal_data, card_reader_)) {
+            emit failure(POSTPERSONAL, QString::fromStdString(""));
             return;
         }
 
