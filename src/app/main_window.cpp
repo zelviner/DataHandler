@@ -146,6 +146,26 @@ void MainWindow::initWindow() {
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
+
+    try {
+        // 创建 PCSC 读卡器工厂
+        std::unique_ptr<CardReaderFactory> card_reader_factory = std::make_unique<PCSCReaderFactory>();
+
+        // 使用工厂创建 PCSC 读卡器
+        card_reader_ = card_reader_factory->createCardReader();
+
+        auto reader_list = card_reader_->readers();
+
+        for (auto reader : reader_list) {
+            ui_->reader_combo_box->addItem(QString::fromStdString(reader));
+        }
+
+        ui_->xhlanguage_combo_box->addItem("编译器");
+        ui_->xhlanguage_combo_box->addItem("解释器");
+
+    } catch (std::exception &e) {
+        QMessageBox::critical(this, "警告", "未找到读卡器，请检查读卡器是否连接");
+    }
 }
 
 void MainWindow::initUI() {
@@ -204,12 +224,6 @@ void MainWindow::initConfig() {
     } else {
         ini_.load("config.ini");
     }
-
-    // 初始化日志
-    auto log = Logger::instance();
-    log->open("xhlanguage.log");
-    log->setLevel(zel::utility::Logger::LOG_ERROR);
-    log->setFormat(false);
 }
 
 void MainWindow::saveBtnClicked() {
@@ -255,29 +269,21 @@ void MainWindow::openClearCardBtnClicked() {
 }
 
 void MainWindow::resetCardBtnClicked() {
-    if (card_reader_ == nullptr) {
-        // 创建 PCSC 读卡器工厂
-        std::unique_ptr<CardReaderFactory> card_reader_factory = std::make_unique<PCSCReaderFactory>();
 
-        // 使用工厂创建 PCSC 读卡器
-        card_reader_ = card_reader_factory->createCardReader();
-
-        try {
-            // 连接读卡器
-            card_reader_->connect(0);
-        } catch (std::exception &e) {
-            QString err_msg = "connect card reader error: " + QString::fromStdString(e.what());
-            QMessageBox::critical(this, "错误", err_msg);
-            return;
-        }
+    try {
+        // 连接读卡器
+        card_reader_->connect(ui_->reader_combo_box->currentText().toStdString());
+    } catch (std::exception &e) {
+        QString err_msg = "connect card reader error: " + QString::fromStdString(e.what());
+        QMessageBox::critical(this, "错误", err_msg);
+        return;
     }
 
     // 复位卡片
     try {
         auto atr = card_reader_->reset();
         ui_->current_card_line->setText(QString::fromStdString(atr));
-        ui_->write_card_btn->setDisabled(false);
-        ui_->clear_card_btn->setDisabled(false);
+        card_reader_->disconnect();
     } catch (std::exception &e) {
         QString err_msg = "reset card error: " + QString::fromStdString(e.what());
         QMessageBox::critical(this, "错误", err_msg);
@@ -296,6 +302,8 @@ void MainWindow::writeCardBtnClicked() {
     write_card->cardReader(card_reader_);
     write_card->scriptInfo(script_info_);
     write_card->jsonData(person_data_info_->json_data);
+    write_card->readerName(ui_->reader_combo_box->currentText().toStdString());
+    write_card->xhlanguageType(ui_->xhlanguage_combo_box->currentIndex());
 
     // 连接信号槽
     connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
@@ -327,6 +335,8 @@ void MainWindow::clearCardBtnClicked() {
     clear_card->cardReader(card_reader_);
     clear_card->scriptInfo(script_info_);
     clear_card->jsonData(person_data_info_->json_data);
+    clear_card->readerName(ui_->reader_combo_box->currentText().toStdString());
+    clear_card->xhlanguageType(ui_->xhlanguage_combo_box->currentIndex());
 
     // 连接信号槽
     connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
@@ -486,6 +496,8 @@ void MainWindow::buttonDisabled(bool disabled) {
     ui_->open_postpersonal_btn->setDisabled(disabled);
     ui_->open_check_btn->setDisabled(disabled);
     ui_->open_clear_btn->setDisabled(disabled);
+    ui_->write_card_btn->setDisabled(disabled);
+    ui_->clear_card_btn->setDisabled(disabled);
 
     ui_->upload_temp_btn->setDisabled(true);
 }
