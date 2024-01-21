@@ -165,6 +165,7 @@ void MainWindow::initWindow() {
 
     } catch (std::exception &e) {
         QMessageBox::critical(this, "警告", "未找到读卡器，请检查读卡器是否连接");
+        ui_->reset_card_btn->setDisabled(true);
     }
 }
 
