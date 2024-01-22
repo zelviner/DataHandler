@@ -52,9 +52,9 @@ class WriteCard : public QThread {
 
         bool success_run = false;
         if (xhlanguage_type_ == 0) {
-            success_run = repl.startCompiler(script_info_->clear_buffer, personal_data, card_reader_);
+            success_run = repl.startCompiler(script_info_->person_buffer, personal_data, card_reader_);
         } else if (xhlanguage_type_ == 1) {
-            success_run = repl.startInterpreter(script_info_->clear_buffer, personal_data, card_reader_);
+            success_run = repl.startInterpreter(script_info_->person_buffer, personal_data, card_reader_);
         }
 
         if (success_run == false) {
@@ -77,9 +77,9 @@ class WriteCard : public QThread {
         start = std::chrono::steady_clock::now();
 
         if (xhlanguage_type_ == 0) {
-            success_run = repl.startCompiler(script_info_->clear_buffer, personal_data, card_reader_);
+            success_run = repl.startCompiler(script_info_->post_person_buffer, personal_data, card_reader_);
         } else if (xhlanguage_type_ == 1) {
-            success_run = repl.startInterpreter(script_info_->clear_buffer, personal_data, card_reader_);
+            success_run = repl.startInterpreter(script_info_->post_person_buffer, personal_data, card_reader_);
         }
 
         if (success_run == false) {
@@ -102,9 +102,9 @@ class WriteCard : public QThread {
         start = std::chrono::steady_clock::now();
 
         if (xhlanguage_type_ == 0) {
-            success_run = repl.startCompiler(script_info_->clear_buffer, personal_data, card_reader_);
+            success_run = repl.startCompiler(script_info_->check_buffer, personal_data, card_reader_);
         } else if (xhlanguage_type_ == 1) {
-            success_run = repl.startInterpreter(script_info_->clear_buffer, personal_data, card_reader_);
+            success_run = repl.startInterpreter(script_info_->check_buffer, personal_data, card_reader_);
         }
 
         if (success_run == false) {

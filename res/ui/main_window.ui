@@ -72,7 +72,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>文件夹名称:</string>
+                     <string>文件夹名称</string>
                     </property>
                    </widget>
                   </item>
@@ -127,7 +127,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>工程单号:</string>
+                     <string>工程单号</string>
                     </property>
                    </widget>
                   </item>
@@ -173,7 +173,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>项目名称:</string>
+                     <string>项目名称</string>
                     </property>
                    </widget>
                   </item>
@@ -219,7 +219,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>需求编码:</string>
+                     <string>需求编码</string>
                     </property>
                    </widget>
                   </item>
@@ -265,7 +265,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>脚本包:</string>
+                     <string>脚本包</string>
                     </property>
                    </widget>
                   </item>
@@ -359,7 +359,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>是否有 ds.:</string>
+                     <string>ds.</string>
                     </property>
                    </widget>
                   </item>
@@ -398,7 +398,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>预个人化:</string>
+                     <string>预个人化</string>
                     </property>
                    </widget>
                   </item>
@@ -447,7 +447,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>后个人化:</string>
+                     <string>后个人化</string>
                     </property>
                    </widget>
                   </item>
@@ -496,7 +496,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>检测脚本:</string>
+                     <string>检测脚本</string>
                     </property>
                    </widget>
                   </item>
@@ -545,7 +545,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>清卡脚本:</string>
+                     <string>清卡脚本</string>
                     </property>
                    </widget>
                   </item>
@@ -645,7 +645,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>当前 ATR:</string>
+                    <string>当前 ATR</string>
                    </property>
                   </widget>
                  </item>
@@ -678,7 +678,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>裸卡 ATR:</string>
+                    <string>裸卡 ATR</string>
                    </property>
                   </widget>
                  </item>
@@ -711,7 +711,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>白卡 ATR:</string>
+                    <string>白卡 ATR</string>
                    </property>
                   </widget>
                  </item>
@@ -744,7 +744,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>成卡 ATR:</string>
+                    <string>成卡 ATR</string>
                    </property>
                   </widget>
                  </item>
@@ -847,7 +847,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>PIN1:</string>
+                    <string>PIN1</string>
                    </property>
                   </widget>
                  </item>
@@ -893,7 +893,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>KI:</string>
+                    <string>KI</string>
                    </property>
                   </widget>
                  </item>
@@ -939,7 +939,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>OP/OPC:</string>
+                    <string>OP/OPC</string>
                    </property>
                   </widget>
                  </item>
@@ -1194,7 +1194,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>主机:</string>
+                  <string>主机</string>
                  </property>
                 </widget>
                </item>
@@ -1234,7 +1234,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>端口:</string>
+                  <string>端口</string>
                  </property>
                 </widget>
                </item>
@@ -1291,7 +1291,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>用户名：</string>
+                  <string>用户名</string>
                  </property>
                 </widget>
                </item>
@@ -1331,7 +1331,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>密码：</string>
+                  <string>密码</string>
                  </property>
                 </widget>
                </item>
@@ -1406,7 +1406,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>PRD:</string>
+                  <string>PRD</string>
                  </property>
                 </widget>
                </item>
@@ -1433,7 +1433,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>临时存放：</string>
+                  <string>临时存放</string>
                  </property>
                 </widget>
                </item>
