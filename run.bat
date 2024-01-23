@@ -28,11 +28,13 @@ rem 检查编译目录是否存在，如果存在则删除，然后创建
 if not exist %BUILD_DIR% (
     mkdir %BUILD_DIR%
 ) else (
-    rem 第二个参数为 rebuild 表示删除原有的编译目录
+    rem 最后一个参数为 rebuild 表示删除原有的编译目录
     if "%2"=="rebuild" (
+        echo Rebuilding...
         rmdir /s /q %BUILD_DIR%
         mkdir %BUILD_DIR%
     )
+   
 )
 
 
@@ -40,7 +42,7 @@ rem 进入编译目录
 cd %BUILD_DIR%
 
 rem 使用 CMake 生成项目文件
-"cmake" -G "Ninja"  .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+"cmake" -G "Ninja" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 
 rem 使用 Ninja 进行编译
 ninja
@@ -52,12 +54,11 @@ if %ERRORLEVEL%==0 (
 
     rem 进入可执行文件所在目录
     cd ..\%EXECUTABLE_PATH%
-    echo 执行结果：
-    echo ===========================================================================
+    echo Running %EXECUTABLE_NAME% ...
     echo.
     %EXECUTABLE_NAME%
     echo.
-    echo ===========================================================================
+    echo Process exited with code %ERRORLEVEL%
 ) else (
     echo.
     echo Build failed!
