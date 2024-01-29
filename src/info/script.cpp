@@ -13,10 +13,10 @@ ScriptInfo *Script::scriptInfo(QString &error) {
     script_info_ = new ScriptInfo();
     Directory script_dir(script_path_);
 
-    if (!script_dir.exists()) {
-        error = "script dir not exists";
-        return nullptr;
-    }
+    // if (!script_dir.exists()) {
+    //     error = "script dir not exists";
+    //     return nullptr;
+    // }
 
     auto files = script_dir.files();
 
