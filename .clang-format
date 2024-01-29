@@ -13,7 +13,7 @@ PointerAlignment: Right
 IndentWidth: 4
 
 # 行最大长度
-ColumnLimit: 120
+ColumnLimit: 200
 
 # 允许排序#include
 SortIncludes: true
