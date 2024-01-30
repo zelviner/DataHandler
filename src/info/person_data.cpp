@@ -1,9 +1,10 @@
 #include "person_data.h"
+
+#include <qdebug>
+#include <qdir>
+#include <qtextstream>
 #include <json/json.h>
 
-#include <QDebug>
-#include <QDir>
-#include <QTextStream>
 
 PersonData::PersonData(QString data_path)
     : data_path_(data_path)

@@ -1,8 +1,8 @@
 #include "public.h"
 #include "QtGui/private/qzipreader_p.h"
 
-#include <QDir>
-#include <QFileInfo>
+#include <qdir>
+#include <qfileinfo>
 
 QString splitFormt(const QString &str, const QString &sep, int start, int end) {
 

@@ -16,7 +16,7 @@ IndentWidth: 4
 ColumnLimit: 120
 
 # 允许排序#include
-SortIncludes: true
+SortIncludes: false
 
 # 连续的空行保留几行
 MaxEmptyLinesToKeep: 1
@@ -67,7 +67,7 @@ KeepEmptyLinesAtTheStartOfBlocks: true
 BreakConstructorInitializersBeforeComma: true
 
 #函数参数换行
-AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
 
 #括号后添加空格
 SpaceAfterCStyleCast: true

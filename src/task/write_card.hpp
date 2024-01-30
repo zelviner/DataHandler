@@ -2,14 +2,11 @@
 
 #include "info/script.h"
 
-#include <QCoreApplication>
-#include <QDebug>
-#include <QThread>
-
-#include <repl/repl.h>
-
+#include <qcoreapplication>
+#include <qdebug>
+#include <qthread>
 #include <json/json.h>
-using namespace zel::json;
+#include <repl/repl.h>
 
 // 自定义的工作线程类
 class WriteCard : public QThread {
@@ -22,7 +19,7 @@ class WriteCard : public QThread {
 
     void scriptInfo(ScriptInfo *script_info) { script_info_ = script_info; }
 
-    void jsonData(const Json &json_data) { json_data_ = json_data; }
+    void jsonData(const zel::json::Json &json_data) { json_data_ = json_data; }
 
     void cardReader(std::shared_ptr<CardReader> card_reader) { card_reader_ = card_reader; }
 
@@ -130,7 +127,7 @@ class WriteCard : public QThread {
 
   private:
     ScriptInfo                 *script_info_;
-    Json                        json_data_;
+    zel::json::Json             json_data_;
     std::shared_ptr<CardReader> card_reader_;
     std::string                 reader_name_;
     int                         xhlanguage_type_;

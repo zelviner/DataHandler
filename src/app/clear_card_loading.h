@@ -3,9 +3,9 @@
 #include "task/clear_card.hpp"
 #include "ui_clear_card_loading.h"
 
-#include <QApplication>
-#include <QMainWindow>
-#include <QPushButton>
+#include <qapplication>
+#include <qmainwindow>
+#include <qpushbutton>
 
 class ClearCardLoading : public QMainWindow {
     Q_OBJECT

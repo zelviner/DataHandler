@@ -1,8 +1,8 @@
 #pragma once
 #include "QtGui/private/qzipwriter_p.h"
-#include <QFileInfoList>
-#include <QString>
-#include <QStringList>
+#include <qfileinfolist>
+#include <qstring>
+#include <qstringlist>
 
 #define FILE_MAX_SIZE 1024
 

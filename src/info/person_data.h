@@ -1,9 +1,9 @@
 #pragma once
 
+#include <qstring>
 #include <json/json.h>
-
-#include <QString>
 #include <map>
+
 
 /// @brief 首条个人化数据结构体
 struct PersonDataInfo {

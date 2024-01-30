@@ -7,7 +7,7 @@
 
 #include "app/main_window.h"
 
-#include <QApplication>
+#include <qapplication>
 #pragma comment(lib, "user32.lib")
 
 int main(int argc, char *argv[]) {

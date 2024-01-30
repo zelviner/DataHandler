@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QString>
+#include <qstring>
 
 struct ScriptInfo {
     QString person_filename;      // 预个人化脚本文件名

@@ -1,52 +1,33 @@
 #include "ftp_loading.h"
 
-#include <QDebug>
-#include <QMessageBox>
-#include <QMovie>
-#include <QThread>
+#include <qdebug>
+#include <qdialog.h>
+#include <qdialog>
+#include <qwidget>
+#include <qmessagebox>
+#include <qthread>
 
-FtpLoading::FtpLoading(QMainWindow *parent)
-    : QMainWindow(parent)
-    , ui_(new Ui_FtpLoading) {
+FtpLoading::FtpLoading(QWidget *parent)
+    : QWidget(parent)
+    , ui_(new Ui_FtpLoading)
+    , movie_(nullptr) {
     ui_->setupUi(this);
 
-    initWindow();
+    // 设置透明度
+    this->setWindowOpacity(0.8);
 
-    initUI();
-
-    initSignalSlot();
+    // 取消对话框标题
+    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 设置为对话框风格，并且去掉边框
+    setWindowModality(Qt::WindowModal); // 设置为模式对话框，同时在构造该对话框时要设置父窗口
+    ui_->ftp_gif_label->setStyleSheet("background-color: transparent;");
+    movie_ = new QMovie(":/image/loading.gif");
+    movie_->setScaledSize(QSize(32, 32));
+    ui_->ftp_gif_label->setMovie(movie_);
+    ui_->ftp_gif_label->setScaledContents(true);
+    movie_->start();
 }
 
-FtpLoading::~FtpLoading() { delete ui_; }
-
-void FtpLoading::initWindow() { qRegisterMetaType<UploadPrd::Type>("UploadPrd::Type"); }
-
-void FtpLoading::initUI() {
-
-    // 新增图片
-    QPixmap pixmap(":/image/waiting.png");
-    // 设置图片大小
-    ui_->ftp_gif_label->setPixmap(pixmap);
+FtpLoading::~FtpLoading() {
+    delete ui_;
+    movie_->stop();
 }
-
-void FtpLoading::initSignalSlot() {}
-
-void FtpLoading::startUpload(const QString &duration) {
-    // 加载动画
-    QMovie *movie = new QMovie(":/image/loading.gif");
-    ui_->ftp_gif_label->setMovie(movie);
-
-    movie->setScaledSize(QSize(32, 32));
-    movie->start();
-}
-
-void FtpLoading::finish(const QString &duration) {
-
-    // 插入图片
-    QPixmap pixmap(":/image/success.png");
-    ui_->ftp_gif_label->setPixmap(pixmap);
-
-    ui_->ftp_text_label->setText(duration);
-}
-
-void FtpLoading::failure(UploadPrd::Type type, const QString &err_msg) {}

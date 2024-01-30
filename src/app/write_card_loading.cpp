@@ -1,9 +1,9 @@
 #include "write_card_loading.h"
 
-#include <QDebug>
-#include <QMessageBox>
-#include <QMovie>
-#include <QThread>
+#include <qdebug>
+#include <qmessagebox>
+#include <qmovie>
+#include <qthread>
 
 WriteCardLoading::WriteCardLoading(QMainWindow *parent)
     : QMainWindow(parent)

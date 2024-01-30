@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QDebug>
-#include <QString>
-#include <QStringList>
+#include <qdebug>
+#include <qstring>
+#include <qstringlist>
 
 /// @brief 路径结构体
 struct RelativePath {

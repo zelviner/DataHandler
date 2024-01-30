@@ -3,9 +3,9 @@
 #include "task/write_card.hpp"
 #include "ui_write_card_loading.h"
 
-#include <QApplication>
-#include <QMainWindow>
-#include <QPushButton>
+#include <qapplication>
+#include <qmainwindow>
+#include <qpushbutton>
 
 class WriteCardLoading : public QMainWindow {
     Q_OBJECT

@@ -1,13 +1,12 @@
 #include "order.h"
 #include "public/public.h"
-#include <qdebug.h>
 
+#include <qdebug>
+#include <qdir>
+#include <qregexp>
+#include <qstringlist>
 #include <utility/logger.h>
 
-#include <QDebug>
-#include <QDir>
-#include <QRegExp>
-#include <QStringList>
 
 Order::Order(Path *path)
     : path_(path)

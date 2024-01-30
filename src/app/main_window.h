@@ -1,13 +1,14 @@
 #pragma once
 
-#include "card-reader/card_reader.hpp"
+#include "ui_main_window.h"
 #include "info/order.h"
 #include "info/person_data.h"
 #include "info/script.h"
-#include "ui_main_window.h"
+#include "ftp_loading.h"
 
-#include <QMainWindow>
+#include <card-reader/card_reader.hpp>
 #include <memory>
+#include <qmainwindow>
 #include <utility/ini_file.h>
 
 class MainWindow : public QMainWindow {
@@ -66,12 +67,17 @@ class MainWindow : public QMainWindow {
     /// @brief 上传临时存放按钮点击事件
     void uploadTempBtnClicked();
 
-    void uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path);
+    /// @brief 上传文件到FTP
+    /// @param local_file_path  本地文件路径
+    /// @param remote_file_path  远程文件路径
+    bool uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path);
 
     void dragEnterEvent(QDragEnterEvent *event);
 
+    /// @brief 拖拽释放事件
     void dropEvent(QDropEvent *event);
 
+    /// @brief 是否是订单
     bool isOrder();
 
     void buttonDisabled(bool disabled);
@@ -85,13 +91,17 @@ class MainWindow : public QMainWindow {
     void whiteAtr(const QString &white_atr);
     void finishedAtr(const QString &finished_atr);
 
-  private:
-    Ui_MainWindow        *ui_;
-    zel::utility::IniFile ini_;
-    Path                 *path_;
-    OrderInfo            *order_info_;
-    PersonDataInfo       *person_data_info_;
-    ScriptInfo           *script_info_;
+    void failure(const QString &err_type, const QString &err_msg);
+    void success();
 
-    std::shared_ptr<CardReader> card_reader_;
+  private:
+    Ui_MainWindow              *ui_;               // UI界面
+    zel::utility::IniFile       ini_;              // 配置文件
+    Path                       *path_;             // 路径
+    OrderInfo                  *order_info_;       // 订单信息
+    PersonDataInfo             *person_data_info_; // 个人化信息
+    ScriptInfo                 *script_info_;      // 脚本信息
+    std::shared_ptr<CardReader> card_reader_;      // 读卡器
+
+    FtpLoading *ftp_loading_;
 };

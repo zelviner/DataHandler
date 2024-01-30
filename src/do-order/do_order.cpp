@@ -2,10 +2,10 @@
 
 #include "public/public.h"
 
-#include <QDebug>
-#include <QDir>
-#include <QFile>
-#include <QStringList>
+#include <qdebug>
+#include <qdir>
+#include <qfile>
+#include <qstringlist>
 
 DoOrder::DoOrder(Path *path)
     : path_(path) {}

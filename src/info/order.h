@@ -2,8 +2,7 @@
 
 #include "path.h"
 
-#include <QString>
-#include <string>
+#include <qstring>
 
 /// @brief 订单信息结构体
 struct OrderInfo {

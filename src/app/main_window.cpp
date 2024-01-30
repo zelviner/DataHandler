@@ -1,6 +1,5 @@
 #include "main_window.h"
 
-#include "app/main_window.h"
 #include "public/public.h"
 
 #include <utility/logger.h>
@@ -10,21 +9,24 @@ using namespace zel::utility;
 #include <ftp/ftp.h>
 using namespace zel::ftp;
 
+#include <card-reader/card_reader_factory.hpp>
+
 #include "clear_card_loading.h"
 #include "do-order/do_order.h"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
+#include "task/upload_file.hpp"
 #include "write_card_loading.h"
 
-#include <QClipboard>
-#include <QDebug>
-#include <QDesktopServices>
-#include <QDir>
-#include <QDragEnterEvent>
-#include <QMessageBox>
-#include <QMimeData>
-#include <QPushButton>
-#include <QTextStream>
+#include <qclipboard>
+#include <qdebug>
+#include <qdesktopservices>
+#include <qdir>
+#include <qdragenterevent>
+#include <qmessagebox>
+#include <qmimedata>
+#include <qpushbutton>
+#include <qtextstream>
 #include <tchar.h>
 
 MainWindow::MainWindow(QMainWindow *parent)
@@ -352,16 +354,29 @@ void MainWindow::clearCardBtnClicked() {
 }
 
 void MainWindow::uploadPrdBtnClicked() {
+    ftp_loading_ = new FtpLoading(this);
+    ftp_loading_->show();
+
     // 将个人化数据上传到FTP服务器
     std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
     remote_prd_path += "/" + order_info_->order_id.toStdString();
     std::string local_prd_path = String::wstring2String(path_->zhDataPath().toStdWString());
-    uploadFile2FTP(local_prd_path, remote_prd_path);
+    auto        upload_file    = new UploadFile();
+    upload_file->ini(ini_);
+    upload_file->localFilePath(local_prd_path);
+    upload_file->remoteFilePath(remote_prd_path);
 
-    ui_->upload_temp_btn->setDisabled(false);
+    // 连接信号槽
+    connect(upload_file, &UploadFile::failure, this, &MainWindow::failure);
+    connect(upload_file, &UploadFile::success, this, &MainWindow::success);
+
+    // 启动工作线程
+    upload_file->start();
 }
 
 void MainWindow::uploadTempBtnClicked() {
+
+    ftp_loading_->show();
 
     // 压缩截图文件夹
     QDir dir(path_->screenshotPath());
@@ -396,10 +411,20 @@ void MainWindow::uploadTempBtnClicked() {
     std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
     std::string local_temp_path =
         String::wstring2String(path_->tempPath().left(path_->tempPath().lastIndexOf("/")).toStdWString());
-    uploadFile2FTP(local_temp_path, remote_temp_path);
+    auto upload_prd = new UploadFile();
+    upload_prd->ini(ini_);
+    upload_prd->localFilePath(local_temp_path);
+    upload_prd->remoteFilePath(remote_temp_path);
+
+    // 连接信号槽
+    connect(upload_prd, &UploadFile::failure, this, &MainWindow::failure);
+    connect(upload_prd, &UploadFile::success, this, &MainWindow::success);
+
+    // 启动工作线程
+    upload_prd->start();
 }
 
-void MainWindow::uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path) {
+bool MainWindow::uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path) {
     std::string host     = ini_["ftp"]["host"];
     int         port     = ini_["ftp"]["port"];
     std::string username = ini_["ftp"]["username"];
@@ -408,21 +433,20 @@ void MainWindow::uploadFile2FTP(const std::string &local_file_path, const std::s
     FtpClient ftp(host, username, password, port);
     if (!ftp.connect()) {
         QMessageBox::critical(this, "FTP连接失败", "请检查FTP服务器IP和端口是否正确");
-        return;
+        return false;
     }
 
     if (!ftp.login()) {
         QMessageBox::critical(this, "FTP连接失败", "请检查用户名和密码是否正确");
-        return;
+        return false;
     }
 
-    printf("loacal: %s, remote: %s\n", local_file_path.c_str(), remote_file_path.c_str());
     if (!ftp.uploadFile(local_file_path, remote_file_path)) {
         QMessageBox::critical(this, "上传文件失败", "请检查远程路径是否正确");
-        return;
+        return false;
     }
 
-    QMessageBox::information(this, "提示", "上传成功");
+    return true;
 }
 
 bool MainWindow::isOrder() {
@@ -559,4 +583,24 @@ void MainWindow::whiteAtr(const QString &white_atr) {
 void MainWindow::finishedAtr(const QString &finished_atr) {
     ui_->finished_card_line->setText(finished_atr);
     ui_->finished_card_line->setCursorPosition(0);
+}
+
+void MainWindow::failure(const QString &err_type, const QString &err_msg) {
+    ftp_loading_->close();
+    QMessageBox::critical(this, err_type, err_msg);
+}
+
+void MainWindow::success() {
+    ui_->upload_temp_btn->setDisabled(false);
+    ftp_loading_->close();
+
+    QMessageBox success_box(this);
+    success_box.setWindowTitle("提示");
+    success_box.setText(QString("上传成功"));
+    QPixmap pix(":/image/success.png");
+    pix = pix.scaled(32, 32);
+    success_box.setIconPixmap(pix);
+    success_box.setStandardButtons(QMessageBox::Ok);
+    success_box.setButtonText(QMessageBox::Ok, "确定");
+    success_box.exec();
 }

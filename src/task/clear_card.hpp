@@ -1,15 +1,13 @@
 #pragma once
 
-#include "card-reader/card_reader_factory.hpp"
 #include "info/script.h"
 
+#include <qcoreapplication>
+#include <qdebug>
+#include <qthread>
+#include <json/json.h>
 #include <repl/repl.h>
 
-#include <json/json.h>
-
-#include <QCoreApplication>
-#include <QDebug>
-#include <QThread>
 
 // 自定义的工作线程类
 class ClearCard : public QThread {
