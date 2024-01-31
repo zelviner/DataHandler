@@ -326,8 +326,7 @@ void MainWindow::clearCardBtnClicked() {
     clear_card_loading->show();
 
     // 获取脚本信息
-    std::string script_path = String::wstring2String(path_->dirPath().toStdWString() + L"/鉴权/" +
-                                                     order_info_->script_package.toStdWString());
+    std::string script_path = String::wstring2String(path_->dirPath().toStdWString() + L"/鉴权/" + order_info_->script_package.toStdWString());
     Script      script(script_path);
     QString     error;
     script_info_ = script.scriptInfo(error);
@@ -376,14 +375,15 @@ void MainWindow::uploadPrdBtnClicked() {
 
 void MainWindow::uploadTempBtnClicked() {
 
-    ftp_loading_->show();
-
     // 压缩截图文件夹
     QDir dir(path_->screenshotPath());
     int  file_count = dir.count() - 2;
     if (file_count < 6) {
-        QMessageBox::information(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个");
+        QMessageBox::StandardButton box;
+        box = QMessageBox::question(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个, 是否继续上传？", QMessageBox::Yes | QMessageBox::No);
+        if (box == QMessageBox::No) return;
     }
+
     if (!compressionZipFile(path_->screenshotPath())) {
         QMessageBox::critical(this, "错误", "压缩截图文件失败");
         return;
@@ -407,11 +407,12 @@ void MainWindow::uploadTempBtnClicked() {
         return;
     }
 
+    ftp_loading_->show();
+
     // 将临时存放数据上传到FTP服务器
     std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
-    std::string local_temp_path =
-        String::wstring2String(path_->tempPath().left(path_->tempPath().lastIndexOf("/")).toStdWString());
-    auto upload_prd = new UploadFile();
+    std::string local_temp_path  = String::wstring2String(path_->tempPath().left(path_->tempPath().lastIndexOf("/")).toStdWString());
+    auto        upload_prd       = new UploadFile();
     upload_prd->ini(ini_);
     upload_prd->localFilePath(local_temp_path);
     upload_prd->remoteFilePath(remote_temp_path);
