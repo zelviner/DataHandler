@@ -13,6 +13,7 @@
 /// @param end 结束位置
 /// @return QString
 QString splitFormt(const QString &str, const QString &sep, int start, int end = -1);
+QString splitFormt(const QString &str, const QString &sep, char start, char end);
 
 /// @brief 创建文件夹
 /// @param folderPath 文件夹路径

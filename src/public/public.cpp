@@ -26,6 +26,30 @@ QString splitFormt(const QString &str, const QString &sep, int start, int end) {
     return result;
 }
 
+QString splitFormt(const QString &str, const QString &sep, char start, char end) {
+
+    QStringList str_list = str.split(sep);
+    QString     result   = "";
+
+    bool is_start = false;
+    for (auto str : str_list) {
+        if (str[0] == start) {
+            is_start = true;
+        }
+
+        if (str[0] == end) {
+            result = result.mid(0, result.length() - 1);
+            break;
+        }
+
+        if (is_start) {
+            result += str + sep;
+        }
+    }
+
+    return result;
+}
+
 QString createFolder(QString folder_path) {
     QDir dir(folder_path);
     if (dir.exists(folder_path)) {
@@ -55,8 +79,7 @@ bool copyFolder(const QString &fromDir, const QString &toDir, bool coverFileIfEx
         if (fileInfo.fileName() == "." || fileInfo.fileName() == "..") continue;
         // 当为目录时，递归的进行copy
         if (fileInfo.isDir()) {
-            if (!copyFolder(fileInfo.filePath(), targetDir.filePath(fileInfo.fileName()), coverFileIfExist))
-                return false;
+            if (!copyFolder(fileInfo.filePath(), targetDir.filePath(fileInfo.fileName()), coverFileIfExist)) return false;
         } else {
             // 当允许覆盖操作时，将旧文件进行删除操作
             if (coverFileIfExist && targetDir.exists(fileInfo.fileName())) {

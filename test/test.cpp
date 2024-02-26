@@ -18,5 +18,7 @@ int main() {
 
     cout << num << endl;
 
+    printf("张恩乐！\n");
+
     return 0;
 }
