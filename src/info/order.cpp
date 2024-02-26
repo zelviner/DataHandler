@@ -66,8 +66,8 @@ OrderInfo *Order::orderInfo(QString &error) {
             } else if (dir_name.indexOf("_") != -1) {
                 // 脚本包
                 order_info_->script_package = dir_name;
-                QString card_type           = splitFormt(dir_name, "_", 'C', 'C').mid(1);
-                order_info_->rf_code        = "XH_RF_" + splitFormt(dir_name, "_", 'P', 'V') + " " + card_type;
+                QString card_type           = dir_name.mid(dir_name.indexOf("_C") + 2, 4);
+                order_info_->rf_code        = "XH_RF_" + splitFormt(dir_name, "_", 'P', 'C') + " " + card_type;
                 path_->zhScriptPath(order_path + "/" + dir_name);
                 path_->scriptPath("鉴权/" + dir_name);
                 std::string a;

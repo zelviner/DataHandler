@@ -37,13 +37,13 @@ QString splitFormt(const QString &str, const QString &sep, char start, char end)
             is_start = true;
         }
 
-        if (is_start) {
-            result += str + sep;
-        }
-
         if (str[0] == end) {
             result = result.mid(0, result.length() - 1);
             break;
+        }
+
+        if (is_start) {
+            result += str + sep;
         }
     }
 
