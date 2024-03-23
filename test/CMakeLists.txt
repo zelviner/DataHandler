@@ -16,15 +16,15 @@ add_executable(ftp-test ftp.cpp)
 # 为target添加头文件
 target_include_directories(ftp-test
 PUBLIC
-    "D:/Workspaces/C++/Vendor/zel-win/include"
-    "D:/Workspaces/C++/Vendor/openssl/include"
+    "$ENV{CPATH}/pkg/zel-win/include"
+    "$ENV{CPATH}/pkg/openssl/include"
 )
 
 # 为target添加库文件目录
 target_link_directories(ftp-test
 PUBLIC
-    "D:/Workspaces/C++/Vendor/zel-win/lib"
-    "D:/Workspaces/C++/Vendor/openssl/lib/VC/static"
+    "$ENV{CPATH}/pkg/zel-win/lib"
+    "$ENV{CPATH}/pkg/openssl/lib/VC/static"
 )
 
 # 为target添加需要链接的共享库

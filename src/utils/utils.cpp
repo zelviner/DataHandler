@@ -1,4 +1,4 @@
-#include "public.h"
+#include "utils.h"
 #include "QtGui/private/qzipreader_p.h"
 
 #include <qdir>

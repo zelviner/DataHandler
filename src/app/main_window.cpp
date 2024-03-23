@@ -1,6 +1,11 @@
 #include "main_window.h"
-
-#include "public/public.h"
+#include "clear_card_loading.h"
+#include "do-order/do_order.h"
+#include "task/clear_card.hpp"
+#include "task/write_card.hpp"
+#include "task/upload_file.hpp"
+#include "write_card_loading.h"
+#include "utils/utils.h"
 
 #include <utility/logger.h>
 #include <utility/string.h>
@@ -10,13 +15,6 @@ using namespace zel::utility;
 using namespace zel::ftp;
 
 #include <card-reader/card_reader_factory.hpp>
-
-#include "clear_card_loading.h"
-#include "do-order/do_order.h"
-#include "task/clear_card.hpp"
-#include "task/write_card.hpp"
-#include "task/upload_file.hpp"
-#include "write_card_loading.h"
 
 #include <qclipboard>
 #include <qdebug>
