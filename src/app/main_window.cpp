@@ -138,11 +138,11 @@ bool MainWindow::doOrder(QString &error) {
 
     return true;
 }
-
+ 
 void MainWindow::initWindow() {
 
     // 设置窗口标题
-    setWindowTitle("星汉数据处理程序");
+    setWindowTitle("智能卡生产预处理软件 v2.7.1");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
