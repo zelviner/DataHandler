@@ -2,7 +2,6 @@
 
 #include <qstring>
 #include <json/json.h>
-#include <map>
 
 
 /// @brief 首条个人化数据结构体
