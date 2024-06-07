@@ -1,3 +1,7 @@
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -17,8 +21,8 @@ file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/res/rc/*)
 
 
 # 添加可执行文件
-# add_executable(${PROJECT_NAME}  ${SOURCES} ${RESOURCES}) #debug
-add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
+add_executable(${PROJECT_NAME}  ${SOURCES} ${RESOURCES}) #debug
+# add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
 
 include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 
@@ -36,17 +40,11 @@ PUBLIC
 # 为target添加头文件
 target_include_directories(${PROJECT_NAME}
 PUBLIC
-    "$ENV{CPATH}/pkg/zel-win/include"
-    "$ENV{CPATH}/pkg/xhlanguage/include"
-    "$ENV{CPATH}/pkg/openssl/include"
 )
 
 # 为target添加库文件目录
 target_link_directories(${PROJECT_NAME}
 PUBLIC
-    "$ENV{CPATH}/pkg/zel-win/lib"
-    "$ENV{CPATH}/pkg/xhlanguage/lib"
-    "$ENV{CPATH}/pkg/openssl/lib/VC/static"
 )
 
 # 为target添加需要链接的共享库
@@ -61,6 +59,6 @@ PRIVATE
     "libssl32MD.lib"
     "Crypt32.lib"   
     "ws2_32.lib"
-    "zel-win.lib"
-    "XhLanguage.lib"
+    "zel.lib"
+    "xhlanguage.lib"
 )

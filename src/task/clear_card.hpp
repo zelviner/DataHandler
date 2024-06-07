@@ -5,8 +5,8 @@
 #include <qcoreapplication>
 #include <qdebug>
 #include <qthread>
-#include <json/json.h>
-#include <repl/repl.h>
+#include <zel/json.h>
+#include <xhlanguage/repl.h>
 
 
 // 自定义的工作线程类

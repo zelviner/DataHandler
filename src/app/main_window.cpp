@@ -1,20 +1,17 @@
+#include "task/upload_file.hpp"
 #include "main_window.h"
+
 #include "clear_card_loading.h"
 #include "do-order/do_order.h"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
-#include "task/upload_file.hpp"
 #include "write_card_loading.h"
 #include "utils/utils.h"
 
-#include <utility/logger.h>
-#include <utility/string.h>
+#include <zel/utility.h>
 using namespace zel::utility;
 
-#include <ftp/ftp.h>
-using namespace zel::ftp;
-
-#include <card-reader/card_reader_factory.hpp>
+#include <xhlanguage/card_reader.h>
 
 #include <qclipboard>
 #include <qdebug>
@@ -138,7 +135,7 @@ bool MainWindow::doOrder(QString &error) {
 
     return true;
 }
- 
+
 void MainWindow::initWindow() {
 
     // 设置窗口标题
@@ -357,6 +354,7 @@ void MainWindow::uploadPrdBtnClicked() {
     // 将个人化数据上传到FTP服务器
     std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
     remote_prd_path += "/" + order_info_->order_id.toStdString();
+    // std::string local_prd_path = String::wstring2String(path_->zhDataPath().toStdWString());
     std::string local_prd_path = String::wstring2String(path_->zhDataPath().toStdWString());
     auto        upload_file    = new UploadFile();
     upload_file->ini(ini_);

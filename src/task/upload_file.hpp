@@ -1,7 +1,7 @@
 #pragma once
 
-#include <utility/ini_file.h>
-#include <ftp/ftp.h>
+#include <zel/ftp.h>
+#include <zel/utility.h>
 #include <qcoreapplication>
 #include <qdebug>
 #include <qthread>
@@ -38,6 +38,7 @@ class UploadFile : public QThread {
             return;
         }
 
+        printf("%s -------- %s\n", local_file_path_.c_str(), remote_file_path_.c_str());
         if (!ftp.uploadFile(local_file_path_, remote_file_path_)) {
             ftp.disconnect();
             emit failure("上传失败", "请检查远程路径是否正确");

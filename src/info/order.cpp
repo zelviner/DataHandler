@@ -5,7 +5,7 @@
 #include <qdir>
 #include <qregexp>
 #include <qstringlist>
-#include <utility/logger.h>
+#include <zel/utility.h>
 
 Order::Order(Path *path)
     : path_(path)

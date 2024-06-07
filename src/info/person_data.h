@@ -1,8 +1,7 @@
 #pragma once
 
 #include <qstring>
-#include <json/json.h>
-
+#include <zel/json.h>
 
 /// @brief 首条个人化数据结构体
 struct PersonDataInfo {

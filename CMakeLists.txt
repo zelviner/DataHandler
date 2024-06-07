@@ -4,8 +4,10 @@ cmake_minimum_required(VERSION 3.20.2)
 # 设置项目名称
 project(DataHandler)
 
-# 采用C++17标准
-set(CMAKE_CXX_STANDARD 17)
+set(ZELPATH $ENV{ZELPATH}/${CMAKE_BUILD_TYPE})
+
+# 采用C++14标准
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -17,11 +19,11 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")    
 endif()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+# 设置三方库的安装路径, 搜索路径, 链接路径
+list(APPEND CMAKE_PREFIX_PATH ${ZELPATH})
+include_directories(${ZELPATH}/include)
+link_directories(${ZELPATH}/lib)
 
 # 添加子工程
-add_subdirectory(vendor)
 add_subdirectory(src)
-add_subdirectory(tests)
+add_subdirectory(test)

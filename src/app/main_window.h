@@ -6,10 +6,12 @@
 #include "info/script.h"
 #include "ftp_loading.h"
 
-#include <card-reader/card_reader.hpp>
+#include <zel/ftp.h>
+using namespace zel::ftp;
+#include <zel/utility.h>
+#include <xhlanguage/card_reader.h>
 #include <memory>
 #include <qmainwindow>
-#include <utility/ini_file.h>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT

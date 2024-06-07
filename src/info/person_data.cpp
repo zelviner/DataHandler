@@ -3,7 +3,7 @@
 #include <qdebug>
 #include <qdir>
 #include <qtextstream>
-#include <json/json.h>
+#include <zel/json.h>
 
 
 PersonData::PersonData(QString data_path)
