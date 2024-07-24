@@ -1,6 +1,6 @@
 #pragma once
 
-#include "info/script.h"
+#include "order-info/script.h"
 
 #include <qcoreapplication>
 #include <qdebug>

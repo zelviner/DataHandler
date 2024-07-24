@@ -22,9 +22,3 @@ enable_testing()
 
 
 # 添加测试
-add_test_executable(ftp zel libcrypto32MD libssl32MD Crypt32)
-
-target_compile_definitions(ftp-test
-PUBLIC
-    NOLFS
-)

@@ -1,14 +1,23 @@
 #pragma once
 
+#include <memory>
 #include <qstring>
 
-#include "info/path.h"
+#include <zel/filesystem.h>
 
-class DoOrder {
+#include "order-info/path.h"
+
+class OrderProcessing {
 
   public:
-    DoOrder(Path *path);
-    ~DoOrder();
+    OrderProcessing(std::shared_ptr<Path> path);
+    ~OrderProcessing();
+
+    /// @brief 预处理
+    bool preProcessing();
+
+    /// @brief 修改工程单号和订单号
+    bool modificateProjectNumber();
 
     /// @brief 鉴权文件夹
     /// @param data_filename 首条个人化数据文件名
@@ -37,5 +46,5 @@ class DoOrder {
     bool dataToAuthDir(QString data_filename, QString header, QString data);
 
   private:
-    Path *path_;
+    std::shared_ptr<Path> path_;
 };

@@ -24,12 +24,13 @@ struct RelativePath {
 class Path {
 
   public:
-    Path(QString dir_path);
+    Path(QString datagram_path);
     ~Path();
 
     /// @brief 显示路径
     void show();
 
+    QString     datagramPath();
     QString     dirPath();
     QString     zhOrderPath();
     QString     zhDataPath();
@@ -64,6 +65,7 @@ class Path {
     QString abslutePath(QString path);
 
   private:
+    QString      datagram_path_;
     QString      dir_path_;
     RelativePath path_;
 };

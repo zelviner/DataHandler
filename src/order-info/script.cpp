@@ -20,7 +20,7 @@ ScriptInfo *Script::scriptInfo(QString &error) {
 
     auto files = script_dir.files();
 
-    for (auto file : files) {
+    for (auto &file : *files) {
         if (file.name().find("ClearCard") != std::string::npos || file.name().find("Restore") != std::string::npos) {
             // 请卡脚本
             if (file.exists()) {
@@ -44,7 +44,7 @@ ScriptInfo *Script::scriptInfo(QString &error) {
             if (file.exists()) {
                 script_info_->post_person_buffer   = file.read();
                 script_info_->post_person_filename = QString::fromStdString(file.name());
-                script_info_->has_ds = script_info_->post_person_buffer.find("ds.") == std::string::npos ? false : true;
+                script_info_->has_ds               = script_info_->post_person_buffer.find("ds.") == std::string::npos ? false : true;
             } else {
                 error = "open perso script failed";
                 return nullptr;

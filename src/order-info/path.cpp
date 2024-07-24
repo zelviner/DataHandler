@@ -1,7 +1,7 @@
 #include "path.h"
 
-Path::Path(QString dir_path)
-    : dir_path_(dir_path) {}
+Path::Path(QString datagram_path)
+    : datagram_path_(datagram_path) {}
 
 Path::~Path() {}
 
@@ -20,6 +20,8 @@ void Path::show() {
     qDebug() << "script_path: " << path_.script_path;
     qDebug() << "clear_card_path: " << path_.clear_card_path;
 }
+
+QString Path::datagramPath() { return datagram_path_; }
 
 QString Path::dirPath() { return dir_path_; }
 

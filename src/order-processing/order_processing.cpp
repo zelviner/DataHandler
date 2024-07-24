@@ -1,18 +1,55 @@
-#include "do_order.h"
+#include "order_processing.h"
 
 #include "utils/utils.h"
+
+#include <memory>
+#include <zel/filesystem.h>
+using namespace zel::filesystem;
+
+#include <zel/crypto.h>
+using namespace zel::crypto;
 
 #include <qdebug>
 #include <qdir>
 #include <qfile>
 #include <qstringlist>
+#include <iostream>
 
-DoOrder::DoOrder(Path *path)
+OrderProcessing::OrderProcessing(std::shared_ptr<Path> path)
     : path_(path) {}
 
-DoOrder::~DoOrder() {}
+OrderProcessing::~OrderProcessing() {}
 
-bool DoOrder::authenticationDir(QString data_filename, QString header, QString data) {
+bool OrderProcessing::preProcessing() {
+    // path_->dirPath(QString(confirm_datagram_dir.c_str()));
+    File datagram_file(path_->datagramPath().toStdString());
+    auto datagram_zip_path = FilePath::join(datagram_file.dirPath(), datagram_file.prefix());
+
+    // GPG解密数据包
+    try {
+        Gpg gpg("libgpgme-11.dll");
+        gpg.decryptFile(datagram_file.path(), datagram_zip_path);
+        std::cout << "File decrypted successfully." << std::endl;
+    } catch (const std::exception &e) {
+        std::cerr << "An error occurred: " << e.what() << std::endl;
+    }
+
+    // 解压数据包
+    if (!decompressionZipFile(QString(datagram_zip_path.c_str()), QString(datagram_file.dirPath().c_str()))) {
+        return false;
+    }
+
+    // 是否更该工程单号或订单号
+    int pos = datagram_file.name().find_last_of(".zip.pgp");
+    if (pos == std::string::npos) return false;
+    auto datagram_dir = datagram_file.name().substr(0, pos - 7);
+
+    return true;
+}
+
+bool OrderProcessing::modificateProjectNumber() { printf("修改订单号"); }
+
+bool OrderProcessing::authenticationDir(QString data_filename, QString header, QString data) {
 
     // 创建鉴权文件夹
     createFolder(path_->authenticationPath());
@@ -28,7 +65,7 @@ bool DoOrder::authenticationDir(QString data_filename, QString header, QString d
     return true;
 }
 
-bool DoOrder::screenshotDir(QString filename) {
+bool OrderProcessing::screenshotDir(QString filename) {
 
     // 创建截图文件夹
     createFolder(path_->screenshotPath());
@@ -40,7 +77,7 @@ bool DoOrder::screenshotDir(QString filename) {
     return true;
 };
 
-bool DoOrder::printDir() {
+bool OrderProcessing::printDir() {
 
     // 创建打印文件夹
     createFolder(path_->printPath());
@@ -55,7 +92,7 @@ bool DoOrder::printDir() {
     return true;
 }
 
-bool DoOrder::tagDataDir() {
+bool OrderProcessing::tagDataDir() {
 
     // 创建标签数据文件夹
     createFolder(path_->tagDataPath());
@@ -72,7 +109,7 @@ bool DoOrder::tagDataDir() {
     return true;
 }
 
-bool DoOrder::clearScriptDir(QString filename, QString clear_script, QString atr3) {
+bool OrderProcessing::clearScriptDir(QString filename, QString clear_script, QString atr3) {
 
     // 创建MD5清卡文件夹
     createFolder(path_->clearCardPath());
@@ -91,7 +128,7 @@ bool DoOrder::clearScriptDir(QString filename, QString clear_script, QString atr
     return false;
 }
 
-bool DoOrder::dataToAuthDir(QString data_filename, QString header, QString data) {
+bool OrderProcessing::dataToAuthDir(QString data_filename, QString header, QString data) {
 
     QFile file(path_->authenticationPath() + "/" + data_filename);
     if (file.open(QIODevice::WriteOnly)) {
