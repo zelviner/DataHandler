@@ -84,7 +84,10 @@ void MainWindow::dropEvent(QDropEvent *event) {
 
     // 订单预处理
     order_processing_ = std::make_unique<OrderProcessing>(path_);
-    order_processing_->preProcessing();
+    if (!order_processing_->preProcessing()) {
+        QMessageBox::critical(this, "错误", "订单预处理失败，请查看日志了解详细信息");
+        return;
+    }
 
     // 获取订单信息
     QString error = "";
@@ -395,6 +398,7 @@ bool MainWindow::orderInfo(QString &error) {
     // 获取订单信息
     Order order(path_);
     order_info_ = order.orderInfo(error);
+    printf("%s \n", order_info_->program_name.toStdString().c_str());
     if (error != "") return false;
 
     // // 获取首条个人化数据

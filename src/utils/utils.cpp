@@ -227,11 +227,14 @@ bool decompressionZipFile(const QString &selectZipFilePath, const QString &saveP
         return false;
     }
 
-    bool                          ret = true;
-    QZipReader                    zipReader(selectZipFilePath);
+    bool ret = true;
+    QZipReader zipReader(selectZipFilePath);
     QVector<QZipReader::FileInfo> zipAllFiles = zipReader.fileInfoList();
+    
     for (const QZipReader::FileInfo &zipFileInfo : zipAllFiles) {
         const QString currDir2File = savePath + "/" + zipFileInfo.filePath;
+        QFileInfo fileInfo(currDir2File);
+        
         if (zipFileInfo.isSymLink) {
             QString destination = QFile::decodeName(zipReader.fileData(zipFileInfo.filePath));
             if (destination.isEmpty()) {
@@ -239,34 +242,34 @@ bool decompressionZipFile(const QString &selectZipFilePath, const QString &saveP
                 continue;
             }
 
-            QFileInfo linkFi(currDir2File);
-            if (!QFile::exists(linkFi.absolutePath())) QDir::root().mkpath(linkFi.absolutePath());
+            if (!QFile::exists(fileInfo.absolutePath())) QDir::root().mkpath(fileInfo.absolutePath());
             if (!QFile::link(destination, currDir2File)) {
                 ret = false;
                 continue;
             }
         }
+        
         if (zipFileInfo.isDir) {
             QDir(savePath).mkpath(currDir2File);
         }
+        
         if (zipFileInfo.isFile) {
-            QByteArray dt     = zipFileInfo.filePath.toUtf8();
-            QString    strtmp = QString::fromLocal8Bit(dt);
-
+            QByteArray byteArr = zipReader.fileData(zipFileInfo.filePath);
+            if (byteArr.isEmpty()) {
+                ret = false;
+                continue;
+            }
+            
             QFile currFile(currDir2File);
-            if (!currFile.isOpen()) {
-                currFile.open(QIODevice::WriteOnly);
-            } else {
+            if (!QFileInfo(fileInfo.absolutePath()).isDir()) {
+                QDir().mkpath(fileInfo.absolutePath());
+            }
+            
+            if (!currFile.open(QIODevice::WriteOnly)) {
                 ret = false;
                 continue;
             }
-
-            qint64 size = zipFileInfo.size / 1024 / 1024;
-            if (size > FILE_MAX_SIZE) {
-                ret = false;
-                continue;
-            }
-            QByteArray byteArr = zipReader.fileData(strtmp);
+            
             currFile.write(byteArr);
             currFile.setPermissions(zipFileInfo.permissions);
             currFile.close();

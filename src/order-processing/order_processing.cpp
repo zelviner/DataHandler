@@ -38,11 +38,11 @@ bool OrderProcessing::preProcessing() {
     if (!decompressionZipFile(QString(datagram_zip_path.c_str()), QString(datagram_file.dirPath().c_str()))) {
         return false;
     }
-
+    printf("解压成功\n");
     // 是否更该工程单号或订单号
-    int pos = datagram_file.name().find_last_of(".zip.pgp");
-    if (pos == std::string::npos) return false;
-    auto datagram_dir = datagram_file.name().substr(0, pos - 7);
+    // int pos = datagram_file.name().find_last_of(".zip.pgp");
+    // if (pos == std::string::npos) return false;
+    // auto datagram_dir = datagram_file.name().substr(0, pos - 7);
 
     return true;
 }
