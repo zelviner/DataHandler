@@ -21,7 +21,10 @@ class PersonData {
     PersonData(const std::string &data_path);
     ~PersonData();
 
-    std::shared_ptr<PersonDataInfo> personDataInfo(std::string &error);
+    std::shared_ptr<PersonDataInfo> personDataInfo();
+
+  private:
+    zel::json::Json jsonData();
 
   private:
     std::string                     data_path_;

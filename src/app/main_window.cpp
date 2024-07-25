@@ -73,7 +73,7 @@ void MainWindow::dropEvent(QDropEvent *event) {
     path_ = std::make_shared<Path>(urls.first().toLocalFile().toStdString());
 
     // 确认订单
-    order_window_ = new OrderWindow(path_->datagramPath());
+    order_window_ = new OrderWindow(path_->datagram);
 
     connect(order_window_, &OrderWindow::confirmOrder, this, &MainWindow::confirmOrder);
     connect(order_window_, &OrderWindow::cancelOrder, this, &MainWindow::cancelOrder);
@@ -104,22 +104,22 @@ void MainWindow::saveBtnClicked() {
 }
 
 void MainWindow::openPersonalBtnClicked() {
-    std::string path = path_->scriptPath() + "/" + script_info_->person_filename;
+    std::string path = path_->script + "/" + script_info_->person_filename;
     QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
 }
 
 void MainWindow::openPostPersonalBtnClicked() {
-    std::string path = path_->scriptPath() + "/" + script_info_->post_person_filename;
+    std::string path = path_->script + "/" + script_info_->post_person_filename;
     QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
 }
 
 void MainWindow::openCheckBtnClicked() {
-    std::string path = path_->scriptPath() + "/" + script_info_->check_filename;
+    std::string path = path_->script + "/" + script_info_->check_filename;
     QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
 }
 
 void MainWindow::openClearCardBtnClicked() {
-    std::string path = path_->scriptPath() + "/" + script_info_->clear_filename;
+    std::string path = path_->script + "/" + script_info_->clear_filename;
     QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
 }
 
@@ -178,11 +178,11 @@ void MainWindow::clearCardBtnClicked() {
     clear_card_loading->show();
 
     // 获取脚本信息
-    std::string script_path = path_->dirPath() + "/鉴权/" + order_info_->script_package;
+    std::string script_path = path_->directory + "/鉴权/" + order_info_->script_package;
     Script      script(script_path);
     std::string error;
-    script_info_ = script.scriptInfo(error);
-    if (error != "") return;
+    script_info_ = script.scriptInfo();
+    if (script_info_ != nullptr) return;
 
     // 创建工作线程
     auto clear_card = new ClearCard();
@@ -212,7 +212,7 @@ void MainWindow::uploadPrdBtnClicked() {
     std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
     remote_prd_path += "/" + order_info_->order_number;
     // std::string local_prd_path = String::wstring2String(path_->zhDataPath().toStdWString());
-    std::string local_prd_path = path_->dataPath();
+    std::string local_prd_path = path_->data;
     auto        upload_file    = new UploadFile();
     upload_file->ini(ini_);
     upload_file->localFilePath(local_prd_path);
@@ -229,7 +229,7 @@ void MainWindow::uploadPrdBtnClicked() {
 void MainWindow::uploadTempBtnClicked() {
 
     // 压缩截图文件夹
-    QDir dir(QString(path_->screenshotPath().c_str()));
+    QDir dir(QString(path_->screenshot.c_str()));
     int  file_count = dir.count() - 2;
     if (file_count < 6) {
         QMessageBox::StandardButton box;
@@ -237,25 +237,25 @@ void MainWindow::uploadTempBtnClicked() {
         if (box == QMessageBox::No) return;
     }
 
-    if (!compressionZipFile(QString(path_->screenshotPath().c_str()))) {
+    if (!compressionZipFile(QString(path_->screenshot.c_str()))) {
         QMessageBox::critical(this, "错误", "压缩截图文件失败");
         return;
     }
 
     // 删除原截图文件夹
-    if (!deleteFileOrFolder(QString(path_->screenshotPath().c_str()))) {
+    if (!deleteFileOrFolder(QString(path_->screenshot.c_str()))) {
         QMessageBox::critical(this, "错误", "删除截图文件失败");
         return;
     }
 
     // 压缩文件
-    if (!compressionZipFile(QString(path_->tempPath().c_str()))) {
+    if (!compressionZipFile(QString(path_->temp.c_str()))) {
         QMessageBox::critical(this, "错误", "压缩文件失败");
         return;
     }
 
     // 删除原文件
-    if (!deleteFileOrFolder(QString(path_->tempPath().c_str()))) {
+    if (!deleteFileOrFolder(QString(path_->temp.c_str()))) {
         QMessageBox::critical(this, "错误", "删除文件失败");
         return;
     }
@@ -374,9 +374,9 @@ bool MainWindow::orderInfo(const std::string &order_dir_name) {
     printf("%s \n", order_info_->program_name.c_str());
 
     // 获取首条个人化数据
-    PersonData person_data(path_->dataPath());
-    person_data_info_ = person_data.personDataInfo(error);
-    if (error != "") return false;
+    PersonData person_data(path_->data);
+    person_data_info_ = person_data.personDataInfo();
+    if (person_data_info_ == nullptr) return false;
 
     return true;
 }
@@ -389,38 +389,28 @@ bool MainWindow::orderProcessing(QString &error) {
     //     return false;
     // }
 
-    // // 创建截图文件夹
-    // auto filename = splitFormt(order_info_->order_dir_name, " ", 1, 3) + ".txt";
-    // if (!order_processing_->screenshotDir(filename)) {
-    //     error = "create screenshot dir error";
-    //     return false;
-    // }
+    // 生成截图文件夹
+    if (!order_processing_->screenshotDir()) {
+        error = "create screenshot dir error";
+        return false;
+    }
 
-    // 创建打印文件夹
+    // 生成打印文件夹
     if (!order_processing_->printDir()) {
         error = "create print dir error";
         return false;
     }
 
-    // 创建标签数据文件夹
+    // 生成标签数据文件夹
     if (!order_processing_->tagDataDir()) {
         error = "create tag data dir error";
         return false;
     }
 
-    // // 重命名文件夹
-    // QString current_dir = path_->dirPath().right(path_->dirPath().indexOf("/") - 1);
-    // if (current_dir != order_info_->order_dir_name) {
-    //     QString new_name = path_->dirPath().left(path_->dirPath().lastIndexOf("/") + 1) + order_info_->order_dir_name;
-    //     renameFolder(path_->dirPath(), new_name);
-    //     path_->dirPath(new_name);
-    // }
-
-    // // 获取脚本信息
-    // std::string script_path = path_->scriptPath().toStdString();
-    // Script      script(script_path);
-    // script_info_ = script.scriptInfo(error);
-    // if (error != "") return false;
+    // 获取脚本信息
+    Script script(path_->script);
+    script_info_ = script.scriptInfo();
+    if (script_info_ == nullptr) return false;
 
     return true;
 }
@@ -509,7 +499,6 @@ void MainWindow::showInfo() {
     ui_->ds_check_box->setChecked(script_info_->has_ds);
 }
 
-
 void MainWindow::confirmOrder(const std::string &confirm_datagram_dir) {
     order_window_->hide();
 
@@ -527,10 +516,9 @@ void MainWindow::confirmOrder(const std::string &confirm_datagram_dir) {
         return;
     }
 
-    // 显示路径
-    path_->show();
+    // // 显示路径
+    // path_->show();
 
-    return;
     QString error = "";
     if (!orderProcessing(error)) {
         QMessageBox::critical(this, "错误", error);

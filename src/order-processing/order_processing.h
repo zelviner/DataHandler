@@ -26,7 +26,7 @@ class OrderProcessing {
     bool authenticationDir(QString data_filename, QString header, QString data);
 
     /// @brief 截图文件夹
-    bool screenshotDir(QString filename);
+    bool screenshotDir();
 
     /// @brief 打印文件夹
     bool printDir();

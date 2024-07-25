@@ -21,8 +21,8 @@ OrderProcessing::OrderProcessing(std::shared_ptr<Path> path)
 OrderProcessing::~OrderProcessing() {}
 
 bool OrderProcessing::preProcessing(const std::string &confirm_datagram_dir) {
-    File datagram_file(path_->datagramPath());
-    path_->dirPath(datagram_file.dirPath());
+    File datagram_file(path_->datagram);
+    path_->directory       = datagram_file.dirPath();
     auto datagram_zip_path = FilePath::join(datagram_file.dirPath(), datagram_file.prefix());
 
     // GPG解密数据包
@@ -69,46 +69,50 @@ bool OrderProcessing::authenticationDir(QString data_filename, QString header, Q
     return true;
 }
 
-bool OrderProcessing::screenshotDir(QString filename) {
+bool OrderProcessing::screenshotDir() {
 
-    // // 创建截图文件夹
-    // createFolder(path_->screenshotPath());
-
-    // QFile file(path_->screenshotPath() + "/" + filename);
-    // if (!file.open(QIODevice::WriteOnly)) return false;
-    // file.close();
+    // 创建截图文件夹
+    Directory screenshot_dir(path_->screenshot);
+    if (!screenshot_dir.exists()) {
+        screenshot_dir.create();
+    }
 
     return true;
 };
 
 bool OrderProcessing::printDir() {
 
-    // // 创建打印文件夹
-    // createFolder(path_->printPath());
+    // 创建打印文件夹
+    Directory print_dir(path_->print);
+    if (!print_dir.exists()) {
+        print_dir.create();
+    }
 
-    // // 拷贝需要打印的文件
-    // QString filename;
-    // for (auto zh_print_path : path_->zhPrintPaths()) {
-    //     filename = zh_print_path.mid(zh_print_path.lastIndexOf("/") + 1);
-    //     if (!copyFile(zh_print_path, path_->printPath() + "/" + filename, true)) return false;
-    // }
+    // 拷贝需要打印的文件
+    auto walkFunc = [=](std::string relative_path, Directory dir, File file) -> bool {
+        if (file.exists()) {
+            if (file.extension() == ".xlsx" || file.extension() == ".xls") {
+                if (!file.copy(FilePath::join(path_->print, file.name()))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
 
-    return true;
+    return FilePath::walk(path_->order, walkFunc);
 }
 
 bool OrderProcessing::tagDataDir() {
 
-    // // 创建标签数据文件夹
-    // createFolder(path_->tagDataPath());
+    // 压缩文件
+    if (!compressionZipFile(QString(path_->tag_data.c_str()))) return false;
 
-    // // // 拷贝标签数据
-    // // copyFolder(path_->zhTagDataPath(), path_->tagDataPath(), true);
-
-    // // 压缩文件
-    // if (!compressionZipFile(path_->tagDataPath())) return false;
-
-    // // 删除原文件
-    // if (!deleteFileOrFolder(path_->tagDataPath())) return false;
+    // 剪切标签数据压缩包
+    File tag_data_file(path_->tag_data + ".zip");
+    if (!tag_data_file.move(FilePath::join(path_->temp, tag_data_file.name()))) {
+        return false;
+    }
 
     return true;
 }

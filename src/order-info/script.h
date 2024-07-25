@@ -24,7 +24,7 @@ class Script {
     Script(const std::string &script_path);
     ~Script();
 
-    std::shared_ptr<ScriptInfo> scriptInfo(const std::string &error);
+    std::shared_ptr<ScriptInfo> scriptInfo();
 
   private:
     std::shared_ptr<ScriptInfo> script_info_;

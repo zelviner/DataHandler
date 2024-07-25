@@ -9,6 +9,9 @@ using namespace zel::filesystem;
 #include <zel/crypto.h>
 using namespace zel::crypto;
 
+#include "zel/utility.h"
+using namespace zel::utility;
+
 #include <memory>
 #include <iostream>
 
@@ -18,63 +21,54 @@ PersonData::PersonData(const std::string &data_path)
 
 PersonData::~PersonData() {}
 
-std::shared_ptr<PersonDataInfo> PersonData::personDataInfo(std::string &error) {
+std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
 
     person_data_info_ = std::make_shared<PersonDataInfo>();
 
     Directory data_dir(data_path_);
-    auto      personal_data_files = data_dir.files();
+    auto      person_data_files = data_dir.files();
 
-    auto personal_data_filename_pgp = personal_data_files->at(0).path();
-    int  pos                        = personal_data_filename_pgp.find_last_of(".");
-    if (pos == std::string::npos) return person_data_info_;
-    auto personal_data_filename = personal_data_filename_pgp.substr(0, pos);
+    auto person_data_file_path_pgp = person_data_files->at(0).path();
+    int  pos                       = person_data_file_path_pgp.find_last_of(".");
+    if (pos == std::string::npos) return nullptr;
+    auto person_data_file_path = person_data_file_path_pgp.substr(0, pos);
 
     // GPG解密个人化数据文件
     try {
         Gpg gpg("libgpgme-11.dll");
-        gpg.decryptFile(personal_data_filename_pgp, personal_data_filename);
+        printf("%s => %s\n", person_data_file_path_pgp.c_str(), person_data_file_path.c_str());
+        gpg.decryptFile(person_data_file_path_pgp, person_data_file_path);
     } catch (const std::exception &e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
     }
 
-    File person_data_file(personal_data_filename);
+    File person_data_file(person_data_file_path);
 
     person_data_info_->filename = person_data_file.name();
+    if (!person_data_file.readLine(person_data_info_->header)) return nullptr;
+    if (!person_data_file.readLine(person_data_info_->data)) return nullptr;
 
-    // QDir data_dir(data_path_);
-    // auto data_dirs = data_dir.entryList();
-    // if (data_dirs.size() <= 2) {
-    //     error = "未找到个人化数据";
-    //     return nullptr;
-    // }
+    person_data_info_->json_data = jsonData();
 
-    // person_data_info_->filename = data_dirs[2];
-    // QFile data_file(data_path_ + "/" + person_data_info_->filename);
-    // if (data_file.open(QIODevice::ReadOnly)) {
-    //     QTextStream in(&data_file);
-    //     person_data_info_->header = in.readLine();
-    //     person_data_info_->data   = in.readLine();
-    // } else {
-    //     error = "打开文件失败";
-    //     return nullptr;
-    // }
-
-    // data_file.close();
-
-    // auto headers = person_data_info_->header.split("/");
-    // auto datas   = person_data_info_->data.split(" ");
-    // for (int i = 0; i < headers.size(); i++) {
-    //     person_data_info_->json_data[headers[i].toStdString()] = datas[i].toStdString();
-    // }
-
-    // std::string pin1 = person_data_info_->json_data["PIN1"];
-    // std::string ki   = person_data_info_->json_data["KI"];
-    // std::string op   = person_data_info_->json_data["OP"].empty() ? person_data_info_->json_data["OPC"] : person_data_info_->json_data["OP"];
-
-    // person_data_info_->pin1 = std::string::fromStdString(pin1);
-    // person_data_info_->ki   = std::string::fromStdString(ki);
-    // person_data_info_->op   = std::string::fromStdString(op);
+    if (!person_data_file.remove()) return nullptr;
 
     return person_data_info_;
+}
+
+zel::json::Json PersonData::jsonData() {
+
+    Json json;
+
+    auto headers = String::split(person_data_info_->header, "/");
+    auto datas   = String::split(person_data_info_->data, " ");
+    for (int i = 0; i < headers.size(); i++) {
+        json[headers[i]] = datas[i];
+    }
+
+    person_data_info_->pin1 = json["PIN1"].asString();
+    person_data_info_->ki   = json["KI"].asString();
+    std::string op          = json["OP"].empty() ? json["OPC"] : json["OP"];
+    person_data_info_->op   = op;
+
+    return json;
 }
