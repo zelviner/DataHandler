@@ -1,28 +1,29 @@
 #pragma once
 
+#include <memory>
 #include <qstring>
 #include <zel/json.h>
 
 /// @brief 首条个人化数据结构体
 struct PersonDataInfo {
-    QString         filename;
-    QString         header;
-    QString         data;
-    QString         pin1;
-    QString         ki;
-    QString         op;
+    std::string     filename; // 个人化文件名
+    std::string     header;   // 头信息
+    std::string     data;     // 数据
+    std::string     pin1;
+    std::string     ki;
+    std::string     op;
     zel::json::Json json_data;
 };
 
 class PersonData {
 
   public:
-    PersonData(QString data_path);
+    PersonData(const std::string &data_path);
     ~PersonData();
 
-    PersonDataInfo *personDataInfo(QString &error);
+    std::shared_ptr<PersonDataInfo> personDataInfo(std::string &error);
 
   private:
-    QString         data_path_;
-    PersonDataInfo *person_data_info_;
+    std::string                     data_path_;
+    std::shared_ptr<PersonDataInfo> person_data_info_;
 };

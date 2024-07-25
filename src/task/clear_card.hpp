@@ -2,12 +2,12 @@
 
 #include "order-info/script.h"
 
+#include <memory>
 #include <qcoreapplication>
 #include <qdebug>
 #include <qthread>
 #include <zel/json.h>
 #include <xhlanguage/repl.h>
-
 
 // 自定义的工作线程类
 class ClearCard : public QThread {
@@ -18,7 +18,7 @@ class ClearCard : public QThread {
 
     ClearCard() {}
 
-    void scriptInfo(ScriptInfo *script_info) { script_info_ = script_info; }
+    void scriptInfo(std::shared_ptr<ScriptInfo> script_info) { script_info_ = script_info; }
 
     void jsonData(const zel::json::Json &json_data) { json_data_ = json_data; }
 
@@ -75,7 +75,7 @@ class ClearCard : public QThread {
     void success(ClearCard::Type type, const QString &duration);
 
   private:
-    ScriptInfo                 *script_info_;
+    std::shared_ptr<ScriptInfo> script_info_;
     zel::json::Json             json_data_;
     std::shared_ptr<CardReader> card_reader_;
     std::string                 reader_name_;

@@ -14,7 +14,7 @@ class OrderProcessing {
     ~OrderProcessing();
 
     /// @brief 预处理
-    bool preProcessing();
+    bool preProcessing(const std::string &confirm_datagram_dir);
 
     /// @brief 修改工程单号和订单号
     bool modificateProjectNumber();
@@ -34,9 +34,6 @@ class OrderProcessing {
     /// @brief 标签数据文件夹
     bool tagDataDir();
 
-    /// @brief MD5清卡文件夹
-    /// @param filename 文件名
-    bool clearScriptDir(QString filename, QString clear_script, QString atr3);
 
   private:
     /// @brief 将首条个人化数据文件移动到鉴权文件夹

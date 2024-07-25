@@ -8,10 +8,9 @@ using namespace zel::filesystem;
 
 #include <qmessagebox>
 
-OrderWindow::OrderWindow(std::shared_ptr<OrderInfo> order_info, const QString &datagram_path, QMainWindow *parent)
+OrderWindow::OrderWindow(const std::string &datagram_path, QMainWindow *parent)
     : QMainWindow(parent)
-    , order_info_(order_info)
-    , datagram_file_(std::make_unique<File>(datagram_path.toStdString()))
+    , datagram_file_(std::make_unique<File>(datagram_path))
     , ui_(std::make_shared<Ui_OrderWindow>()) {
     ui_->setupUi(this);
 
@@ -25,22 +24,20 @@ OrderWindow::OrderWindow(std::shared_ptr<OrderInfo> order_info, const QString &d
 OrderWindow::~OrderWindow() {}
 
 void OrderWindow::confirmBtnClicked() {
-
-    QString confirm_project_number = ui_->project_number_line->text();
-    QString confirm_order_number   = ui_->order_number_line->text();
+    std::string confirm_project_number = ui_->project_number_line->text().toStdString();
+    std::string confirm_order_number   = ui_->order_number_line->text().toStdString();
     if (confirm_project_number == "" || confirm_order_number == "") {
         QMessageBox::critical(this, "警告", "工程单号或订单号不能为空");
     }
 
-    order_info_->project_number = confirm_project_number;
-    order_info_->order_number   = confirm_order_number;
-    datagram_format_[0]         = confirm_project_number.toStdString();
-    datagram_format_[1]         = confirm_order_number.toStdString();
+    datagram_format_[0] = confirm_project_number;
+    datagram_format_[1] = confirm_order_number;
 
     auto datagram_temp = String::join(datagram_format_, " ");
     int  pos           = datagram_temp.find_last_of(".zip.pgp");
     if (pos == std::string::npos) return;
-    auto confirm_datagram_dir = QString(datagram_temp.substr(0, pos - 7).c_str());
+    auto confirm_datagram_dir = std::string(datagram_temp.substr(0, pos - 7).c_str());
+
     emit confirmOrder(confirm_datagram_dir);
 }
 

@@ -1,55 +1,59 @@
 #include "order.h"
 #include "utils/utils.h"
 
-#include <memory>
-#include <qdebug>
-#include <qdir>
-#include <qregexp>
-#include <qstringlist>
+#include <vector>
 #include <zel/utility.h>
+using namespace zel::utility;
+
+#include <zel/filesystem.h>
+using namespace zel::filesystem;
+
+#include <memory>
 
 Order::Order(std::shared_ptr<Path> path)
     : path_(path) {}
 
 Order::~Order() {}
 
-std::shared_ptr<OrderInfo> Order::orderInfo(QString &error) {
-    order_info_ = std::make_shared<OrderInfo>();
-    QDir dir(path_->dirPath());
-    auto dir_names = dir.entryList();
+std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
+    order_info_                 = std::make_shared<OrderInfo>();
+    order_info_->order_dir_name = order_dir_name;
 
-    path_->zhOrderPath(path_->dirPath());
+    auto infos                  = String::split(order_dir_name, " ");
+    order_info_->order_number   = infos[0];
+    order_info_->project_number = infos[1];
+    order_info_->program_name   = infos[2];
 
-    auto temp = "临时存放/" + order_info_->order_number;
-    path_->tempPath(temp);
-    path_->screenshotPath(temp + "/截图 " + order_info_->project_number + " " + order_info_->order_number);
-    path_->printPath(temp + "/打印 " + order_info_->project_number + " " + order_info_->order_number);
+    std::vector<std::string> print_dirs;
+    path_->tempPath(FilePath::join(path_->dirPath(), order_info_->order_dir_name, "TEMP", order_info_->order_number));
+    path_->printPath(FilePath::join(path_->tempPath(), "打印 " + order_info_->order_number + " " + order_info_->project_number));
+    path_->screenshotPath(FilePath::join(path_->tempPath(), "截图 " + order_info_->order_number + " " + order_info_->project_number));
 
-    dir_names = dir.entryList();
-    QStringList temp_list;
-    for (auto dir_name : dir_names) {
-        if (dir_name.indexOf(".") == -1) {
-            if (dir_name.indexOf("Tag_data") != -1) {
-                // 标签数据
-                path_->zhTagDataPath(path_->dirPath() + "/" + dir_name);
-                path_->tagDataPath(temp + "/" + dir_name);
-            } else if (dir_name.indexOf("_") != -1) {
-                // 脚本包
-                order_info_->script_package = dir_name;
-                QString card_type           = dir_name.mid(dir_name.indexOf("_C") + 2, 4);
-                order_info_->rf_code        = "XH_RF_" + splitFormt(dir_name, "_", 'P', 'C') + " " + card_type;
-                path_->zhScriptPath(path_->dirPath() + "/" + dir_name);
-                path_->scriptPath("鉴权/" + dir_name);
-                std::string a;
-            } else if (dir_name == "DATA") {
-                // 个人化数据
-                path_->zhDataPath(path_->dirPath() + "/" + dir_name);
-            } else {
-                continue;
+    auto walkFunc = [&](std::string relative_path, Directory dir, File file) -> bool {
+        if (dir.exists()) {
+            if (dir.name() == "DATA") {
+                path_->dataPath(dir.path());
+            } else if (dir.name().rfind("Tag_data") != std::string::npos) {
+                path_->tagDataPath(dir.path());
+            } else if (String::matches(dir.name(), "([A-Z0-9]+_[A-Z0-9]+_[A-Z0-9]+)").size() != 0) {
+                order_info_->script_package = dir.name();
+                path_->scriptPath(dir.path());
+                auto infos              = String::split(dir.name(), "_");
+                order_info_->chip_model = String::matches(dir.name(), "_C([A-Z0-9]+)")[0];
+                order_info_->rf_code    = "XH_RF_" + String::matches(dir.name(), "P[A-Z0-9_]+_C[A-Z0-9]+")[0];
             }
-        } else if (dir_name.indexOf(".xlsx") != -1 || dir_name.indexOf(".xls") != -1) {
-            temp_list.push_back(path_->dirPath() + "/" + dir_name);
+        } else {
+            if (file.extension() == ".xlsx" || file.extension() == ".xls") {
+                print_dirs.push_back(file.path());
+            }
         }
-    }
-    path_->zhPrintPaths(temp_list);
+        return true;
+    };
+
+    std::string root = FilePath::join(path_->dirPath(), order_info_->order_dir_name);
+    FilePath::walk(root, walkFunc);
+
+    path_->printPaths(print_dirs);
+
+    return order_info_;
 }

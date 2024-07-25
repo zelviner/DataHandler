@@ -11,7 +11,7 @@ class OrderWindow : public QMainWindow {
     Q_OBJECT
 
   public:
-    OrderWindow(std::shared_ptr<OrderInfo> order_info, const QString &datagram_path, QMainWindow *parent = nullptr);
+    OrderWindow(const std::string &datagram_path, QMainWindow *parent = nullptr);
     ~OrderWindow();
 
     /// @brief 确定按钮点击事件
@@ -21,7 +21,7 @@ class OrderWindow : public QMainWindow {
     void cancelBtnClicked();
 
   signals:
-    void confirmOrder(const QString &confirm_datagram_dir);
+    void confirmOrder(const std::string &confirm_datagram_dir);
     void cancelOrder();
 
   private:
@@ -36,7 +36,6 @@ class OrderWindow : public QMainWindow {
 
   private:
     std::shared_ptr<Ui_OrderWindow>        ui_;
-    std::shared_ptr<OrderInfo>             order_info_;
     std::unique_ptr<zel::filesystem::File> datagram_file_;
     std::vector<std::string>               datagram_format_;
 };

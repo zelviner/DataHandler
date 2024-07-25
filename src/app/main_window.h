@@ -68,7 +68,8 @@ class MainWindow : public QMainWindow {
     void initConfig();
 
     /// @brief 获取订单全部信息
-    bool orderInfo(QString &error);
+    /// @param order_dir_name 订单文件夹名称
+    bool orderInfo(const std::string &order_dir_name);
 
     /// @brief 订单处理
     bool orderProcessing(QString &error);
@@ -87,10 +88,8 @@ class MainWindow : public QMainWindow {
 
     void showInfo();
 
-    void next();
-
   public slots:
-    void confirmOrder(const QString &confirm_datagram_dir);
+    void confirmOrder(const std::string &confirm_datagram_dir);
     void cancelOrder();
 
     void bareAtr(const QString &bare_atr);
@@ -101,15 +100,15 @@ class MainWindow : public QMainWindow {
     void success();
 
   private:
-    Ui_MainWindow                   *ui_;               // UI界面
-    OrderWindow                     *order_window_;     // 确认订单窗口
+    Ui_MainWindow *ui_;           // UI界面
+    OrderWindow   *order_window_; // 确认订单窗口
+    FtpLoading    *ftp_loading_;
+
     zel::utility::IniFile            ini_;              // 配置文件
     std::shared_ptr<Path>            path_;             // 路径
     std::unique_ptr<OrderProcessing> order_processing_; // 订单处理
     std::shared_ptr<OrderInfo>       order_info_;       // 订单信息
-    PersonDataInfo                  *person_data_info_; // 个人化信息
-    ScriptInfo                      *script_info_;      // 脚本信息
+    std::shared_ptr<PersonDataInfo>  person_data_info_; // 个人化信息
+    std::shared_ptr<ScriptInfo>      script_info_;      // 脚本信息
     std::shared_ptr<CardReader>      card_reader_;      // 读卡器
-
-    FtpLoading *ftp_loading_;
 };
