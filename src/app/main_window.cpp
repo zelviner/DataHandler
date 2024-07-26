@@ -3,16 +3,14 @@
 #include "main_window.h"
 
 #include "clear_card_loading.h"
-#include "order-processing/order_processing.h"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
 #include "write_card_loading.h"
 #include "utils/utils.h"
 
-#include <cstddef>
 #include <memory>
 #include <qmainwindow.h>
-#include <type_traits>
+#include <qmessagebox.h>
 
 #include <zel/utility.h>
 using namespace zel::utility;
@@ -55,6 +53,9 @@ MainWindow::MainWindow(QMainWindow *parent)
 
     // 初始化信号和槽
     initSignalSlot();
+
+    // 初始化日志器
+    initLogger();
 }
 
 MainWindow::~MainWindow() {
@@ -70,10 +71,18 @@ void MainWindow::dropEvent(QDropEvent *event) {
     QList<QUrl> urls = event->mimeData()->urls();
     if (urls.empty()) return;
 
-    path_ = std::make_shared<Path>(urls.first().toLocalFile().toStdString());
+    std::string datagram_path = urls.first().toLocalFile().toStdString();
+    path_                     = std::make_shared<Path>(datagram_path);
+    path_->directory          = FilePath::dir(datagram_path);
+
+    auto datagram_format = String::split(FilePath::base(datagram_path), " ");
+    if (datagram_format.size() < 6) {
+        QMessageBox::critical(this, "警告", "未知文件，请拖入星汉总部数据包");
+        return;
+    }
 
     // 确认订单
-    order_window_ = new OrderWindow(path_->datagram);
+    order_window_ = new OrderWindow(datagram_format);
 
     connect(order_window_, &OrderWindow::confirmOrder, this, &MainWindow::confirmOrder);
     connect(order_window_, &OrderWindow::cancelOrder, this, &MainWindow::cancelOrder);
@@ -177,13 +186,6 @@ void MainWindow::clearCardBtnClicked() {
     ClearCardLoading *clear_card_loading = new ClearCardLoading(this);
     clear_card_loading->show();
 
-    // 获取脚本信息
-    std::string script_path = path_->directory + "/鉴权/" + order_info_->script_package;
-    Script      script(script_path);
-    std::string error;
-    script_info_ = script.scriptInfo();
-    if (script_info_ != nullptr) return;
-
     // 创建工作线程
     auto clear_card = new ClearCard();
     clear_card->cardReader(card_reader_);
@@ -211,12 +213,11 @@ void MainWindow::uploadPrdBtnClicked() {
     // 将个人化数据上传到FTP服务器
     std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
     remote_prd_path += "/" + order_info_->order_number;
-    // std::string local_prd_path = String::wstring2String(path_->zhDataPath().toStdWString());
     std::string local_prd_path = path_->data;
     auto        upload_file    = new UploadFile();
     upload_file->ini(ini_);
-    upload_file->localFilePath(local_prd_path);
-    upload_file->remoteFilePath(remote_prd_path);
+    upload_file->localPath(local_prd_path);
+    upload_file->remotePath(remote_prd_path);
 
     // 连接信号槽
     connect(upload_file, &UploadFile::failure, this, &MainWindow::failure);
@@ -262,20 +263,19 @@ void MainWindow::uploadTempBtnClicked() {
 
     ftp_loading_->show();
 
-    // TODO 将临时存放数据上传到FTP服务器
-    // std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
-    // std::string local_temp_path  = path_->tempPath().left(path_->tempPath().lastIndexOf("/")).toStdString();
-    // auto        upload_prd       = new UploadFile();
-    // upload_prd->ini(ini_);
-    // upload_prd->localFilePath(local_temp_path);
-    // upload_prd->remoteFilePath(remote_temp_path);
+    std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
+    std::string local_temp_path  = FilePath::dir(path_->temp);
+    auto        upload_prd       = new UploadFile();
+    upload_prd->ini(ini_);
+    upload_prd->localPath(local_temp_path);
+    upload_prd->remotePath(remote_temp_path);
 
-    // // 连接信号槽
-    // connect(upload_prd, &UploadFile::failure, this, &MainWindow::failure);
-    // connect(upload_prd, &UploadFile::success, this, &MainWindow::success);
+    // 连接信号槽
+    connect(upload_prd, &UploadFile::failure, this, &MainWindow::failure);
+    connect(upload_prd, &UploadFile::success, this, &MainWindow::success);
 
-    // // 启动工作线程
-    // upload_prd->start();
+    // 启动工作线程
+    upload_prd->start();
 }
 
 void MainWindow::initWindow() {
@@ -366,56 +366,16 @@ void MainWindow::initConfig() {
     }
 }
 
-bool MainWindow::orderInfo(const std::string &order_dir_name) {
-
-    // 获取订单信息
-    Order order(path_);
-    order_info_ = order.orderInfo(order_dir_name);
-    printf("%s \n", order_info_->program_name.c_str());
-
-    // 获取首条个人化数据
-    PersonData person_data(path_->data);
-    person_data_info_ = person_data.personDataInfo();
-    if (person_data_info_ == nullptr) return false;
-
-    return true;
+void MainWindow::initLogger() {
+    auto logger = Logger::instance();
+    logger->open("./DataHandler.log");
+    logger->setFormat(false);
+    logger->setLevel(Logger::LOG_DEBUG);
 }
 
-bool MainWindow::orderProcessing(QString &error) {
-    // TODO
-    // // 创建鉴权文件夹
-    // if (!order_processing_->authenticationDir(person_data_info_->filename, person_data_info_->header, person_data_info_->data)) {
-    //     error = "data to auth dir error";
-    //     return false;
-    // }
+bool MainWindow::orderInfo(const std::string &order_dir_name) { return true; }
 
-    // 生成截图文件夹
-    if (!order_processing_->screenshotDir()) {
-        error = "create screenshot dir error";
-        return false;
-    }
-
-    // 生成打印文件夹
-    if (!order_processing_->printDir()) {
-        error = "create print dir error";
-        return false;
-    }
-
-    // 生成标签数据文件夹
-    if (!order_processing_->tagDataDir()) {
-        error = "create tag data dir error";
-        return false;
-    }
-
-    // 获取脚本信息
-    Script script(path_->script);
-    script_info_ = script.scriptInfo();
-    if (script_info_ == nullptr) return false;
-
-    return true;
-}
-
-bool MainWindow::uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path) {
+bool MainWindow::uploadFile2FTP(const std::string &local_path, const std::string &remote_path) {
     auto                ftp_ini = ini_["ftp"];
     zel::ftp::FtpClient ftp(ftp_ini["host"], ftp_ini["username"], ftp_ini["password"], ftp_ini["port"]);
     if (!ftp.connect()) {
@@ -428,22 +388,10 @@ bool MainWindow::uploadFile2FTP(const std::string &local_file_path, const std::s
         return false;
     }
 
-    if (!ftp.uploadFile(local_file_path, remote_file_path)) {
+    if (!ftp.upload(local_path, remote_path)) {
         QMessageBox::critical(this, "上传文件失败", "请检查远程路径是否正确");
         return false;
     }
-
-    return true;
-}
-
-bool MainWindow::isOrder() {
-    // TODO
-    // if (path_->dirPath().isEmpty() || path_->dirPath().indexOf(".") != -1) return false;
-
-    // QDir        dir(path_->dirPath());
-    // QStringList files = dir.entryList();
-
-    // if (files.indexOf("INP") == -1 || files.indexOf("DATA") == -1) return false;
 
     return true;
 }
@@ -499,34 +447,46 @@ void MainWindow::showInfo() {
     ui_->ds_check_box->setChecked(script_info_->has_ds);
 }
 
-void MainWindow::confirmOrder(const std::string &confirm_datagram_dir) {
+void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
     order_window_->hide();
 
-    //   next();
+    path_->order = FilePath::join(path_->directory, confirm_datagram_dir_name);
+    order_       = std::make_unique<Order>(path_);
+    if (FilePath::isFile(path_->datagram)) {
+        // 订单预处理
+        if (!order_->preProcessing()) {
+            QMessageBox::critical(this, "错误", "订单预处理失败，请查看日志文件 'DataHandler.log' 了解详细信息");
+            return;
+        }
+    } else {
+        path_->datagram_order = path_->datagram;
+    }
 
-    // 订单预处理
-    order_processing_ = std::make_unique<OrderProcessing>(path_);
-    if (!order_processing_->preProcessing(confirm_datagram_dir)) {
-        QMessageBox::critical(this, "错误", "订单预处理失败，请查看日志了解详细信息");
+    // 判断是否修改订单
+    if (path_->datagram_order != path_->order) {
+        printf("%s ==== %s\n", path_->datagram_order.c_str(), path_->order.c_str());
+        if (!order_->modify()) {
+            QMessageBox::critical(this, "错误", "修改工程单号和订单号失败，请查看日志文件 'DataHandler.log' 了解详细信息");
+            return;
+        }
+    }
+
+    // 订单处理
+    if (!order_->processing()) {
+        QMessageBox::critical(this, "错误", "订单处理失败，请查看日志文件 'DataHandler.log' 了解详细信息");
         return;
     }
 
     // 获取订单信息
-    if (!orderInfo(confirm_datagram_dir)) {
-        return;
-    }
-
-    // // 显示路径
-    // path_->show();
-
-    QString error = "";
-    if (!orderProcessing(error)) {
-        QMessageBox::critical(this, "错误", error);
-        return;
-    }
+    order_info_       = order_->orderInfo();
+    person_data_info_ = order_->personDataInfo();
+    script_info_      = order_->scriptInfo();
 
     // 显示订单信息
     showInfo();
+
+    // // 显示路径
+    // order_->showPath();
 
     // 打开复制按钮
     buttonDisabled(false);

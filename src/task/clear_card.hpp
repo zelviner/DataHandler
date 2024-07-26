@@ -1,10 +1,9 @@
 #pragma once
 
-#include "order-info/script.h"
+#include "order/script.h"
 
 #include <memory>
 #include <qcoreapplication>
-#include <qdebug>
 #include <qthread>
 #include <zel/json.h>
 #include <xhlanguage/repl.h>
@@ -37,7 +36,7 @@ class ClearCard : public QThread {
         json_data_["has_ds"] = script_info_->has_ds;
         auto personal_data   = json_data_.str();
 
-        xhlanguage::repl::Repl repl("xhlanguage.log");
+        xhlanguage::repl::Repl repl;
         std::string            duration;
 
         // 清卡

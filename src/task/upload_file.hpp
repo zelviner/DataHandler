@@ -15,9 +15,9 @@ class UploadFile : public QThread {
 
     void ini(const zel::utility::IniFile &ini) { ini_ = ini; }
 
-    void localFilePath(const std::string &local_file_path) { local_file_path_ = local_file_path; }
+    void localPath(const std::string &local_file) { local_path_ = local_file; }
 
-    void remoteFilePath(const std::string &remote_file_path) { remote_file_path_ = remote_file_path; }
+    void remotePath(const std::string &remote_file) { remote_path_ = remote_file; }
 
     // 重写run函数，在这里执行线程的工作
     void run() override {
@@ -38,8 +38,7 @@ class UploadFile : public QThread {
             return;
         }
 
-        printf("%s -------- %s\n", local_file_path_.c_str(), remote_file_path_.c_str());
-        if (!ftp.uploadFile(local_file_path_, remote_file_path_)) {
+        if (!ftp.upload(local_path_, remote_path_)) {
             ftp.disconnect();
             emit failure("上传失败", "请检查远程路径是否正确");
             return;
@@ -56,6 +55,6 @@ class UploadFile : public QThread {
 
   private:
     zel::utility::IniFile ini_;
-    std::string           local_file_path_;
-    std::string           remote_file_path_;
+    std::string           local_path_;
+    std::string           remote_path_;
 };

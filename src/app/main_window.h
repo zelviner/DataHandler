@@ -1,12 +1,11 @@
 #pragma once
 
 #include "ui_main_window.h"
-#include "order-info/order.h"
-#include "order-info/person_data.h"
-#include "order-info/script.h"
+#include "order/order.h"
+#include "order/person_data.h"
+#include "order/script.h"
 #include "ftp_loading.h"
 #include "order_window.h"
-#include "order-processing/order_processing.h"
 
 #include <zel/ftp.h>
 #include <zel/utility.h>
@@ -67,6 +66,9 @@ class MainWindow : public QMainWindow {
     /// @brief 初始化配置
     void initConfig();
 
+    /// @brief 初始化日志器
+    void initLogger();
+
     /// @brief 获取订单全部信息
     /// @param order_dir_name 订单文件夹名称
     bool orderInfo(const std::string &order_dir_name);
@@ -81,15 +83,12 @@ class MainWindow : public QMainWindow {
 
     void dragEnterEvent(QDragEnterEvent *event);
 
-    /// @brief 是否是订单
-    bool isOrder();
-
     void buttonDisabled(bool disabled);
 
     void showInfo();
 
   public slots:
-    void confirmOrder(const std::string &confirm_datagram_dir);
+    void confirmOrder(const std::string &confirm_datagram_dir_name);
     void cancelOrder();
 
     void bareAtr(const QString &bare_atr);
@@ -104,11 +103,11 @@ class MainWindow : public QMainWindow {
     OrderWindow   *order_window_; // 确认订单窗口
     FtpLoading    *ftp_loading_;
 
-    zel::utility::IniFile            ini_;              // 配置文件
-    std::shared_ptr<Path>            path_;             // 路径
-    std::unique_ptr<OrderProcessing> order_processing_; // 订单处理
-    std::shared_ptr<OrderInfo>       order_info_;       // 订单信息
-    std::shared_ptr<PersonDataInfo>  person_data_info_; // 个人化信息
-    std::shared_ptr<ScriptInfo>      script_info_;      // 脚本信息
-    std::shared_ptr<CardReader>      card_reader_;      // 读卡器
+    zel::utility::IniFile           ini_;              // 配置文件
+    std::shared_ptr<Path>           path_;             // 路径
+    std::unique_ptr<Order>          order_;            // 订单
+    std::shared_ptr<OrderInfo>      order_info_;       // 订单信息
+    std::shared_ptr<PersonDataInfo> person_data_info_; // 个人化信息
+    std::shared_ptr<ScriptInfo>     script_info_;      // 脚本信息
+    std::shared_ptr<CardReader>     card_reader_;      // 读卡器
 };

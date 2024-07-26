@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ui_order_window.h"
-#include "order-info/order.h"
 
 #include <zel/filesystem.h>
 #include <memory>
@@ -11,7 +10,7 @@ class OrderWindow : public QMainWindow {
     Q_OBJECT
 
   public:
-    OrderWindow(const std::string &datagram_path, QMainWindow *parent = nullptr);
+    OrderWindow(std::vector<std::string> &datagram_format, QMainWindow *parent = nullptr);
     ~OrderWindow();
 
     /// @brief 确定按钮点击事件
@@ -21,7 +20,7 @@ class OrderWindow : public QMainWindow {
     void cancelBtnClicked();
 
   signals:
-    void confirmOrder(const std::string &confirm_datagram_dir);
+    void confirmOrder(const std::string &confirm_datagram_dir_name);
     void cancelOrder();
 
   private:
@@ -35,7 +34,6 @@ class OrderWindow : public QMainWindow {
     void initSignalSlot();
 
   private:
-    std::shared_ptr<Ui_OrderWindow>        ui_;
-    std::unique_ptr<zel::filesystem::File> datagram_file_;
-    std::vector<std::string>               datagram_format_;
+    std::shared_ptr<Ui_OrderWindow> ui_;
+    std::vector<std::string>        datagram_format_;
 };
