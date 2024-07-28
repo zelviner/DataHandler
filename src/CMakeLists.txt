@@ -61,4 +61,5 @@ PRIVATE
     "ws2_32.lib"
     "zel.lib"
     "xhlanguage.lib"
+    "xlntd.lib"
 )

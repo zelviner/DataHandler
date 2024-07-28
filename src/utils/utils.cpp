@@ -3,143 +3,151 @@
 
 #include <qdir>
 #include <qfileinfo>
+#include <xlnt/xlnt.hpp>
 
-QString splitFormt(const QString &str, const QString &sep, int start, int end) {
+Utils::Utils() {}
+Utils::~Utils() {}
 
-    QStringList str_list = str.split(sep);
-    QString     result   = "";
-
-    if (end == -1) end = str_list.size();
-
-    if (start < 0 || start > str_list.size() || end < 0 || end > str_list.size() || start > end) {
-        return result;
-    }
-
-    for (int i = start - 1; i <= end - 1; i++) {
-        if (i == end - 1) {
-            result += str_list[i];
-        } else {
-            result += str_list[i] + sep;
-        }
-    }
-
-    return result;
+bool Utils::compressionZipFile(const std::string &file_path, bool remove) {
+    int pos = file_path.find_last_of("/");
+    if (pos == std::string::npos) return false;
+    std::string save_path = file_path.substr(0, pos);
+    return compressionZipFile(file_path, save_path, remove);
 }
 
-QString splitFormt(const QString &str, const QString &sep, char start, char end) {
-
-    QStringList str_list = str.split(sep);
-    QString     result   = "";
-
-    bool is_start = false;
-    for (auto str : str_list) {
-        if (str[0] == start) {
-            is_start = true;
-        }
-
-        if (str[0] == end) {
-            result = result.mid(0, result.length() - 1);
-            break;
-        }
-
-        if (is_start) {
-            result += str + sep;
-        }
-    }
-
-    return result;
-}
-
-QString createFolder(QString folder_path) {
-    QDir dir(folder_path);
-    if (dir.exists(folder_path)) {
-        return folder_path;
-    }
-
-    QString parentDir = createFolder(folder_path.mid(0, folder_path.lastIndexOf('/')));
-    QString dirName   = folder_path.mid(folder_path.lastIndexOf('/') + 1);
-
-    QDir parentPath(parentDir);
-    if (!dirName.isEmpty()) {
-        parentPath.mkpath(dirName);
-    }
-    return parentDir + "/" + dirName;
-}
-
-bool copyFolder(const QString &fromDir, const QString &toDir, bool coverFileIfExist) {
-    QDir sourceDir(fromDir);
-    QDir targetDir(toDir);
-
-    if (!targetDir.exists()) { // 如果目标目录不存在，则进行创建
-        if (!targetDir.mkdir(targetDir.absolutePath())) return false;
-    }
-
-    QFileInfoList fileInfoList = sourceDir.entryInfoList();
-    for (QFileInfo fileInfo : fileInfoList) {
-        if (fileInfo.fileName() == "." || fileInfo.fileName() == "..") continue;
-        // 当为目录时，递归的进行copy
-        if (fileInfo.isDir()) {
-            if (!copyFolder(fileInfo.filePath(), targetDir.filePath(fileInfo.fileName()), coverFileIfExist)) return false;
-        } else {
-            // 当允许覆盖操作时，将旧文件进行删除操作
-            if (coverFileIfExist && targetDir.exists(fileInfo.fileName())) {
-                targetDir.remove(fileInfo.fileName());
-            }
-
-            // 进行文件拷贝
-            if (!QFile::copy(fileInfo.filePath(), targetDir.filePath(fileInfo.fileName()))) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-void renameFolder(const QString oldPath, const QString newPath) {
-    // 重命名文件夹
-    QDir dirOld(oldPath);
-    dirOld.rename(oldPath, newPath);
-}
-
-bool deleteFileOrFolder(const QString &strPath) {
-    if (strPath.isEmpty() || !QDir().exists(strPath)) // 是否传入了空的路径||路径是否存在
+bool Utils::compressionZipFile(const std::string &file_path, const std::string &save_path, bool remove) {
+    QString qfile_path = QString(file_path.c_str());
+    QString qsave_path = QString(save_path.c_str());
+    if (qfile_path.isEmpty() || qsave_path.isEmpty()) {
         return false;
-
-    QFileInfo FileInfo(strPath);
-
-    if (FileInfo.isFile()) // 如果是文件
-        QFile::remove(strPath);
-    else if (FileInfo.isDir()) // 如果是文件夹
-    {
-        QDir qDir(strPath);
-        qDir.removeRecursively();
     }
-    return true;
-}
+    if (!QFile::exists(qfile_path) || !QFileInfo(qsave_path).isDir()) {
+        return false;
+    }
 
-bool copyFile(QString sourceDir, QString toDir, bool coverFileIfExist) {
-    toDir.replace("\\", "/");
-    if (sourceDir == toDir) {
+    // 压缩的是一个文件
+    if (QFileInfo(qfile_path).isFile()) {
+        QString fileName       = QFileInfo(qfile_path).baseName();
+        QString writerFilePath = qsave_path + "/" + fileName + ".zip";
+
+        QFile  selectFile(qfile_path);
+        qint64 size = selectFile.size() / 1024 / 1024;
+        if (!selectFile.open(QIODevice::ReadOnly) || size > FILE_MAX_SIZE) {
+            // 打开文件失败，或者大于1GB导致无法压缩的文件
+            return false;
+        }
+        QString    addFileName = QFileInfo(qfile_path).fileName();
+        QZipWriter writer(writerFilePath);
+        writer.addFile(addFileName, selectFile.readAll());
+        selectFile.close();
         return true;
-    }
-    if (!QFile::exists(sourceDir)) {
-        return false;
-    }
-    QDir *createfile = new QDir;
-    bool  exist      = createfile->exists(toDir);
-    if (exist) {
-        if (coverFileIfExist) {
-            createfile->remove(toDir);
-        }
-    } // end if
+    } else {
+        // 压缩的是一个文件夹
+        QString zipRootFolder  = qfile_path.mid(qfile_path.lastIndexOf("/") + 1);
+        QString selectDirUpDir = qfile_path.left(qfile_path.lastIndexOf("/"));
+        QString saveFilePath   = qsave_path + "/" + zipRootFolder + ".zip";
 
-    if (!QFile::copy(sourceDir, toDir)) {
+        QZipWriter writer(saveFilePath);
+        writer.addDirectory(zipRootFolder);
+        QFileInfoList fileList = ergodicCompressionFile(&writer, selectDirUpDir, qfile_path);
+        writer.close();
+        if (0 == fileList.size()) return true;
         return false;
     }
-    return true;
+
+    if (remove) return deleteFileOrFolder(file_path);
 }
 
-QFileInfoList ergodicCompressionFile(QZipWriter *writer, const QString &rootPath, QString dirPath) {
+bool Utils::decompressionZipFile(const QString &selectZipFilePath, const QString &save_path) {
+    if (selectZipFilePath.isEmpty() || save_path.isEmpty()) {
+        return false;
+    }
+    if (!QFileInfo(selectZipFilePath).isFile() || !QFileInfo(save_path).isDir()) {
+        return false;
+    }
+
+    bool                          ret = true;
+    QZipReader                    zipReader(selectZipFilePath);
+    QVector<QZipReader::FileInfo> zipAllFiles = zipReader.fileInfoList();
+
+    for (const QZipReader::FileInfo &zipFileInfo : zipAllFiles) {
+        const QString currDir2File = save_path + "/" + zipFileInfo.filePath;
+        QFileInfo     fileInfo(currDir2File);
+
+        if (zipFileInfo.isSymLink) {
+            QString destination = QFile::decodeName(zipReader.fileData(zipFileInfo.filePath));
+            if (destination.isEmpty()) {
+                ret = false;
+                continue;
+            }
+
+            if (!QFile::exists(fileInfo.absolutePath())) QDir::root().mkpath(fileInfo.absolutePath());
+            if (!QFile::link(destination, currDir2File)) {
+                ret = false;
+                continue;
+            }
+        }
+
+        if (zipFileInfo.isDir) {
+            QDir(save_path).mkpath(currDir2File);
+        }
+
+        if (zipFileInfo.isFile) {
+            QByteArray byteArr = zipReader.fileData(zipFileInfo.filePath);
+            if (byteArr.isEmpty()) {
+                ret = false;
+                continue;
+            }
+
+            QFile currFile(currDir2File);
+            if (!QFileInfo(fileInfo.absolutePath()).isDir()) {
+                QDir().mkpath(fileInfo.absolutePath());
+            }
+
+            if (!currFile.open(QIODevice::WriteOnly)) {
+                ret = false;
+                continue;
+            }
+
+            currFile.write(byteArr);
+            currFile.setPermissions(zipFileInfo.permissions);
+            currFile.close();
+        }
+    }
+    zipReader.close();
+    return ret;
+}
+
+void Utils::replaceStringInXlsx(const std::string &filename, const std::string &old_str, const std::string &new_str) {
+    // 打开 Excel 文件
+    xlnt::workbook workbook;
+    workbook.load(filename);
+
+    // 获取活动工作表
+    xlnt::worksheet worksheet = workbook.active_sheet();
+
+    // 遍历工作表中的所有单元格
+    for (auto row : worksheet.rows()) {
+        for (auto cell : row) {
+            // 检查单元格是否包含字符串
+            std::string cell_value = cell.to_string();
+
+            // 替换字符串
+            size_t pos = 0;
+            while ((pos = cell_value.find(old_str, pos)) != std::string::npos) {
+                cell_value.replace(pos, old_str.length(), new_str);
+                pos += new_str.length();
+            }
+            // 更新单元格内容
+            worksheet.cell(cell.reference()).value(cell_value);
+        }
+    }
+
+    // 保存 Excel 文件
+    workbook.save(filename);
+}
+
+QFileInfoList Utils::ergodicCompressionFile(QZipWriter *writer, const QString &rootPath, QString dirPath) {
     QDir crrDir(dirPath);
     /// 解压失败的文件
     QFileInfoList errFileList;
@@ -175,106 +183,19 @@ QFileInfoList ergodicCompressionFile(QZipWriter *writer, const QString &rootPath
     return errFileList;
 }
 
-bool compressionZipFile(const QString &selectFile2DirPath, const QString &savePath) {
-    if (selectFile2DirPath.isEmpty() || savePath.isEmpty()) {
+bool Utils::deleteFileOrFolder(const std::string &str_path) {
+    QString strPath = QString(str_path.c_str());
+    if (strPath.isEmpty() || !QDir().exists(strPath)) // 是否传入了空的路径||路径是否存在
         return false;
+
+    QFileInfo FileInfo(strPath);
+
+    if (FileInfo.isFile()) // 如果是文件
+        QFile::remove(strPath);
+    else if (FileInfo.isDir()) // 如果是文件夹
+    {
+        QDir qDir(strPath);
+        qDir.removeRecursively();
     }
-    if (!QFile::exists(selectFile2DirPath) || !QFileInfo(savePath).isDir()) {
-        return false;
-    }
-
-    // 压缩的是一个文件
-    if (QFileInfo(selectFile2DirPath).isFile()) {
-        QString fileName       = QFileInfo(selectFile2DirPath).baseName();
-        QString writerFilePath = savePath + "/" + fileName + ".zip";
-
-        QFile  selectFile(selectFile2DirPath);
-        qint64 size = selectFile.size() / 1024 / 1024;
-        if (!selectFile.open(QIODevice::ReadOnly) || size > FILE_MAX_SIZE) {
-            // 打开文件失败，或者大于1GB导致无法压缩的文件
-            return false;
-        }
-        QString    addFileName = QFileInfo(selectFile2DirPath).fileName();
-        QZipWriter writer(writerFilePath);
-        writer.addFile(addFileName, selectFile.readAll());
-        selectFile.close();
-        return true;
-    } else {
-        // 压缩的是一个文件夹
-        QString zipRootFolder  = selectFile2DirPath.mid(selectFile2DirPath.lastIndexOf("/") + 1);
-        QString selectDirUpDir = selectFile2DirPath.left(selectFile2DirPath.lastIndexOf("/"));
-        QString saveFilePath   = savePath + "/" + zipRootFolder + ".zip";
-
-        QZipWriter writer(saveFilePath);
-        writer.addDirectory(zipRootFolder);
-        QFileInfoList fileList = ergodicCompressionFile(&writer, selectDirUpDir, selectFile2DirPath);
-        writer.close();
-        if (0 == fileList.size()) return true;
-        return false;
-    }
-}
-
-bool compressionZipFile(const QString &file_path) {
-    QString save_path = file_path.mid(0, file_path.lastIndexOf("/"));
-    return compressionZipFile(file_path, save_path);
-}
-
-bool decompressionZipFile(const QString &selectZipFilePath, const QString &savePath) {
-    if (selectZipFilePath.isEmpty() || savePath.isEmpty()) {
-        return false;
-    }
-    if (!QFileInfo(selectZipFilePath).isFile() || !QFileInfo(savePath).isDir()) {
-        return false;
-    }
-
-    bool ret = true;
-    QZipReader zipReader(selectZipFilePath);
-    QVector<QZipReader::FileInfo> zipAllFiles = zipReader.fileInfoList();
-    
-    for (const QZipReader::FileInfo &zipFileInfo : zipAllFiles) {
-        const QString currDir2File = savePath + "/" + zipFileInfo.filePath;
-        QFileInfo fileInfo(currDir2File);
-        
-        if (zipFileInfo.isSymLink) {
-            QString destination = QFile::decodeName(zipReader.fileData(zipFileInfo.filePath));
-            if (destination.isEmpty()) {
-                ret = false;
-                continue;
-            }
-
-            if (!QFile::exists(fileInfo.absolutePath())) QDir::root().mkpath(fileInfo.absolutePath());
-            if (!QFile::link(destination, currDir2File)) {
-                ret = false;
-                continue;
-            }
-        }
-        
-        if (zipFileInfo.isDir) {
-            QDir(savePath).mkpath(currDir2File);
-        }
-        
-        if (zipFileInfo.isFile) {
-            QByteArray byteArr = zipReader.fileData(zipFileInfo.filePath);
-            if (byteArr.isEmpty()) {
-                ret = false;
-                continue;
-            }
-            
-            QFile currFile(currDir2File);
-            if (!QFileInfo(fileInfo.absolutePath()).isDir()) {
-                QDir().mkpath(fileInfo.absolutePath());
-            }
-            
-            if (!currFile.open(QIODevice::WriteOnly)) {
-                ret = false;
-                continue;
-            }
-            
-            currFile.write(byteArr);
-            currFile.setPermissions(zipFileInfo.permissions);
-            currFile.close();
-        }
-    }
-    zipReader.close();
-    return ret;
+    return true;
 }

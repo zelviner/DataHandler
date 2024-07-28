@@ -39,7 +39,7 @@ bool Order::preProcessing() {
         }
 
         // 解压数据包
-        if (!decompressionZipFile(QString(datagram_zip_path.c_str()), QString(datagram_file.dirPath().c_str()))) {
+        if (!Utils::decompressionZipFile(QString(datagram_zip_path.c_str()), QString(datagram_file.dirPath().c_str()))) {
             log_error("Failed to unzip the packet: %s", datagram_zip_path.c_str());
             return false;
         }
@@ -47,7 +47,7 @@ bool Order::preProcessing() {
         datagram_dir_name = datagram_file.prefix();
 
         // 解压数据包
-        if (!decompressionZipFile(QString(datagram_file.path().c_str()), QString(datagram_file.dirPath().c_str()))) {
+        if (!Utils::decompressionZipFile(QString(datagram_file.path().c_str()), QString(datagram_file.dirPath().c_str()))) {
             log_error("Failed to unzip the packet: %s", datagram_file.path().c_str());
             return false;
         }
@@ -74,6 +74,13 @@ bool Order::modify() {
 
     auto walkFunc = [=](std::string relative_path, Directory dir, File file) -> bool {
         if (file.exists()) {
+            // 修改 xlsx 文件中的项目信息
+            if (file.extension() == ".xlsx") {
+                Utils::replaceStringInXlsx(file.path(), src_order_number, dest_order_number);
+                Utils::replaceStringInXlsx(file.path(), src_project_number, dest_project_number);
+            }
+
+            // 修改文件名
             auto filename = String::replace(relative_path, src_order_number, dest_order_number);
             filename      = String::replace(filename, src_project_number, dest_project_number);
             if (!file.copy(FilePath::join(path_->order, filename))) {
@@ -86,14 +93,14 @@ bool Order::modify() {
 
     FilePath::walk(path_->datagram_order, walkFunc, true);
 
-    return false;
+    return true;
 }
 
 bool Order::processing() {
 
     // 获取订单信息
     Order order(path_);
-    order_info_ = order.orderInfo(path_->order);
+    order_info_ = order.orderInfo(FilePath::base(path_->order));
     if (order_info_ == nullptr) {
         log_error("Failed to get order infomation.");
         return false;
@@ -191,7 +198,7 @@ bool Order::printDir() {
 bool Order::tagDataDir() {
 
     // 压缩文件
-    if (!compressionZipFile(QString(path_->tag_data.c_str()))) return false;
+    if (!Utils::compressionZipFile(path_->tag_data)) return false;
 
     // 剪切标签数据压缩包
     File tag_data_file(path_->tag_data + ".zip");
@@ -207,14 +214,14 @@ std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
     order_info_->order_dir_name = order_dir_name;
 
     auto infos                  = String::split(order_dir_name, " ");
-    order_info_->order_number   = infos[0];
-    order_info_->project_number = infos[1];
-    order_info_->program_name   = String::matches(infos[2], "[A-Z]+[0-9]+")[0];
+    order_info_->project_number = infos[0];
+    order_info_->order_number   = infos[1];
+    order_info_->project_name   = String::matches(infos[2], "[A-Z]+[0-9]+")[0];
 
     path_->order      = FilePath::join(path_->directory, order_info_->order_dir_name);
-    path_->temp       = FilePath::join(path_->order, "TEMP", order_info_->order_number);
-    path_->print      = FilePath::join(path_->temp, "打印 " + order_info_->order_number + " " + order_info_->project_number);
-    path_->screenshot = FilePath::join(path_->temp, "截图 " + order_info_->order_number + " " + order_info_->project_number);
+    path_->temp       = FilePath::join(path_->order, "TEMP", order_info_->project_number);
+    path_->print      = FilePath::join(path_->temp, "打印 " + order_info_->project_number + " " + order_info_->order_number);
+    path_->screenshot = FilePath::join(path_->temp, "截图 " + order_info_->project_number + " " + order_info_->order_number);
 
     auto walkFunc = [&](std::string relative_path, Directory dir, File file) -> bool {
         if (dir.exists()) {
@@ -227,13 +234,11 @@ std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
                 path_->script               = dir.path();
                 auto infos                  = String::split(dir.name(), "_");
                 order_info_->chip_model     = String::matches(dir.name(), "_C([A-Z0-9]+)")[0];
-                // order_info_->rf_code        = "XH_RF_" + String::matches(dir.name(), "P[A-Z0-9_]+_C[A-Z0-9]+")[0] + " " + order_info_->chip_model;
-                order_info_->rf_code = "XH_RF_" + String::matches(dir.name(), "(P[A-Z0-9_]+)_C")[0] + " " + order_info_->chip_model;
+                order_info_->rf_code        = "XH_RF_" + String::matches(dir.name(), "(P[A-Z0-9_]+)_C")[0] + " " + order_info_->chip_model;
             }
         }
         return true;
     };
-    printf("%s\n", path_->order.c_str());
     FilePath::walk(path_->order, walkFunc);
 
     return order_info_;

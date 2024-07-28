@@ -1,10 +1,12 @@
 #include "order_window.h"
-#include "task/upload_file.hpp"
 #include "main_window.h"
 
-#include "clear_card_loading.h"
+#include "task/upload_file.hpp"
+#include "task/handle_order.hpp"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
+
+#include "clear_card_loading.h"
 #include "write_card_loading.h"
 #include "utils/utils.h"
 
@@ -12,6 +14,7 @@
 #include <qmainwindow.h>
 #include <qmessagebox.h>
 
+#include <string>
 #include <zel/utility.h>
 using namespace zel::utility;
 
@@ -21,15 +24,12 @@ using namespace zel::filesystem;
 #include <xhlanguage/card_reader.h>
 
 #include <qclipboard>
-#include <qdebug>
 #include <qdesktopservices>
-#include <qdir>
 #include <qdragenterevent>
 #include <qmessagebox>
 #include <qmimedata>
 #include <qpushbutton>
 #include <qtextstream>
-#include <tchar.h>
 
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
@@ -91,19 +91,21 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::saveBtnClicked() {
-    std::string host             = ui_->ip_line->text().toStdString();
-    int         port             = ui_->port_line->text().toInt();
-    std::string username         = ui_->username_line->text().toStdString();
-    std::string password         = ui_->password_line->text().toStdString();
-    std::string remote_prd_path  = ui_->prd_line->text().toStdString();
-    std::string remote_temp_path = ui_->temp_line->text().toStdString();
+    std::string host              = ui_->ip_line->text().toStdString();
+    int         port              = ui_->port_line->text().toInt();
+    std::string username          = ui_->username_line->text().toStdString();
+    std::string password          = ui_->password_line->text().toStdString();
+    std::string remote_prd_path   = ui_->prd_line->text().toStdString();
+    std::string remote_temp_path  = ui_->temp_line->text().toStdString();
+    std::string local_backup_path = ui_->backup_line->text().toStdString();
 
     ini_.set("ftp", "host", host);
     ini_.set("ftp", "port", port);
     ini_.set("ftp", "username", username);
     ini_.set("ftp", "password", password);
-    ini_.set("ftp", "remote_prd_path", remote_prd_path);
-    ini_.set("ftp", "remote_temp_path", remote_temp_path);
+    ini_.set("path", "remote_prd_path", remote_prd_path);
+    ini_.set("path", "remote_temp_path", remote_temp_path);
+    ini_.set("path", "local_backup_path", local_backup_path);
 
     if (ini_.save("config.ini")) {
         QMessageBox::information(this, "提示", "保存成功");
@@ -207,63 +209,52 @@ void MainWindow::clearCardBtnClicked() {
 }
 
 void MainWindow::uploadPrdBtnClicked() {
-    ftp_loading_ = new FtpLoading(this);
-    ftp_loading_->show();
+    loading_ = new Loading(this);
+    loading_->setWindowTitle("正在上传个人化数据...");
+    loading_->show();
 
     // 将个人化数据上传到FTP服务器
-    std::string remote_prd_path = ini_["ftp"]["remote_prd_path"];
-    remote_prd_path += "/" + order_info_->order_number;
-    std::string local_prd_path = path_->data;
-    auto        upload_file    = new UploadFile();
+    std::string remote_prd_path = ini_["path"]["remote_prd_path"].asString() + "/" + order_info_->order_number;
+    std::string local_prd_path  = path_->data;
+    auto        upload_file     = new UploadFile();
     upload_file->ini(ini_);
     upload_file->localPath(local_prd_path);
     upload_file->remotePath(remote_prd_path);
 
     // 连接信号槽
-    connect(upload_file, &UploadFile::failure, this, &MainWindow::failure);
-    connect(upload_file, &UploadFile::success, this, &MainWindow::success);
+    connect(upload_file, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
+    connect(upload_file, &UploadFile::success, this, &MainWindow::uploadFileSuccess);
 
     // 启动工作线程
     upload_file->start();
 }
 
 void MainWindow::uploadTempBtnClicked() {
+    loading_->setWindowTitle("正在上传临时文件...");
+    loading_->show();
 
-    // 压缩截图文件夹
-    QDir dir(QString(path_->screenshot.c_str()));
-    int  file_count = dir.count() - 2;
-    if (file_count < 6) {
+    // 获取截图文件数量
+    Directory dir(path_->screenshot);
+    int       file_count = dir.count() - 2;
+    if (file_count < 5) {
         QMessageBox::StandardButton box;
         box = QMessageBox::question(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个, 是否继续上传？", QMessageBox::Yes | QMessageBox::No);
         if (box == QMessageBox::No) return;
     }
 
-    if (!compressionZipFile(QString(path_->screenshot.c_str()))) {
-        QMessageBox::critical(this, "错误", "压缩截图文件失败");
+    // 压缩截图文件夹
+    if (!Utils::compressionZipFile(path_->screenshot, true)) {
+        QMessageBox::critical(this, "错误", "压缩截图文件夹失败");
         return;
     }
 
-    // 删除原截图文件夹
-    if (!deleteFileOrFolder(QString(path_->screenshot.c_str()))) {
-        QMessageBox::critical(this, "错误", "删除截图文件失败");
+    // 压缩临时文件夹
+    if (!Utils::compressionZipFile(path_->temp, true)) {
+        QMessageBox::critical(this, "错误", "压缩临时文件夹失败");
         return;
     }
 
-    // 压缩文件
-    if (!compressionZipFile(QString(path_->temp.c_str()))) {
-        QMessageBox::critical(this, "错误", "压缩文件失败");
-        return;
-    }
-
-    // 删除原文件
-    if (!deleteFileOrFolder(QString(path_->temp.c_str()))) {
-        QMessageBox::critical(this, "错误", "删除文件失败");
-        return;
-    }
-
-    ftp_loading_->show();
-
-    std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
+    std::string remote_temp_path = ini_["path"]["remote_temp_path"];
     std::string local_temp_path  = FilePath::dir(path_->temp);
     auto        upload_prd       = new UploadFile();
     upload_prd->ini(ini_);
@@ -271,17 +262,119 @@ void MainWindow::uploadTempBtnClicked() {
     upload_prd->remotePath(remote_temp_path);
 
     // 连接信号槽
-    connect(upload_prd, &UploadFile::failure, this, &MainWindow::failure);
-    connect(upload_prd, &UploadFile::success, this, &MainWindow::success);
+    connect(upload_prd, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
+    connect(upload_prd, &UploadFile::success, this, &MainWindow::uploadFileSuccess);
 
     // 启动工作线程
     upload_prd->start();
+
+    // 备份订单
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm     now_tm;
+    localtime_s(&now_tm, &now_time_t); // Windows 平台
+
+    // 获取年和月
+    int         year      = now_tm.tm_year + 1900; // tm_year 是从 1900 年起计数的
+    int         month     = now_tm.tm_mon + 1;     // tm_mon 是从 0 开始的，所以要加 1
+    std::string save_path = FilePath::join(ini_["path"]["local_backup_path"], std::to_string(year), std::to_string(month));
+    if (!Utils::compressionZipFile(path_->order, save_path, false)) {
+        QMessageBox::critical(this, "错误", "备份订单失败");
+        return;
+    }
+}
+
+void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
+    order_window_->hide();
+
+    loading_ = new Loading(this);
+    loading_->setWindowTitle("订单处理中...");
+    loading_->show();
+
+    path_->order = FilePath::join(path_->directory, confirm_datagram_dir_name);
+
+    auto handleOrder = new HandleOrder(path_);
+
+    // 连接信号槽
+    connect(handleOrder, &HandleOrder::failure, this, &MainWindow::handleOrderFailure);
+    connect(handleOrder, &HandleOrder::success, this, &MainWindow::handleOrderSuccess);
+
+    // 启动工作线程
+    handleOrder->start();
+}
+
+void MainWindow::cancelOrder() { order_window_->hide(); }
+
+void MainWindow::bareAtr(const QString &bare_atr) {
+    ui_->bare_card_line->setText(bare_atr);
+    ui_->bare_card_line->setCursorPosition(0);
+}
+
+void MainWindow::whiteAtr(const QString &white_atr) {
+    ui_->white_card_line->setText(white_atr);
+    ui_->white_card_line->setCursorPosition(0);
+}
+
+void MainWindow::finishedAtr(const QString &finished_atr) {
+    ui_->finished_card_line->setText(finished_atr);
+    ui_->finished_card_line->setCursorPosition(0);
+}
+
+void MainWindow::uploadFileFailure(const QString &err_type, const QString &err_msg) {
+    loading_->close();
+    QMessageBox::critical(this, err_type, err_msg);
+}
+
+void MainWindow::uploadFileSuccess() {
+    ui_->upload_temp_btn->setDisabled(false);
+    loading_->close();
+
+    QMessageBox success_box(this);
+    success_box.setWindowTitle("提示");
+    success_box.setText(QString("上传成功"));
+    QPixmap pix(":/image/success.png");
+    pix = pix.scaled(32, 32);
+    success_box.setIconPixmap(pix);
+    success_box.setStandardButtons(QMessageBox::Ok);
+    success_box.setButtonText(QMessageBox::Ok, "确定");
+    success_box.exec();
+}
+
+void MainWindow::handleOrderSuccess(std::shared_ptr<OrderInfo> order_info, std::shared_ptr<PersonDataInfo> person_data_info, std::shared_ptr<ScriptInfo> script_info) {
+    loading_->hide();
+    order_info_       = order_info;
+    person_data_info_ = person_data_info;
+    script_info_      = script_info;
+
+    // 显示订单信息
+    showInfo();
+
+    // // 显示路径
+    // order_->showPath();
+
+    // 打开复制按钮
+    buttonDisabled(false);
+
+    // 弹窗提示
+    QMessageBox success_box(this);
+    success_box.setWindowTitle("提示");
+    success_box.setText(QString("订单处理完成"));
+    QPixmap pix(":/image/success.png");
+    pix = pix.scaled(32, 32);
+    success_box.setIconPixmap(pix);
+    success_box.setStandardButtons(QMessageBox::Ok);
+    success_box.setButtonText(QMessageBox::Ok, "确定");
+    success_box.exec();
+}
+
+void MainWindow::handleOrderFailure(const QString &err_msg) {
+    loading_->hide();
+    QMessageBox::critical(this, "警告", err_msg);
 }
 
 void MainWindow::initWindow() {
 
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v2.7.3");
+    setWindowTitle("智能卡生产预处理软件 v3.0.0");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
@@ -310,18 +403,20 @@ void MainWindow::initWindow() {
 
 void MainWindow::initUI() {
     buttonDisabled(true);
-    std::string host             = ini_["ftp"]["host"];
-    int         port             = ini_["ftp"]["port"];
-    std::string username         = ini_["ftp"]["username"];
-    std::string password         = ini_["ftp"]["password"];
-    std::string remote_prd_path  = ini_["ftp"]["remote_prd_path"];
-    std::string remote_temp_path = ini_["ftp"]["remote_temp_path"];
+    std::string host              = ini_["ftp"]["host"];
+    int         port              = ini_["ftp"]["port"];
+    std::string username          = ini_["ftp"]["username"];
+    std::string password          = ini_["ftp"]["password"];
+    std::string remote_prd_path   = ini_["path"]["remote_prd_path"];
+    std::string remote_temp_path  = ini_["path"]["remote_temp_path"];
+    std::string local_backup_path = ini_["path"]["local_backup_path"];
     ui_->ip_line->setText(QString::fromStdString(host));
     ui_->port_line->setText(QString::number(port));
     ui_->username_line->setText(QString::fromStdString(username));
     ui_->password_line->setText(QString::fromStdString(password));
     ui_->prd_line->setText(QString::fromStdString(remote_prd_path));
     ui_->temp_line->setText(QString::fromStdString(remote_temp_path));
+    ui_->backup_line->setText(QString::fromStdString(local_backup_path));
 
     ui_->clear_card_btn->setDisabled(true);
     ui_->write_card_btn->setDisabled(true);
@@ -329,9 +424,10 @@ void MainWindow::initUI() {
 
 void MainWindow::initSignalSlot() {
     QClipboard *clip = QApplication::clipboard();
-    connect(ui_->dir_name_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_dir_name.c_str())); });
-    connect(ui_->order_id_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_number.c_str())); });
-    connect(ui_->project_name_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->program_name.c_str())); });
+    connect(ui_->project_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_number.c_str())); });
+    connect(ui_->order_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_number.c_str())); });
+    connect(ui_->project_name_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_name.c_str())); });
+    connect(ui_->chip_model_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->chip_model.c_str())); });
     connect(ui_->rf_code_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->rf_code.c_str())); });
     connect(ui_->script_package_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->script_package.c_str())); });
     connect(ui_->pin1_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->pin1.c_str())); });
@@ -357,8 +453,9 @@ void MainWindow::initConfig() {
         ini_.set("ftp", "port", "21");
         ini_.set("ftp", "username", "admin");
         ini_.set("ftp", "password", "admin");
-        ini_.set("ftp", "remote_prd_path", "/data/ftp/output/PRD");
-        ini_.set("ftp", "remote_temp_path", "/data/ftp/output/临时存放");
+        ini_.set("path", "remote_prd_path", "/data/ftp/output/PRD");
+        ini_.set("path", "remote_temp_path", "/data/ftp/output/临时存放");
+        ini_.set("path", "local_backup_path", "D:/备份");
 
         ini_.save("config.ini");
     } else {
@@ -373,29 +470,6 @@ void MainWindow::initLogger() {
     logger->setLevel(Logger::LOG_DEBUG);
 }
 
-bool MainWindow::orderInfo(const std::string &order_dir_name) { return true; }
-
-bool MainWindow::uploadFile2FTP(const std::string &local_path, const std::string &remote_path) {
-    auto                ftp_ini = ini_["ftp"];
-    zel::ftp::FtpClient ftp(ftp_ini["host"], ftp_ini["username"], ftp_ini["password"], ftp_ini["port"]);
-    if (!ftp.connect()) {
-        QMessageBox::critical(this, "FTP连接失败", "请检查FTP服务器IP和端口是否正确");
-        return false;
-    }
-
-    if (!ftp.login()) {
-        QMessageBox::critical(this, "FTP连接失败", "请检查用户名和密码是否正确");
-        return false;
-    }
-
-    if (!ftp.upload(local_path, remote_path)) {
-        QMessageBox::critical(this, "上传文件失败", "请检查远程路径是否正确");
-        return false;
-    }
-
-    return true;
-}
-
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
     if (event->mimeData()->hasFormat("text/uri-list")) {
         event->acceptProposedAction();
@@ -403,9 +477,10 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
 }
 
 void MainWindow::buttonDisabled(bool disabled) {
-    ui_->dir_name_btn->setDisabled(disabled);
-    ui_->order_id_btn->setDisabled(disabled);
+    ui_->project_number_btn->setDisabled(disabled);
+    ui_->order_number_btn->setDisabled(disabled);
     ui_->project_name_btn->setDisabled(disabled);
+    ui_->chip_model_btn->setDisabled(disabled);
     ui_->rf_code_btn->setDisabled(disabled);
     ui_->script_package_btn->setDisabled(disabled);
     ui_->pin1_btn->setDisabled(disabled);
@@ -423,10 +498,11 @@ void MainWindow::buttonDisabled(bool disabled) {
 }
 
 void MainWindow::showInfo() {
-    ui_->dir_name_line->setText(QString(order_info_->order_dir_name.c_str()));
-    ui_->dir_name_line->setCursorPosition(0);
-    ui_->order_id_line->setText(QString(order_info_->order_number.c_str()));
-    ui_->project_name_line->setText(QString(order_info_->program_name.c_str()));
+    ui_->project_number_line->setText(QString(order_info_->project_number.c_str()));
+    ui_->project_number_line->setCursorPosition(0);
+    ui_->order_number_line->setText(QString(order_info_->order_number.c_str()));
+    ui_->project_name_line->setText(QString(order_info_->project_name.c_str()));
+    ui_->chip_model_line->setText(QString(order_info_->chip_model.c_str()));
     ui_->rf_code_line->setText(QString(order_info_->rf_code.c_str()));
     ui_->script_package_line->setText(QString(order_info_->script_package.c_str()));
     ui_->script_package_line->setCursorPosition(0);
@@ -445,97 +521,4 @@ void MainWindow::showInfo() {
     ui_->pin1_line->setText(QString(person_data_info_->pin1.c_str()));
 
     ui_->ds_check_box->setChecked(script_info_->has_ds);
-}
-
-void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
-    order_window_->hide();
-
-    path_->order = FilePath::join(path_->directory, confirm_datagram_dir_name);
-    order_       = std::make_unique<Order>(path_);
-    if (FilePath::isFile(path_->datagram)) {
-        // 订单预处理
-        if (!order_->preProcessing()) {
-            QMessageBox::critical(this, "错误", "订单预处理失败，请查看日志文件 'DataHandler.log' 了解详细信息");
-            return;
-        }
-    } else {
-        path_->datagram_order = path_->datagram;
-    }
-
-    // 判断是否修改订单
-    if (path_->datagram_order != path_->order) {
-        printf("%s ==== %s\n", path_->datagram_order.c_str(), path_->order.c_str());
-        if (!order_->modify()) {
-            QMessageBox::critical(this, "错误", "修改工程单号和订单号失败，请查看日志文件 'DataHandler.log' 了解详细信息");
-            return;
-        }
-    }
-
-    // 订单处理
-    if (!order_->processing()) {
-        QMessageBox::critical(this, "错误", "订单处理失败，请查看日志文件 'DataHandler.log' 了解详细信息");
-        return;
-    }
-
-    // 获取订单信息
-    order_info_       = order_->orderInfo();
-    person_data_info_ = order_->personDataInfo();
-    script_info_      = order_->scriptInfo();
-
-    // 显示订单信息
-    showInfo();
-
-    // // 显示路径
-    // order_->showPath();
-
-    // 打开复制按钮
-    buttonDisabled(false);
-
-    // 弹窗提示
-    QMessageBox success_box(this);
-    success_box.setWindowTitle("提示");
-    success_box.setText(QString("订单处理完成"));
-    QPixmap pix(":/image/success.png");
-    pix = pix.scaled(32, 32);
-    success_box.setIconPixmap(pix);
-    success_box.setStandardButtons(QMessageBox::Ok);
-    success_box.setButtonText(QMessageBox::Ok, "确定");
-    success_box.exec();
-}
-
-void MainWindow::cancelOrder() { order_window_->hide(); }
-
-void MainWindow::bareAtr(const QString &bare_atr) {
-    ui_->bare_card_line->setText(bare_atr);
-    ui_->bare_card_line->setCursorPosition(0);
-}
-
-void MainWindow::whiteAtr(const QString &white_atr) {
-    ui_->white_card_line->setText(white_atr);
-    ui_->white_card_line->setCursorPosition(0);
-}
-
-void MainWindow::finishedAtr(const QString &finished_atr) {
-    ui_->finished_card_line->setText(finished_atr);
-    ui_->finished_card_line->setCursorPosition(0);
-}
-
-void MainWindow::failure(const QString &err_type, const QString &err_msg) {
-    ftp_loading_->close();
-    QMessageBox::critical(this, err_type, err_msg);
-}
-
-void MainWindow::success() {
-    ui_->upload_temp_btn->setDisabled(false);
-    ftp_loading_->close();
-
-    QMessageBox success_box(this);
-    success_box.setWindowTitle("提示");
-    success_box.setText(QString("上传成功"));
-    QPixmap pix(":/image/success.png");
-    pix = pix.scaled(32, 32);
-    success_box.setIconPixmap(pix);
-    success_box.setStandardButtons(QMessageBox::Ok);
-    success_box.setButtonText(QMessageBox::Ok, "确定");
-    success_box.exec();
 }

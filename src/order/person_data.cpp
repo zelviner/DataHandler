@@ -36,7 +36,6 @@ std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
     // GPG解密个人化数据文件
     try {
         Gpg gpg("libgpgme-11.dll");
-        printf("%s => %s\n", person_data_file_path_pgp.c_str(), person_data_file_path.c_str());
         gpg.decryptFile(person_data_file_path_pgp, person_data_file_path);
     } catch (const std::exception &e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;

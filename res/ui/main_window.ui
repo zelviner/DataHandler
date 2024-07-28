@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>983</width>
-    <height>759</height>
+    <width>776</width>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,9 +33,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QWidget" name="add_dir_widget" native="true">
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="3,2">
            <item>
-            <widget class="QGroupBox" name="groupBox_2">
+            <widget class="QGroupBox" name="order_info_group_box">
              <property name="font">
               <font>
                <family>微软雅黑</family>
@@ -45,7 +45,7 @@
              <property name="title">
               <string>订单信息</string>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_25" stretch="1,8,1">
+             <layout class="QHBoxLayout" name="horizontalLayout_39" stretch="1,20,1">
               <item>
                <spacer name="horizontalSpacer">
                 <property name="orientation">
@@ -72,12 +72,12 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>文件夹名称</string>
+                     <string>工程单号</string>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="dir_name_line">
+                   <widget class="QLineEdit" name="project_number_line">
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
@@ -97,12 +97,58 @@
                      <bool>true</bool>
                     </property>
                     <property name="placeholderText">
-                     <string>请拖入订单文件夹</string>
+                     <string/>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="dir_name_btn">
+                   <widget class="QPushButton" name="project_number_btn">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>复制</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_25" stretch="2,7,1">
+                  <item>
+                   <widget class="QLabel" name="script_package_2">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>订单号</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="order_number_line">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>14</pointsize>
+                     </font>
+                    </property>
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="order_number_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -120,52 +166,6 @@
                  <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,7,1">
                   <item>
                    <widget class="QLabel" name="order_id">
-                    <property name="font">
-                     <font>
-                      <family>微软雅黑</family>
-                      <pointsize>16</pointsize>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>工程单号</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="order_id_line">
-                    <property name="enabled">
-                     <bool>true</bool>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <family>微软雅黑</family>
-                      <pointsize>14</pointsize>
-                     </font>
-                    </property>
-                    <property name="readOnly">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="order_id_btn">
-                    <property name="font">
-                     <font>
-                      <family>微软雅黑</family>
-                      <pointsize>12</pointsize>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>复制</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,7,1">
-                  <item>
-                   <widget class="QLabel" name="project_name">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -195,6 +195,52 @@
                   </item>
                   <item>
                    <widget class="QPushButton" name="project_name_btn">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>复制</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,7,1">
+                  <item>
+                   <widget class="QLabel" name="project_name">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>芯片型号</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="chip_model_line">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>14</pointsize>
+                     </font>
+                    </property>
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="chip_model_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -319,7 +365,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox_3">
+            <widget class="QGroupBox" name="script_info_group_box">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -332,7 +378,7 @@
              <property name="title">
               <string>脚本包信息</string>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_27" stretch="1,8,1">
+             <layout class="QHBoxLayout" name="horizontalLayout_27" stretch="1,20,1">
               <item>
                <spacer name="horizontalSpacer_3">
                 <property name="orientation">
@@ -614,7 +660,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_7" stretch="2,2,1">
           <item>
-           <widget class="QGroupBox" name="groupBox_6">
+           <widget class="QGroupBox" name="write_card_group_box">
             <property name="title">
              <string>写卡</string>
             </property>
@@ -810,7 +856,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox">
+           <widget class="QGroupBox" name="person_data_group_box">
             <property name="font">
              <font>
               <family>微软雅黑</family>
@@ -993,7 +1039,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox_7">
+           <widget class="QGroupBox" name="upload_file_group_box">
             <property name="title">
              <string>上传FTP服务器</string>
             </property>
@@ -1062,438 +1108,473 @@
        <attribute name="title">
         <string>配置</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_11" stretch="2,2,2,1">
+       <layout class="QHBoxLayout" name="horizontalLayout_41">
         <item>
-         <widget class="QGroupBox" name="groupBox_8">
-          <property name="title">
-           <string>读卡器</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_38" stretch="1,8,1">
-           <item>
-            <spacer name="horizontalSpacer_21">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>87</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_10">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_34" stretch="2,5">
-               <item>
-                <widget class="QLabel" name="label">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>读卡器</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="reader_combo_box">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_35" stretch="2,5">
-               <item>
-                <widget class="QLabel" name="label_7">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>脚本运行器</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="xhlanguage_combo_box">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_22">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>86</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_4">
-          <property name="font">
-           <font>
-            <family>微软雅黑</family>
-            <pointsize>20</pointsize>
-           </font>
-          </property>
-          <property name="title">
-           <string>FTP</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_31" stretch="0,4,0,4,0">
-             <item>
-              <spacer name="horizontalSpacer_12">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="3,7">
-               <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>主机</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="ip_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_13">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="2,8">
-               <item>
-                <widget class="QLabel" name="label_5">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>端口</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="port_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_14">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_32" stretch="0,4,0,4,0">
-             <item>
-              <spacer name="horizontalSpacer_15">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_19" stretch="3,7">
-               <item>
-                <widget class="QLabel" name="label_3">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>用户名</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="username_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_16">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_21" stretch="2,8">
-               <item>
-                <widget class="QLabel" name="label_4">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>密码</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="password_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                 <property name="echoMode">
-                  <enum>QLineEdit::Password</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_17">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_5">
-          <property name="font">
-           <font>
-            <family>微软雅黑</family>
-            <pointsize>20</pointsize>
-           </font>
-          </property>
-          <property name="title">
-           <string>远程路径</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_37" stretch="1,8,1">
-           <item>
-            <spacer name="horizontalSpacer_18">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>72</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_9">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="2,8">
-               <item>
-                <widget class="QLabel" name="label_6">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>PRD</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="prd_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_23" stretch="2,8">
-               <item>
-                <widget class="QLabel" name="label_9">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>临时存放</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="temp_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_19">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>72</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_33">
+         <layout class="QVBoxLayout" name="verticalLayout_12" stretch="2,2,3">
           <item>
-           <spacer name="horizontalSpacer_20">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+           <widget class="QGroupBox" name="groupBox_8">
+            <property name="title">
+             <string>读卡器</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+            <layout class="QHBoxLayout" name="horizontalLayout_38" stretch="1,8,1">
+             <item>
+              <spacer name="horizontalSpacer_21">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>87</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_34" stretch="2,5">
+                 <item>
+                  <widget class="QLabel" name="label">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>读卡器</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="reader_combo_box">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_35" stretch="2,5">
+                 <item>
+                  <widget class="QLabel" name="label_7">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>脚本运行器</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="xhlanguage_combo_box">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_22">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>86</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="save_btn">
+           <widget class="QGroupBox" name="groupBox_4">
             <property name="font">
              <font>
               <family>微软雅黑</family>
-              <pointsize>18</pointsize>
+              <pointsize>20</pointsize>
              </font>
             </property>
-            <property name="text">
-             <string>保存</string>
+            <property name="title">
+             <string>FTP</string>
             </property>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_31" stretch="0,4,0,4,0">
+               <item>
+                <spacer name="horizontalSpacer_12">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="3,7">
+                 <item>
+                  <widget class="QLabel" name="label_2">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>主机</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="ip_line">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_13">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="2,8">
+                 <item>
+                  <widget class="QLabel" name="label_5">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>端口</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="port_line">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_14">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_32" stretch="0,4,0,4,0">
+               <item>
+                <spacer name="horizontalSpacer_15">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_19" stretch="3,7">
+                 <item>
+                  <widget class="QLabel" name="label_3">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>用户名</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="username_line">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_16">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_21" stretch="2,8">
+                 <item>
+                  <widget class="QLabel" name="label_4">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>密码</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="password_line">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                   <property name="echoMode">
+                    <enum>QLineEdit::Password</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_17">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
            </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0">
+            <item>
+             <widget class="QGroupBox" name="groupBox_5">
+              <property name="font">
+               <font>
+                <family>微软雅黑</family>
+                <pointsize>20</pointsize>
+               </font>
+              </property>
+              <property name="title">
+               <string>路径</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_37" stretch="1,9,1">
+               <item>
+                <spacer name="horizontalSpacer_18">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>72</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_9">
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="2,8">
+                   <item>
+                    <widget class="QLabel" name="label_6">
+                     <property name="font">
+                      <font>
+                       <family>微软雅黑</family>
+                       <pointsize>16</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>服务器PRD</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="prd_line">
+                     <property name="font">
+                      <font>
+                       <family>微软雅黑</family>
+                       <pointsize>14</pointsize>
+                      </font>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_23" stretch="2,8">
+                   <item>
+                    <widget class="QLabel" name="label_9">
+                     <property name="font">
+                      <font>
+                       <family>微软雅黑</family>
+                       <pointsize>16</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>服务器临时存放</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="temp_line">
+                     <property name="font">
+                      <font>
+                       <family>微软雅黑</family>
+                       <pointsize>14</pointsize>
+                      </font>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_33" stretch="2,8">
+                   <item>
+                    <widget class="QLabel" name="label_10">
+                     <property name="font">
+                      <font>
+                       <family>微软雅黑</family>
+                       <pointsize>16</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>本地备份</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="backup_line">
+                     <property name="font">
+                      <font>
+                       <family>微软雅黑</family>
+                       <pointsize>14</pointsize>
+                      </font>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_19">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>72</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_40">
+              <item>
+               <spacer name="horizontalSpacer_20">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="save_btn">
+                <property name="font">
+                 <font>
+                  <family>微软雅黑</family>
+                  <pointsize>18</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>保存</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -1508,8 +1589,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>983</width>
-     <height>26</height>
+     <width>776</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "ui_main_window.h"
+
 #include "order/order.h"
 #include "order/person_data.h"
 #include "order/script.h"
-#include "ftp_loading.h"
 #include "order_window.h"
+#include "loading.h"
 
 #include <zel/ftp.h>
 #include <zel/utility.h>
@@ -53,6 +54,20 @@ class MainWindow : public QMainWindow {
     /// @brief 上传临时存放按钮点击事件
     void uploadTempBtnClicked();
 
+  public slots:
+    void confirmOrder(const std::string &confirm_datagram_dir_name);
+    void cancelOrder();
+
+    void bareAtr(const QString &bare_atr);
+    void whiteAtr(const QString &white_atr);
+    void finishedAtr(const QString &finished_atr);
+
+    void uploadFileFailure(const QString &err_type, const QString &err_msg);
+    void uploadFileSuccess();
+
+    void handleOrderFailure(const QString &err_msg);
+    void handleOrderSuccess(std::shared_ptr<OrderInfo> order_info, std::shared_ptr<PersonDataInfo> person_data_info, std::shared_ptr<ScriptInfo> script_info);
+
   private:
     /// @brief 初始化窗口
     void initWindow();
@@ -69,43 +84,19 @@ class MainWindow : public QMainWindow {
     /// @brief 初始化日志器
     void initLogger();
 
-    /// @brief 获取订单全部信息
-    /// @param order_dir_name 订单文件夹名称
-    bool orderInfo(const std::string &order_dir_name);
-
-    /// @brief 订单处理
-    bool orderProcessing(QString &error);
-
-    /// @brief 上传文件到FTP
-    /// @param local_file_path  本地文件路径
-    /// @param remote_file_path  远程文件路径
-    bool uploadFile2FTP(const std::string &local_file_path, const std::string &remote_file_path);
-
     void dragEnterEvent(QDragEnterEvent *event);
 
     void buttonDisabled(bool disabled);
 
     void showInfo();
 
-  public slots:
-    void confirmOrder(const std::string &confirm_datagram_dir_name);
-    void cancelOrder();
-
-    void bareAtr(const QString &bare_atr);
-    void whiteAtr(const QString &white_atr);
-    void finishedAtr(const QString &finished_atr);
-
-    void failure(const QString &err_type, const QString &err_msg);
-    void success();
-
   private:
     Ui_MainWindow *ui_;           // UI界面
     OrderWindow   *order_window_; // 确认订单窗口
-    FtpLoading    *ftp_loading_;
+    Loading       *loading_;      // 加载窗口
 
     zel::utility::IniFile           ini_;              // 配置文件
     std::shared_ptr<Path>           path_;             // 路径
-    std::unique_ptr<Order>          order_;            // 订单
     std::shared_ptr<OrderInfo>      order_info_;       // 订单信息
     std::shared_ptr<PersonDataInfo> person_data_info_; // 个人化信息
     std::shared_ptr<ScriptInfo>     script_info_;      // 脚本信息
