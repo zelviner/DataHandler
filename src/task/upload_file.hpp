@@ -1,9 +1,14 @@
 #pragma once
 
+#include "utils/utils.h"
+#include "order/order.h"
+#include <order/path.h>
+
 #include <zel/ftp.h>
 #include <zel/utility.h>
+
+#include <memory>
 #include <qcoreapplication>
-#include <qdebug>
 #include <qthread>
 
 // 自定义的工作线程类
@@ -11,16 +16,36 @@ class UploadFile : public QThread {
     Q_OBJECT
 
   public:
-    UploadFile() {}
-
-    void ini(const zel::utility::IniFile &ini) { ini_ = ini; }
-
-    void localPath(const std::string &local_file) { local_path_ = local_file; }
-
-    void remotePath(const std::string &remote_file) { remote_path_ = remote_file; }
+    UploadFile(const zel::utility::IniFile &ini, const std::string &local_path, const std::string &remote_path, bool is_temp, std::shared_ptr<Path> path)
+        : ini_(ini)
+        , local_path_(local_path)
+        , remote_path_(remote_path)
+        , is_temp_(is_temp)
+        , path_(path) {}
 
     // 重写run函数，在这里执行线程的工作
     void run() override {
+
+        if (is_temp_) {
+            // 压缩截图文件夹
+            if (!Utils::compressionZipFile(path_->screenshot, true)) {
+                failure("上传失败", "压缩截图文件夹失败");
+                return;
+            }
+
+            // 压缩临时文件夹
+            if (!Utils::compressionZipFile(path_->temp, true)) {
+                failure("上传失败", "压缩临时文件夹失败");
+                return;
+            }
+
+            // 备份订单
+            Order order(path_);
+            if (!order.backup(ini_["path"]["local_backup_path"])) {
+                failure("上传失败", "备份文件夹失败");
+                return;
+            }
+        }
 
         std::string host     = ini_["ftp"]["host"];
         int         port     = ini_["ftp"]["port"];
@@ -57,4 +82,6 @@ class UploadFile : public QThread {
     zel::utility::IniFile ini_;
     std::string           local_path_;
     std::string           remote_path_;
+    bool                  is_temp_;
+    std::shared_ptr<Path> path_;
 };

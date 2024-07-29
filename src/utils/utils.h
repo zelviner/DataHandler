@@ -14,21 +14,22 @@ class Utils {
     ~Utils();
 
     /// @brief 压缩 zip 文件到当前路径
-    /// @param selectFile2DirPath
-    /// @param savePath
+    /// @param file_path
+    /// @param save_path
     /// @param remove 是否需要删除原文件
-    static bool compressionZipFile(const std::string &selectFile2DirPath, bool remove = false);
+    static bool compressionZipFile(const std::string &file_path, bool remove = false);
 
     /// @brief 压缩 zip 文件
-    /// @param selectFile2DirPath
-    /// @param savePath
+    /// @param file_path
+    /// @param save_path
     /// @param remove 是否需要删除原文件
-    static bool compressionZipFile(const std::string &selectFile2DirPath, const std::string &savePath, bool remove = false);
+    static bool compressionZipFile(const std::string &file_path, const std::string &save_path, bool remove = false);
 
     /// @brief 解压缩 zip 文件
     /// @param selectZipFilePath
-    /// @param savePath
-    static bool decompressionZipFile(const QString &selectZipFilePath, const QString &savePath);
+    /// @param save_path
+    /// @param remove 是否需要删除原文件
+    static bool decompressionZipFile(const std::string &file_path, const std::string &save_path, bool remove = false);
 
     /// @brief 替换 xlsx 文件中的字符串
     /// @param filename xlsx 文件路径

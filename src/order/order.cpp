@@ -39,7 +39,7 @@ bool Order::preProcessing() {
         }
 
         // 解压数据包
-        if (!Utils::decompressionZipFile(QString(datagram_zip_path.c_str()), QString(datagram_file.dirPath().c_str()))) {
+        if (!Utils::decompressionZipFile(datagram_zip_path, datagram_file.dirPath(), true)) {
             log_error("Failed to unzip the packet: %s", datagram_zip_path.c_str());
             return false;
         }
@@ -47,7 +47,7 @@ bool Order::preProcessing() {
         datagram_dir_name = datagram_file.prefix();
 
         // 解压数据包
-        if (!Utils::decompressionZipFile(QString(datagram_file.path().c_str()), QString(datagram_file.dirPath().c_str()))) {
+        if (!Utils::decompressionZipFile(datagram_file.path(), datagram_file.dirPath(), true)) {
             log_error("Failed to unzip the packet: %s", datagram_file.path().c_str());
             return false;
         }
@@ -62,6 +62,7 @@ bool Order::preProcessing() {
 
 bool Order::modify() {
 
+    // 需要替换的信息
     std::string src_order_number    = String::split(FilePath::base(path_->datagram_order), " ")[0];
     std::string src_project_number  = String::split(FilePath::base(path_->datagram_order), " ")[1];
     std::string dest_order_number   = String::split(FilePath::base(path_->order), " ")[0];
@@ -93,7 +94,9 @@ bool Order::modify() {
 
     FilePath::walk(path_->datagram_order, walkFunc, true);
 
-    return true;
+    // 删除原目录
+    Directory datagram_dir(path_->datagram_order);
+    return datagram_dir.remove();
 }
 
 bool Order::processing() {
@@ -141,6 +144,25 @@ bool Order::processing() {
     }
 
     return true;
+}
+
+bool Order::backup(const std::string &backup_path) {
+    // 获取年和月
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm     now_tm;
+    localtime_s(&now_tm, &now_time_t); // Windows 平台
+    int year  = now_tm.tm_year + 1900; // tm_year 是从 1900 年起计数的
+    int month = now_tm.tm_mon + 1;     // tm_mon 是从 0 开始的，所以要加 1
+
+    // 创建目录
+    std::string save_path = FilePath::join(backup_path, std::to_string(year) + " 年", std::to_string(month) + " 月");
+    Directory   backup_dir(save_path);
+    if (!backup_dir.exists()) {
+        backup_dir.create();
+    }
+
+    // 压缩订单数据包
+    return Utils::compressionZipFile(path_->order, save_path, false);
 }
 
 void Order::showPath() {

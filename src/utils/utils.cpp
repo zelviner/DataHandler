@@ -40,6 +40,10 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
         QZipWriter writer(writerFilePath);
         writer.addFile(addFileName, selectFile.readAll());
         selectFile.close();
+
+        // 删除原文件
+        if (remove) return deleteFileOrFolder(file_path);
+
         return true;
     } else {
         // 压缩的是一个文件夹
@@ -51,27 +55,31 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
         writer.addDirectory(zipRootFolder);
         QFileInfoList fileList = ergodicCompressionFile(&writer, selectDirUpDir, qfile_path);
         writer.close();
+
+        // 删除原文件
+        if (remove) return deleteFileOrFolder(file_path);
+
         if (0 == fileList.size()) return true;
         return false;
     }
-
-    if (remove) return deleteFileOrFolder(file_path);
 }
 
-bool Utils::decompressionZipFile(const QString &selectZipFilePath, const QString &save_path) {
-    if (selectZipFilePath.isEmpty() || save_path.isEmpty()) {
+bool Utils::decompressionZipFile(const std::string &file_path, const std::string &save_path, bool remove) {
+    QString qfile_path = QString(file_path.c_str());
+    QString qsave_path = QString(save_path.c_str());
+    if (qfile_path.isEmpty() || qsave_path.isEmpty()) {
         return false;
     }
-    if (!QFileInfo(selectZipFilePath).isFile() || !QFileInfo(save_path).isDir()) {
+    if (!QFileInfo(qfile_path).isFile() || !QFileInfo(qsave_path).isDir()) {
         return false;
     }
 
     bool                          ret = true;
-    QZipReader                    zipReader(selectZipFilePath);
+    QZipReader                    zipReader(qfile_path);
     QVector<QZipReader::FileInfo> zipAllFiles = zipReader.fileInfoList();
 
     for (const QZipReader::FileInfo &zipFileInfo : zipAllFiles) {
-        const QString currDir2File = save_path + "/" + zipFileInfo.filePath;
+        const QString currDir2File = qsave_path + "/" + zipFileInfo.filePath;
         QFileInfo     fileInfo(currDir2File);
 
         if (zipFileInfo.isSymLink) {
@@ -89,7 +97,7 @@ bool Utils::decompressionZipFile(const QString &selectZipFilePath, const QString
         }
 
         if (zipFileInfo.isDir) {
-            QDir(save_path).mkpath(currDir2File);
+            QDir(qsave_path).mkpath(currDir2File);
         }
 
         if (zipFileInfo.isFile) {
@@ -115,6 +123,8 @@ bool Utils::decompressionZipFile(const QString &selectZipFilePath, const QString
         }
     }
     zipReader.close();
+
+    if (remove) deleteFileOrFolder(file_path);
     return ret;
 }
 

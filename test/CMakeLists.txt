@@ -22,5 +22,4 @@ enable_testing()
 
 
 # 添加测试
-add_test_executable(xlnt xlntd)
 add_test_executable(time)

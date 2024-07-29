@@ -33,6 +33,10 @@ class Order {
     /// @brief 处理
     bool processing();
 
+    /// @brief 备份
+    /// @param backup_path 备份路径
+    bool backup(const std::string &backup_path);
+
     /// @brief 显示路径
     void showPath();
 

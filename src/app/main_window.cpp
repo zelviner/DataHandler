@@ -8,7 +8,6 @@
 
 #include "clear_card_loading.h"
 #include "write_card_loading.h"
-#include "utils/utils.h"
 
 #include <memory>
 #include <qmainwindow.h>
@@ -214,12 +213,9 @@ void MainWindow::uploadPrdBtnClicked() {
     loading_->show();
 
     // 将个人化数据上传到FTP服务器
-    std::string remote_prd_path = ini_["path"]["remote_prd_path"].asString() + "/" + order_info_->order_number;
+    std::string remote_prd_path = ini_["path"]["remote_prd_path"].asString() + "/" + order_info_->project_number;
     std::string local_prd_path  = path_->data;
-    auto        upload_file     = new UploadFile();
-    upload_file->ini(ini_);
-    upload_file->localPath(local_prd_path);
-    upload_file->remotePath(remote_prd_path);
+    auto        upload_file     = new UploadFile(ini_, local_prd_path, remote_prd_path, false, path_);
 
     // 连接信号槽
     connect(upload_file, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
@@ -230,36 +226,21 @@ void MainWindow::uploadPrdBtnClicked() {
 }
 
 void MainWindow::uploadTempBtnClicked() {
-    loading_->setWindowTitle("正在上传临时文件...");
-    loading_->show();
-
     // 获取截图文件数量
     Directory dir(path_->screenshot);
-    int       file_count = dir.count() - 2;
+    int       file_count = dir.count();
     if (file_count < 5) {
         QMessageBox::StandardButton box;
         box = QMessageBox::question(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个, 是否继续上传？", QMessageBox::Yes | QMessageBox::No);
         if (box == QMessageBox::No) return;
     }
 
-    // 压缩截图文件夹
-    if (!Utils::compressionZipFile(path_->screenshot, true)) {
-        QMessageBox::critical(this, "错误", "压缩截图文件夹失败");
-        return;
-    }
-
-    // 压缩临时文件夹
-    if (!Utils::compressionZipFile(path_->temp, true)) {
-        QMessageBox::critical(this, "错误", "压缩临时文件夹失败");
-        return;
-    }
+    loading_->setWindowTitle("正在上传临时文件...");
+    loading_->show();
 
     std::string remote_temp_path = ini_["path"]["remote_temp_path"];
     std::string local_temp_path  = FilePath::dir(path_->temp);
-    auto        upload_prd       = new UploadFile();
-    upload_prd->ini(ini_);
-    upload_prd->localPath(local_temp_path);
-    upload_prd->remotePath(remote_temp_path);
+    auto        upload_prd       = new UploadFile(ini_, local_temp_path, remote_temp_path, true, path_);
 
     // 连接信号槽
     connect(upload_prd, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
@@ -267,20 +248,6 @@ void MainWindow::uploadTempBtnClicked() {
 
     // 启动工作线程
     upload_prd->start();
-
-    // 备份订单
-    std::time_t now_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::tm     now_tm;
-    localtime_s(&now_tm, &now_time_t); // Windows 平台
-
-    // 获取年和月
-    int         year      = now_tm.tm_year + 1900; // tm_year 是从 1900 年起计数的
-    int         month     = now_tm.tm_mon + 1;     // tm_mon 是从 0 开始的，所以要加 1
-    std::string save_path = FilePath::join(ini_["path"]["local_backup_path"], std::to_string(year), std::to_string(month));
-    if (!Utils::compressionZipFile(path_->order, save_path, false)) {
-        QMessageBox::critical(this, "错误", "备份订单失败");
-        return;
-    }
 }
 
 void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
@@ -467,7 +434,7 @@ void MainWindow::initLogger() {
     auto logger = Logger::instance();
     logger->open("./DataHandler.log");
     logger->setFormat(false);
-    logger->setLevel(Logger::LOG_DEBUG);
+    logger->setLevel(Logger::LOG_ERROR);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
