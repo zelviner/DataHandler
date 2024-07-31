@@ -369,6 +369,10 @@ void MainWindow::initWindow() {
 }
 
 void MainWindow::initUI() {
+
+    // 使窗口始终在其他窗口之上
+    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+
     buttonDisabled(true);
     std::string host              = ini_["ftp"]["host"];
     int         port              = ini_["ftp"]["port"];

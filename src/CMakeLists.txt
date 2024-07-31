@@ -21,8 +21,8 @@ file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/res/rc/*)
 
 
 # 添加可执行文件
-# add_executable(${PROJECT_NAME}  ${SOURCES} ${RESOURCES}) #debug
-add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
+add_executable(${PROJECT_NAME}  ${SOURCES} ${RESOURCES}) #debug
+# add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
 
 include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 
@@ -61,5 +61,5 @@ PRIVATE
     "ws2_32.lib"
     "zel.lib"
     "xhlanguage.lib"
-    "xlnt.lib"
+    "xlntd.lib"
 )
