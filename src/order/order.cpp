@@ -242,8 +242,8 @@ std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
 
     path_->order      = FilePath::join(path_->directory, order_info_->order_dir_name);
     path_->temp       = FilePath::join(path_->order, "TEMP", order_info_->project_number);
-    path_->print      = FilePath::join(path_->temp, "打印 " + order_info_->project_number + " " + order_info_->order_number);
-    path_->screenshot = FilePath::join(path_->temp, "截图 " + order_info_->project_number + " " + order_info_->order_number);
+    path_->print      = FilePath::join(path_->temp, "打印 " + order_info_->project_number + " " + order_info_->order_number + " " + order_info_->project_name);
+    path_->screenshot = FilePath::join(path_->temp, "截图 " + order_info_->project_number + " " + order_info_->order_number + " " + order_info_->project_name);
 
     auto walkFunc = [&](std::string relative_path, Directory dir, File file) -> bool {
         if (dir.exists()) {

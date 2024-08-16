@@ -81,7 +81,7 @@ void MainWindow::dropEvent(QDropEvent *event) {
     }
 
     // 确认订单
-    order_window_ = new OrderWindow(datagram_format);
+    order_window_ = new OrderWindow(datagram_format, this);
 
     connect(order_window_, &OrderWindow::confirmOrder, this, &MainWindow::confirmOrder);
     connect(order_window_, &OrderWindow::cancelOrder, this, &MainWindow::cancelOrder);
@@ -341,7 +341,7 @@ void MainWindow::handleOrderFailure(const QString &err_msg) {
 void MainWindow::initWindow() {
 
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.0.0");
+    setWindowTitle("智能卡生产预处理软件 v3.0.2");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
@@ -464,8 +464,7 @@ void MainWindow::buttonDisabled(bool disabled) {
     ui_->open_clear_btn->setDisabled(disabled);
     ui_->write_card_btn->setDisabled(disabled);
     ui_->clear_card_btn->setDisabled(disabled);
-
-    ui_->upload_temp_btn->setDisabled(true);
+    ui_->upload_temp_btn->setDisabled(disabled);
 }
 
 void MainWindow::showInfo() {
