@@ -2,11 +2,9 @@
 
 #include "utils/utils.h"
 #include "order/order.h"
-#include <order/path.h>
+#include "order/path.h"
 
-#include <zel/ftp.h>
-#include <zel/utility.h>
-
+#include <zel.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>

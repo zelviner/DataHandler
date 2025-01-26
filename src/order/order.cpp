@@ -2,16 +2,12 @@
 #include "utils/utils.h"
 
 #include <vector>
-#include <zel/utility.h>
-using namespace zel::utility;
-
-#include <zel/filesystem.h>
-using namespace zel::filesystem;
-
-#include <zel/crypto.h>
-using namespace zel::crypto;
-
+#include <zel.h>
 #include <memory>
+
+using namespace zel::utility;
+using namespace zel::filesystem;
+using namespace zel::crypto;
 
 Order::Order(std::shared_ptr<Path> path)
     : path_(path) {}

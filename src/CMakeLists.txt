@@ -19,23 +19,19 @@ file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_LIST_DIR}/*.cpp ${CMAKE_CURRENT_LIST_D
 # 添加资源文件
 file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/res/rc/*)
 
-
 # 添加可执行文件
 # add_executable(${PROJECT_NAME}  ${SOURCES} ${RESOURCES}) #debug
 add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
 
 include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 
-target_compile_definitions(${PROJECT_NAME}
+# 添加编译时的宏定义
+target_compile_definitions(${APP_NAME}
 PUBLIC
-# 	_DEBUG
-# 	WIN32_LEAN_AND_MEAN
-# 	_WINSOCK_DEPRECATED_NO_WARNINGS
-    NOLFS
-    _CRT_SECURE_NO_WARNINGS
-    _WINSOCK_DEPRECATED_NO_WARNINGS
+    NOLFS  # 可能用于禁用某些与LFS（Large File Storage）相关的功能
+    _CRT_SECURE_NO_WARNINGS  # 禁用对不安全函数的警告
+    _WINSOCK_DEPRECATED_NO_WARNINGS  # 禁用对已弃用Winsock功能的警告
 )
-
 
 # 为target添加头文件
 target_include_directories(${PROJECT_NAME}
@@ -54,12 +50,12 @@ PRIVATE
     Qt5::Gui
     Qt5::Widgets
     Qt5::Network
-    "Winscard.lib"
-    "libcrypto32MD.lib"
-    "libssl32MD.lib"
-    "Crypt32.lib"   
-    "ws2_32.lib"
-    "zel.lib"
-    "xhlanguage.lib"
-    "xlnt.lib"
+    Winscard
+    libcrypto32MD
+    libssl32MD
+    Crypt32   
+    ws2_32
+    zel
+    xhlanguage
+    xlnt
 )

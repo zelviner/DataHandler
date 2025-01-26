@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <qstring>
-#include <zel/json.h>
+#include <zel.h>
 
 /// @brief 首条个人化数据结构体
 struct PersonDataInfo {

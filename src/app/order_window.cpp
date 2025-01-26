@@ -1,12 +1,10 @@
 #include "order_window.h"
 
 #include <memory>
-#include <zel/utility.h>
-using namespace zel::utility;
-
-using namespace zel::filesystem;
-
 #include <qmessagebox>
+
+using namespace zel::utility;
+using namespace zel::filesystem;
 
 OrderWindow::OrderWindow(std::vector<std::string> &datagram_format, QMainWindow *parent)
     : QMainWindow(parent)

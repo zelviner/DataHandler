@@ -1,7 +1,8 @@
 #include "script.h"
 
 #include <memory>
-#include <zel/filesystem.h>
+#include <zel.h>
+
 using namespace zel::filesystem;
 
 Script::Script(const std::string &script_path)

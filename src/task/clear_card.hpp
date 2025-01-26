@@ -5,8 +5,8 @@
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <zel/json.h>
-#include <xhlanguage/repl.h>
+#include <zel.h>
+#include <xhlanguage.h>
 
 // 自定义的工作线程类
 class ClearCard : public QThread {

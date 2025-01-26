@@ -8,9 +8,8 @@
 #include "order_window.h"
 #include "loading.h"
 
-#include <zel/ftp.h>
-#include <zel/utility.h>
-#include <xhlanguage/card_reader.h>
+#include <zel.h>
+#include <xhlanguage.h>
 #include <memory>
 #include <qmainwindow>
 

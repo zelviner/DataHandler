@@ -5,13 +5,12 @@
 #include "order/person_data.h"
 #include "order/script.h"
 
-#include <zel/filesystem.h>
-using namespace zel::filesystem;
-
 #include <memory>
 #include <qcoreapplication>
 #include <qdebug>
 #include <qthread>
+
+using namespace zel::filesystem;
 
 // 自定义的工作线程类
 class HandleOrder : public QThread {

@@ -1,27 +1,16 @@
 #include "order_window.h"
 #include "main_window.h"
-
 #include "task/upload_file.hpp"
 #include "task/handle_order.hpp"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
-
 #include "clear_card_loading.h"
 #include "write_card_loading.h"
 
 #include <memory>
 #include <qmainwindow.h>
 #include <qmessagebox.h>
-
 #include <string>
-#include <zel/utility.h>
-using namespace zel::utility;
-
-#include <zel/filesystem.h>
-using namespace zel::filesystem;
-
-#include <xhlanguage/card_reader.h>
-
 #include <qclipboard>
 #include <qdesktopservices>
 #include <qdragenterevent>
@@ -29,6 +18,9 @@ using namespace zel::filesystem;
 #include <qmimedata>
 #include <qpushbutton>
 #include <qtextstream>
+
+using namespace zel::utility;
+using namespace zel::filesystem;
 
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
