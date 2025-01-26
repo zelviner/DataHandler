@@ -2,11 +2,11 @@
 
 #include "order/script.h"
 
+#include <zel.h>
+#include <xhlanguage.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <zel.h>
-#include <xhlanguage.h>
 
 // 自定义的工作线程
 class WriteCard : public QThread {

@@ -30,7 +30,6 @@ list(APPEND CMAKE_PREFIX_PATH ${VENDOR_DIRS})
 include_directories(${VENDOR_INCLUDE_DIRS})
 link_directories(${VENDOR_LIB_DIRS})
 
-
 # 添加子工程
 add_subdirectory(src)
 add_subdirectory(test)

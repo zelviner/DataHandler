@@ -56,11 +56,11 @@ PRIVATE
     Qt5::Widgets
     Qt5::Network
     Winscard
-    libcrypto32MD
-    libssl32MD
+    VC/libcrypto32MD
+    VC/libssl32MD
     Crypt32   
     ws2_32
     zel
     xhlanguage
-    xlnt
+    xlntd
 )

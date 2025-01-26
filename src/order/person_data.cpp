@@ -1,12 +1,12 @@
 #include "person_data.h"
 
+#include <memory>
+#include <iostream>
+
 using namespace zel::json;
 using namespace zel::filesystem;
 using namespace zel::crypto;
 using namespace zel::utility;
-
-#include <memory>
-#include <iostream>
 
 PersonData::PersonData(const std::string &data_path)
     : data_path_(data_path)
