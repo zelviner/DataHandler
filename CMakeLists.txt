@@ -22,6 +22,22 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")    
 endif()
 
+# 设置 vcpkg
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(VCPKG_INDTALLED $ENV{ZEL_HOME}/pkg/vcpkg/installed/x64-windows)
+    file(GLOB VCPKG_SHARED_LIBS ${VCPKG_INDTALLED}/share/*)
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(VCPKG_INDTALLED $ENV{ZEL_HOME}/pkg/vcpkg/installed/x86-windows)
+    file(GLOB VCPKG_SHARED_LIBS ${VCPKG_INDTALLED}/share/*)
+endif()
+list(APPEND CMAKE_PREFIX_PATH ${VCPKG_SHARED_LIBS})
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(VCPKG_LIB_DIR ${VCPKG_INDTALLED}/debug)
+else()
+    set(VCPKG_LIB_DIR ${VCPKG_INDTALLED})
+endif()
+
 # 设置三方库的安装路径, 搜索路径, 链接路径
 file(GLOB VENDOR_DIRS ${ZEL_VENDOR}/*/${CMAKE_BUILD_TYPE})
 file(GLOB VENDOR_INCLUDE_DIRS ${ZEL_VENDOR}/*/${CMAKE_BUILD_TYPE}/include)
