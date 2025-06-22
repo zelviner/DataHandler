@@ -4,7 +4,7 @@
 #include "order/order.h"
 #include "order/path.h"
 
-#include <zel.h>
+#include <zel/zel.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>

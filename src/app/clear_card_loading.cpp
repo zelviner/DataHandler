@@ -4,6 +4,7 @@
 #include <qmessagebox>
 #include <qmovie>
 #include <qthread>
+#include <chrono>
 
 ClearCardLoading::ClearCardLoading(QMainWindow *parent)
     : QMainWindow(parent)
@@ -31,7 +32,7 @@ void ClearCardLoading::initUI() {
 
 void ClearCardLoading::initSignalSlot() {}
 
-void ClearCardLoading::startClear(const QString &duration) {
+void ClearCardLoading::startClear() {
     // 加载动画
     QMovie *movie = new QMovie(":/image/loading.gif");
     ui_->clear_label->setMovie(movie);
@@ -75,7 +76,7 @@ void ClearCardLoading::success(ClearCard::Type type, const QString &duration) {
     switch (type) {
 
     case ClearCard::CLEAR: {
-        startClear(duration);
+        startClear();
         break;
     }
 

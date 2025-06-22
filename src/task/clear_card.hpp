@@ -2,11 +2,11 @@
 
 #include "order/script.h"
 
-#include <xhlanguage.h>
+#include <xhlanguage/xhlanguage.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <zel.h>
+#include <zel/zel.h>
 
 // 自定义的工作线程类
 class ClearCard : public QThread {

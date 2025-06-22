@@ -1,6 +1,6 @@
 #pragma once
 
-#include <xhlanguage.h>
+#include <xhlanguage/xhlanguage.h>
 #include "ui_main_window.h"
 #include "order/order.h"
 #include "order/person_data.h"
@@ -8,7 +8,7 @@
 #include "order_window.h"
 #include "loading.h"
 
-#include <zel.h>
+#include <zel/zel.h>
 #include <memory>
 #include <qmainwindow>
 

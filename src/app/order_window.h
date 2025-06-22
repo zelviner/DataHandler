@@ -2,7 +2,7 @@
 
 #include "ui_order_window.h"
 
-#include <zel.h>
+#include <zel/zel.h>
 #include <memory>
 #include <qmainwindow>
 
@@ -34,6 +34,6 @@ class OrderWindow : public QMainWindow {
     void initSignalSlot();
 
   private:
-    std::shared_ptr<Ui_OrderWindow> ui_;
     std::vector<std::string>        datagram_format_;
+    std::shared_ptr<Ui_OrderWindow> ui_;
 };

@@ -24,7 +24,7 @@ class ClearCardLoading : public QMainWindow {
     /// @brief 初始化信号槽
     void initSignalSlot();
 
-    void startClear(const QString &duration);
+    void startClear();
 
     void finish(const QString &duration);
 

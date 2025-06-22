@@ -2,8 +2,8 @@
 
 #include "order/script.h"
 
-#include <zel.h>
-#include <xhlanguage.h>
+#include <zel/zel.h>
+#include <xhlanguage/xhlanguage.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>

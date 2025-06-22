@@ -2,7 +2,7 @@
 #include "utils/utils.h"
 
 #include <vector>
-#include <zel.h>
+#include <zel/zel.h>
 #include <memory>
 
 using namespace zel::utility;
@@ -22,7 +22,7 @@ bool Order::preProcessing() {
         auto datagram_zip_path = FilePath::join(datagram_file.dirPath(), datagram_file.prefix());
         datagram_dir_name      = datagram_file.prefix();
         int pos                = datagram_dir_name.rfind(".zip");
-        if (pos == std::string::npos) return false;
+        if (pos == int(std::string::npos)) return false;
         datagram_dir_name = datagram_dir_name.substr(0, pos);
 
         // GPG解密数据包

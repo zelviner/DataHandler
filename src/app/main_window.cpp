@@ -18,6 +18,7 @@
 #include <qmimedata>
 #include <qpushbutton>
 #include <qtextstream>
+#include <zel/utility/logger.h>
 
 using namespace zel::utility;
 using namespace zel::filesystem;
@@ -223,7 +224,8 @@ void MainWindow::uploadTempBtnClicked() {
     int       file_count = dir.count();
     if (file_count < 5) {
         QMessageBox::StandardButton box;
-        box = QMessageBox::question(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个, 是否继续上传？", QMessageBox::Yes | QMessageBox::No);
+        box =
+            QMessageBox::question(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个, 是否继续上传？", QMessageBox::Yes | QMessageBox::No);
         if (box == QMessageBox::No) return;
     }
 
@@ -298,7 +300,8 @@ void MainWindow::uploadFileSuccess() {
     success_box.exec();
 }
 
-void MainWindow::handleOrderSuccess(std::shared_ptr<OrderInfo> order_info, std::shared_ptr<PersonDataInfo> person_data_info, std::shared_ptr<ScriptInfo> script_info) {
+void MainWindow::handleOrderSuccess(std::shared_ptr<OrderInfo> order_info, std::shared_ptr<PersonDataInfo> person_data_info,
+                                    std::shared_ptr<ScriptInfo> script_info) {
     loading_->hide();
     order_info_       = order_info;
     person_data_info_ = person_data_info;
@@ -428,7 +431,7 @@ void MainWindow::initConfig() {
 
 void MainWindow::initLogger() {
     auto logger = Logger::instance();
-    logger->open("./DataHandler.log");
+    logger->open("DataHandler.log");
     logger->setFormat(false);
     logger->setLevel(Logger::LOG_ERROR);
 }
