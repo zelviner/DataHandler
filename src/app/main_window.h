@@ -1,16 +1,18 @@
 #pragma once
 
-#include <xhlanguage/xhlanguage.h>
 #include "ui_main_window.h"
 #include "order/order.h"
 #include "order/person_data.h"
 #include "order/script.h"
 #include "order_window.h"
 #include "loading.h"
+#include "tabulation/tabulation.h"
+#include "myorm/database.h"
 
 #include <zel/zel.h>
 #include <memory>
 #include <qmainwindow>
+#include <xhlanguage/card-reader/card_reader.hpp>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -21,9 +23,6 @@ class MainWindow : public QMainWindow {
 
     /// @brief 拖拽释放事件
     void dropEvent(QDropEvent *event);
-
-    /// @brief 保存按钮点击事件
-    void saveBtnClicked();
 
     /// @brief 打开预个人化脚本按钮点击事件
     void openPersonalBtnClicked();
@@ -52,6 +51,12 @@ class MainWindow : public QMainWindow {
     /// @brief 上传临时存放按钮点击事件
     void uploadTempBtnClicked();
 
+    /// @brief 搜索订单按钮点击事件
+    void searchOrderBtnClicked();
+
+    /// @brief 保存按钮点击事件
+    void saveBtnClicked();
+
   public slots:
     void confirmOrder(const std::string &confirm_datagram_dir_name);
     void cancelOrder();
@@ -77,10 +82,16 @@ class MainWindow : public QMainWindow {
     void initSignalSlot();
 
     /// @brief 初始化配置
-    void initConfig();
+    void initConfig(const std::string &config_file);
 
     /// @brief 初始化日志器
-    void initLogger();
+    void initLogger(const std::string &log_file);
+
+    /// @brief 初始化读卡器
+    void initCardReader();
+
+    /// @brief 初始化数据库
+    void initDatabase();
 
     void dragEnterEvent(QDragEnterEvent *event);
 
@@ -93,10 +104,12 @@ class MainWindow : public QMainWindow {
     OrderWindow   *order_window_; // 确认订单窗口
     Loading       *loading_;      // 加载窗口
 
-    zel::utility::IniFile           ini_;              // 配置文件
-    std::shared_ptr<Path>           path_;             // 路径
-    std::shared_ptr<OrderInfo>      order_info_;       // 订单信息
-    std::shared_ptr<PersonDataInfo> person_data_info_; // 个人化信息
-    std::shared_ptr<ScriptInfo>     script_info_;      // 脚本信息
-    std::shared_ptr<CardReader>     card_reader_;      // 读卡器
+    zel::utility::IniFile                           ini_;              // 配置文件
+    std::shared_ptr<Path>                           path_;             // 路径
+    std::shared_ptr<OrderInfo>                      order_info_;       // 订单信息
+    std::shared_ptr<PersonDataInfo>                 person_data_info_; // 个人化信息
+    std::shared_ptr<ScriptInfo>                     script_info_;      // 脚本信息
+    std::shared_ptr<xhlanguage::reader::CardReader> card_reader_;      // 读卡器
+    std::shared_ptr<Tabulation>                     tabulation_;       // 制表
+    std::shared_ptr<zel::myorm::Database>           db_;               // 数据库
 };

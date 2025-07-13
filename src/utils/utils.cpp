@@ -139,6 +139,8 @@ void Utils::replaceStringInXlsx(const std::string &filename, const std::string &
     // 遍历工作表中的所有单元格
     for (auto row : worksheet.rows()) {
         for (auto cell : row) {
+            if (!cell.has_value()) continue;
+
             // 检查单元格是否包含字符串
             std::string cell_value = cell.to_string();
 

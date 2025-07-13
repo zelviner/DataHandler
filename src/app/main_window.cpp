@@ -1,4 +1,5 @@
 #include "main_window.h"
+
 #include "order_window.h"
 #include "task/upload_file.hpp"
 #include "task/handle_order.hpp"
@@ -6,10 +7,13 @@
 #include "task/write_card.hpp"
 #include "clear_card_loading.h"
 #include "write_card_loading.h"
+#include "myorm/database.h"
+#include "tabulation/distribution_record.h"
 
 #include <memory>
 #include <qmainwindow.h>
 #include <qmessagebox.h>
+#include <qpushbutton.h>
 #include <string>
 #include <qclipboard>
 #include <qdesktopservices>
@@ -18,10 +22,13 @@
 #include <qmimedata>
 #include <qpushbutton>
 #include <qtextstream>
-#include <zel/utility/logger.h>
 
+#include <zel/utility/logger.h>
 using namespace zel::utility;
 using namespace zel::filesystem;
+
+#include <xhlanguage/card-reader/card_reader_factory.hpp>
+using namespace xhlanguage::reader;
 
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
@@ -31,14 +38,16 @@ MainWindow::MainWindow(QMainWindow *parent)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
     , script_info_(nullptr)
-    , card_reader_(nullptr) {
+    , card_reader_(nullptr)
+    , tabulation_(nullptr)
+    , db_(nullptr) {
     ui_->setupUi(this);
 
     // 初始化窗口
     initWindow();
 
     // 初始化配置
-    initConfig();
+    initConfig("config.ini");
 
     // 初始化UI
     initUI();
@@ -47,7 +56,13 @@ MainWindow::MainWindow(QMainWindow *parent)
     initSignalSlot();
 
     // 初始化日志器
-    initLogger();
+    initLogger("DataHandler.log");
+
+    // 初始化读卡器
+    initCardReader();
+
+    // 初始化数据库
+    initDatabase();
 }
 
 MainWindow::~MainWindow() {
@@ -83,18 +98,28 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::saveBtnClicked() {
-    std::string host              = ui_->ip_line->text().toStdString();
-    int         port              = ui_->port_line->text().toInt();
-    std::string username          = ui_->username_line->text().toStdString();
-    std::string password          = ui_->password_line->text().toStdString();
+    std::string mysql_host        = ui_->mysql_ip_line->text().toStdString();
+    int         mysql_port        = ui_->mysql_port_line->text().toInt();
+    std::string mysql_username    = ui_->mysql_username_line->text().toStdString();
+    std::string mysql_password    = ui_->mysql_password_line->text().toStdString();
+    std::string mysql_database    = ui_->mysql_database_line->text().toStdString();
+    std::string ftp_host          = ui_->ftp_ip_line->text().toStdString();
+    int         ftp_port          = ui_->ftp_port_line->text().toInt();
+    std::string ftp_username      = ui_->ftp_username_line->text().toStdString();
+    std::string ftp_password      = ui_->ftp_password_line->text().toStdString();
     std::string remote_prd_path   = ui_->prd_line->text().toStdString();
     std::string remote_temp_path  = ui_->temp_line->text().toStdString();
     std::string local_backup_path = ui_->backup_line->text().toStdString();
 
-    ini_.set("ftp", "host", host);
-    ini_.set("ftp", "port", port);
-    ini_.set("ftp", "username", username);
-    ini_.set("ftp", "password", password);
+    ini_.set("mysql", "host", mysql_host);
+    ini_.set("mysql", "port", mysql_port);
+    ini_.set("mysql", "username", mysql_username);
+    ini_.set("mysql", "password", mysql_password);
+    ini_.set("mysql", "database", mysql_database);
+    ini_.set("ftp", "host", ftp_host);
+    ini_.set("ftp", "port", ftp_port);
+    ini_.set("ftp", "username", ftp_username);
+    ini_.set("ftp", "password", ftp_password);
     ini_.set("path", "remote_prd_path", remote_prd_path);
     ini_.set("path", "remote_temp_path", remote_temp_path);
     ini_.set("path", "local_backup_path", local_backup_path);
@@ -244,6 +269,29 @@ void MainWindow::uploadTempBtnClicked() {
     upload_prd->start();
 }
 
+void MainWindow::searchOrderBtnClicked() {
+    auto order_number = ui_->find_order_line->text().toStdString();
+    auto data_field   = ui_->data_field_line->text().toStdString();
+
+    if (order_number.empty()) {
+        QMessageBox::critical(this, "错误", "请输入订单号");
+        return;
+    }
+
+    if (data_field.empty()) {
+        QMessageBox::critical(this, "错误", "请输入数据项");
+        return;
+    }
+
+    tabulation_ = std::make_shared<Tabulation>(db_);
+    if (!tabulation_->distributionRecord(order_number, data_field)) {
+        QMessageBox::critical(this, "错误", "请核对订单号与数据项是否正确");
+        return;
+    }
+
+    tabulation_->generateDistributionRecords("template/模板.xlsx", "output/输出.xlsx");
+}
+
 void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
     order_window_->hide();
 
@@ -340,7 +388,111 @@ void MainWindow::initWindow() {
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
+}
 
+void MainWindow::initUI() {
+
+    // 使窗口始终在其他窗口之上
+    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+
+    buttonDisabled(true);
+    std::string mysql_host        = ini_["mysql"]["host"];
+    int         mysql_port        = ini_["mysql"]["port"];
+    std::string mysql_username    = ini_["mysql"]["username"];
+    std::string mysql_password    = ini_["mysql"]["password"];
+    std::string mysql_database    = ini_["mysql"]["database"];
+    std::string ftp_host          = ini_["ftp"]["host"];
+    int         ftp_port          = ini_["ftp"]["port"];
+    std::string ftp_username      = ini_["ftp"]["username"];
+    std::string ftp_password      = ini_["ftp"]["password"];
+    std::string remote_prd_path   = ini_["path"]["remote_prd_path"];
+    std::string remote_temp_path  = ini_["path"]["remote_temp_path"];
+    std::string local_backup_path = ini_["path"]["local_backup_path"];
+
+    ui_->mysql_ip_line->setText(QString::fromStdString(mysql_host));
+    ui_->mysql_port_line->setText(QString::number(mysql_port));
+    ui_->mysql_username_line->setText(QString::fromStdString(mysql_username));
+    ui_->mysql_password_line->setText(QString::fromStdString(mysql_password));
+    ui_->mysql_database_line->setText(QString::fromStdString(mysql_database));
+    ui_->ftp_ip_line->setText(QString::fromStdString(ftp_host));
+    ui_->ftp_port_line->setText(QString::number(ftp_port));
+    ui_->ftp_username_line->setText(QString::fromStdString(ftp_username));
+    ui_->ftp_password_line->setText(QString::fromStdString(ftp_password));
+    ui_->prd_line->setText(QString::fromStdString(remote_prd_path));
+    ui_->temp_line->setText(QString::fromStdString(remote_temp_path));
+    ui_->backup_line->setText(QString::fromStdString(local_backup_path));
+
+    ui_->clear_card_btn->setDisabled(true);
+    ui_->write_card_btn->setDisabled(true);
+}
+
+void MainWindow::initSignalSlot() {
+    QClipboard *clip = QApplication::clipboard();
+
+    // 信息 - 订单信息
+    connect(ui_->project_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_number.c_str())); });
+    connect(ui_->order_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_number.c_str())); });
+    connect(ui_->project_name_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_name.c_str())); });
+    connect(ui_->chip_model_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->chip_model.c_str())); });
+    connect(ui_->rf_code_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->rf_code.c_str())); });
+    connect(ui_->script_package_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->script_package.c_str())); });
+    connect(ui_->pin1_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->pin1.c_str())); });
+    connect(ui_->op_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->op.c_str())); });
+    connect(ui_->ki_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->ki.c_str())); });
+
+    // 信息 - 脚本包信息
+    connect(ui_->open_personal_btn, &QPushButton::clicked, this, &MainWindow::openPersonalBtnClicked);
+    connect(ui_->open_postpersonal_btn, &QPushButton::clicked, this, &MainWindow::openPostPersonalBtnClicked);
+    connect(ui_->open_check_btn, &QPushButton::clicked, this, &MainWindow::openCheckBtnClicked);
+    connect(ui_->open_clear_btn, &QPushButton::clicked, this, &MainWindow::openClearCardBtnClicked);
+
+    // 鉴权
+    connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
+    connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
+    connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
+    connect(ui_->upload_prd_btn, &QPushButton::clicked, this, &MainWindow::uploadPrdBtnClicked);
+    connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
+
+    // 制表
+    connect(ui_->search_ptn, &QPushButton::clicked, this, &MainWindow::searchOrderBtnClicked);
+
+    // 配置
+    connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
+}
+
+void MainWindow::initConfig(const std::string &config_file) {
+    if (!ini_.exists(config_file)) {
+        ini_.set("log", "level", 0);
+        ini_.set("mysql", "host", "127.0.0.1");
+        ini_.set("mysql", "port", "3306");
+        ini_.set("mysql", "username", "admin");
+        ini_.set("mysql", "password", "admin");
+        ini_.set("mysql", "database", "dms");
+        ini_.set("ftp", "host", "127.0.0.1");
+        ini_.set("ftp", "port", "21");
+        ini_.set("ftp", "username", "admin");
+        ini_.set("ftp", "password", "admin");
+        ini_.set("path", "remote_prd_path", "/data/ftp/output/PRD");
+        ini_.set("path", "remote_temp_path", "/data/ftp/output/临时存放");
+        ini_.set("path", "local_backup_path", "D:/备份");
+
+        ini_.save(config_file);
+    } else {
+        ini_.load(config_file);
+    }
+}
+
+void MainWindow::initLogger(const std::string &log_file) {
+    auto logger = Logger::instance();
+    if (!logger->isOpen()) {
+        logger->open(log_file);
+        logger->setFormat(false);
+        int level = ini_["log"]["level"];
+        logger->setLevel(Logger::Level(level));
+    }
+}
+
+void MainWindow::initCardReader() {
     try {
         // 创建 PCSC 读卡器工厂
         std::unique_ptr<CardReaderFactory> card_reader_factory = std::make_unique<PCSCReaderFactory>();
@@ -363,77 +515,16 @@ void MainWindow::initWindow() {
     }
 }
 
-void MainWindow::initUI() {
-
-    // 使窗口始终在其他窗口之上
-    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-
-    buttonDisabled(true);
-    std::string host              = ini_["ftp"]["host"];
-    int         port              = ini_["ftp"]["port"];
-    std::string username          = ini_["ftp"]["username"];
-    std::string password          = ini_["ftp"]["password"];
-    std::string remote_prd_path   = ini_["path"]["remote_prd_path"];
-    std::string remote_temp_path  = ini_["path"]["remote_temp_path"];
-    std::string local_backup_path = ini_["path"]["local_backup_path"];
-    ui_->ip_line->setText(QString::fromStdString(host));
-    ui_->port_line->setText(QString::number(port));
-    ui_->username_line->setText(QString::fromStdString(username));
-    ui_->password_line->setText(QString::fromStdString(password));
-    ui_->prd_line->setText(QString::fromStdString(remote_prd_path));
-    ui_->temp_line->setText(QString::fromStdString(remote_temp_path));
-    ui_->backup_line->setText(QString::fromStdString(local_backup_path));
-
-    ui_->clear_card_btn->setDisabled(true);
-    ui_->write_card_btn->setDisabled(true);
-}
-
-void MainWindow::initSignalSlot() {
-    QClipboard *clip = QApplication::clipboard();
-    connect(ui_->project_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_number.c_str())); });
-    connect(ui_->order_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_number.c_str())); });
-    connect(ui_->project_name_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_name.c_str())); });
-    connect(ui_->chip_model_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->chip_model.c_str())); });
-    connect(ui_->rf_code_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->rf_code.c_str())); });
-    connect(ui_->script_package_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->script_package.c_str())); });
-    connect(ui_->pin1_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->pin1.c_str())); });
-    connect(ui_->op_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->op.c_str())); });
-    connect(ui_->ki_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->ki.c_str())); });
-
-    connect(ui_->open_personal_btn, &QPushButton::clicked, this, &MainWindow::openPersonalBtnClicked);
-    connect(ui_->open_postpersonal_btn, &QPushButton::clicked, this, &MainWindow::openPostPersonalBtnClicked);
-    connect(ui_->open_check_btn, &QPushButton::clicked, this, &MainWindow::openCheckBtnClicked);
-    connect(ui_->open_clear_btn, &QPushButton::clicked, this, &MainWindow::openClearCardBtnClicked);
-
-    connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
-    connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
-    connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
-    connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
-    connect(ui_->upload_prd_btn, &QPushButton::clicked, this, &MainWindow::uploadPrdBtnClicked);
-    connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
-}
-
-void MainWindow::initConfig() {
-    if (!ini_.exists("config.ini")) {
-        ini_.set("ftp", "host", "127.0.0.1");
-        ini_.set("ftp", "port", "21");
-        ini_.set("ftp", "username", "admin");
-        ini_.set("ftp", "password", "admin");
-        ini_.set("path", "remote_prd_path", "/data/ftp/output/PRD");
-        ini_.set("path", "remote_temp_path", "/data/ftp/output/临时存放");
-        ini_.set("path", "local_backup_path", "D:/备份");
-
-        ini_.save("config.ini");
-    } else {
-        ini_.load("config.ini");
+void MainWindow::initDatabase() {
+    db_ = std::make_shared<zel::myorm::Database>();
+    if (!db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"], ini_["mysql"]["database"])) {
+        log_error("Failed to connect to database");
+        QMessageBox::critical(this, "警告", "连接数据库失败，请检查配置");
+        ui_->search_ptn->setDisabled(true);
+        return;
     }
-}
 
-void MainWindow::initLogger() {
-    auto logger = Logger::instance();
-    logger->open("DataHandler.log");
-    logger->setFormat(false);
-    logger->setLevel(Logger::LOG_ERROR);
+    log_debug("Connected to database");
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {

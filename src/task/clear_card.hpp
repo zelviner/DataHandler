@@ -2,11 +2,14 @@
 
 #include "order/script.h"
 
-#include <xhlanguage/xhlanguage.h>
+// #include <xhlanguage/xhlanguage.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
 #include <zel/zel.h>
+#include <xhlanguage/card-reader/card_reader.hpp>
+#include <xhlanguage/repl/repl.h>
+using namespace xhlanguage::reader;
 
 // 自定义的工作线程类
 class ClearCard : public QThread {

@@ -3,10 +3,12 @@
 #include "order/script.h"
 
 #include <zel/zel.h>
-#include <xhlanguage/xhlanguage.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
+#include <xhlanguage/card-reader/card_reader.hpp>
+#include <xhlanguage/repl/repl.h>
+using namespace xhlanguage::reader;
 
 // 自定义的工作线程
 class WriteCard : public QThread {
