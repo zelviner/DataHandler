@@ -290,6 +290,16 @@ void MainWindow::searchOrderBtnClicked() {
     }
 
     tabulation_->generateDistributionRecords("template/模板.xlsx", "output/输出.xlsx");
+
+    QMessageBox success_box(this);
+    success_box.setWindowTitle("提示");
+    success_box.setText(QString("生成成功"));
+    QPixmap pix(":/image/success.png");
+    pix = pix.scaled(32, 32);
+    success_box.setIconPixmap(pix);
+    success_box.setStandardButtons(QMessageBox::Ok);
+    success_box.setButtonText(QMessageBox::Ok, "确定");
+    success_box.exec();
 }
 
 void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
