@@ -9,10 +9,11 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/xlnt.hpp>
+#include <zel/utility/ini_file.h>
 
 class Tabulation {
   public:
-    Tabulation(const std::shared_ptr<zel::myorm::Database> &db);
+    Tabulation(const std::shared_ptr<zel::myorm::Database> &db, const zel::utility::IniFile &ini);
     ~Tabulation();
 
     std::vector<std::string> orderList();
@@ -38,8 +39,10 @@ class Tabulation {
 
   private:
     std::shared_ptr<zel::myorm::Database>                 db_;
+    zel::utility::IniFile                                 ini_;
     std::shared_ptr<DistributionRecord>                   dr_;
     xlnt::workbook                                        workbook_;
     xlnt::worksheet                                       worksheet_;
     std::unordered_map<std::string, xlnt::cell_reference> cell_refs_;
+    std::unordered_map<std::string, std::string>           key_map_;
 };

@@ -9,6 +9,7 @@
 #include "write_card_loading.h"
 #include "myorm/database.h"
 
+#include <cstdlib>
 #include <memory>
 #include <qdesktopservices.h>
 #include <qfiledialog.h>
@@ -287,10 +288,12 @@ void MainWindow::uploadTempBtnClicked() {
 
 void MainWindow::selectGeneratePathBtnClicked() {
 
+    QString order_no = ui_->order_combo_box->currentText();
+
     // 获取桌面路径
     QString desktop_path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-
-    QString file_path = QFileDialog::getOpenFileName(this, "选择数据分配表路径", desktop_path, "*.xlsx");
+    QString default_path = desktop_path + "/数据分配表-" + order_no + ".xlsx";
+    QString file_path    = QFileDialog::getSaveFileName(this, "选择数据分配表路径", default_path, "Excel 文件 (*.xlsx)");
 
     if (file_path.isEmpty()) return;
 
@@ -590,34 +593,16 @@ void MainWindow::initDatabase() {
 
     log_debug("Connected to database");
 
-    tabulation_            = std::make_shared<Tabulation>(db_);
+    tabulation_            = std::make_shared<Tabulation>(db_, ini_);
     auto        order_list = tabulation_->orderList();
+    reverse(order_list.begin(), order_list.end());
     QStringList items;
     for (auto order : order_list) {
         items.append(QString::fromStdString(order));
     }
 
     ui_->order_combo_box->addItems(items);
-
-    // 创建原始模型
-    QStringListModel *model = new QStringListModel(items, ui_->order_combo_box);
-
-    // 创建模糊过滤代理模型
-    FuzzyFilterProxyModel *proxyModel = new FuzzyFilterProxyModel(ui_->order_combo_box);
-    proxyModel->setSourceModel(model);
-    proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive); // 忽略大小写
-
-    // 创建自定义 Completer
-    QCompleter *completer = new QCompleter(proxyModel, ui_->order_combo_box);
-    completer->setCompletionMode(QCompleter::PopupCompletion);
-    completer->setFilterMode(Qt::MatchContains); // 启用包含匹配
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-
-    ui_->order_combo_box->setCompleter(completer);
-
-    // 每次编辑框变化时更新过滤器
-    QObject::connect(ui_->order_combo_box->lineEdit(), &QLineEdit::textEdited, proxyModel,
-                     [&](const QString &text) { proxyModel->setFilterFixedString(text); });
+    ui_->order_combo_box->setCurrentText("");
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {

@@ -7,19 +7,21 @@
 #include <vector>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <zel/utility/ini_file.h>
 #include <zel/utility/logger.h>
 #include <fmt/format.h>
 #include <zel/utility/string.h>
 #include <zel/filesystem/file.h>
 
-// 键：逻辑标识；值：对应的关键字
-std::unordered_map<std::string, std::string> key_map = {
-    {"order_no", "工程单号(Order No.):"}, {"order_quantity", "下单数量(Qty):"}, {"data", "Product File Name"}};
-
-Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &db)
+Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &db, const zel::utility::IniFile &ini)
     : db_(db)
+    , ini_(ini)
     , dr_(std::make_shared<DistributionRecord>())
-    , cell_refs_(std::unordered_map<std::string, xlnt::cell_reference>()) {}
+    , cell_refs_(std::unordered_map<std::string, xlnt::cell_reference>()) {
+    key_map_["order_no"]       = ini_["template"]["order_no"].asString();
+    key_map_["order_quantity"] = ini_["template"]["order_quantity"].asString();
+    key_map_["data"]           = ini_["template"]["data"].asString();
+}
 
 Tabulation::~Tabulation() {}
 
@@ -125,7 +127,7 @@ void Tabulation::locateTemplateTags() {
             if (!cell.has_value()) continue;
             std::string val = cell.to_string();
 
-            for (const auto &pair : key_map) {
+            for (const auto &pair : key_map_) {
                 if (val.find(pair.second) != std::string::npos) {
                     cell_refs_[pair.first] = cell.reference();
                 }
@@ -135,9 +137,8 @@ void Tabulation::locateTemplateTags() {
 }
 
 void Tabulation::fillTemplateWithData(const std::string &output_file) {
-
-    worksheet_.cell(cell_refs_["order_no"]).value(key_map["order_no"] + dr_->header.order_no);
-    worksheet_.cell(cell_refs_["order_quantity"]).value(key_map["order_quantity"] + std::to_string(dr_->header.order_quantity));
+    worksheet_.cell(cell_refs_["order_no"]).value(key_map_["order_no"] + dr_->header.order_no);
+    worksheet_.cell(cell_refs_["order_quantity"]).value(key_map_["order_quantity"] + std::to_string(dr_->header.order_quantity));
 
     auto data_ref = cell_refs_["data"];
     for (size_t i = 0; i < dr_->datas.size(); ++i) {
