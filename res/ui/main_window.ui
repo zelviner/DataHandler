@@ -1217,8 +1217,8 @@
          <rect>
           <x>10</x>
           <y>20</y>
-          <width>781</width>
-          <height>281</height>
+          <width>771</width>
+          <height>291</height>
          </rect>
         </property>
         <property name="title">
@@ -1241,7 +1241,7 @@
             </spacer>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_51">
+            <layout class="QHBoxLayout" name="horizontalLayout_51" stretch="2,8">
              <item>
               <widget class="QLabel" name="label_15">
                <property name="font">
@@ -1256,12 +1256,15 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="find_order_line">
+              <widget class="QComboBox" name="order_combo_box">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
                  <pointsize>14</pointsize>
                 </font>
+               </property>
+               <property name="editable">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -1298,7 +1301,7 @@
             </spacer>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_52">
+            <layout class="QHBoxLayout" name="horizontalLayout_52" stretch="2,8">
              <item>
               <widget class="QLabel" name="label_16">
                <property name="font">
@@ -1370,11 +1373,11 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="find_order_line_3">
+              <widget class="QLineEdit" name="generate_path_line">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
-                 <pointsize>14</pointsize>
+                 <pointsize>10</pointsize>
                 </font>
                </property>
               </widget>
@@ -1382,7 +1385,7 @@
             </layout>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_2">
+            <widget class="QPushButton" name="select_generate_file_ptn">
              <property name="font">
               <font>
                <family>微软雅黑</family>
@@ -1703,7 +1706,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="mysql_database_line">
+                <widget class="QLineEdit" name="sim_database_line">
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
@@ -1746,7 +1749,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="mysql_database_line_2">
+                <widget class="QLineEdit" name="bank_database_line">
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
@@ -2022,7 +2025,7 @@
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </widget>
@@ -2062,7 +2065,7 @@
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </widget>
@@ -2094,7 +2097,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_17">
+            <layout class="QHBoxLayout" name="horizontalLayout_17" stretch="1,8,1">
              <item>
               <spacer name="horizontalSpacer_19">
                <property name="orientation">
@@ -2119,22 +2122,22 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>金融数据分配表</string>
+                  <string>文件路径</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="find_order_line_4">
+                <widget class="QLineEdit" name="bank_path_line">
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="pushButton">
+                <widget class="QPushButton" name="select_template_file_ptn">
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
@@ -2164,7 +2167,7 @@
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_38">
+            <layout class="QHBoxLayout" name="horizontalLayout_61" stretch="1,8,1">
              <item>
               <spacer name="horizontalSpacer_21">
                <property name="orientation">
@@ -2179,9 +2182,9 @@
               </spacer>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_34">
+              <layout class="QHBoxLayout" name="horizontalLayout_60" stretch="4,6">
                <item>
-                <widget class="QLabel" name="label_22">
+                <widget class="QLabel" name="label">
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
@@ -2189,30 +2192,17 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>电信数据分配表</string>
+                  <string>订单号单元格内容</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="find_order_line_5">
+                <widget class="QLineEdit" name="order_no_line">
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
                    <pointsize>14</pointsize>
                   </font>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_3">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>14</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>浏览</string>
                  </property>
                 </widget>
                </item>
@@ -2233,11 +2223,125 @@
              </item>
             </layout>
            </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_62" stretch="1,8,1">
+             <item>
+              <spacer name="horizontalSpacer_47">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_38" stretch="4,6">
+               <item>
+                <widget class="QLabel" name="label_7">
+                 <property name="font">
+                  <font>
+                   <family>微软雅黑</family>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>订单数量单元格内容</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="order_quantity_line">
+                 <property name="font">
+                  <font>
+                   <family>微软雅黑</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_48">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_63" stretch="1,8,1">
+             <item>
+              <spacer name="horizontalSpacer_49">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_34" stretch="4,6">
+               <item>
+                <widget class="QLabel" name="label_22">
+                 <property name="font">
+                  <font>
+                   <family>微软雅黑</family>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>数据行单元格内容</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="data_line">
+                 <property name="font">
+                  <font>
+                   <family>微软雅黑</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_50">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
           </layout>
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_40">
+         <layout class="QHBoxLayout" name="horizontalLayout_40" stretch="1,8,1">
           <item>
            <spacer name="horizontalSpacer_31">
             <property name="orientation">
@@ -2252,7 +2356,7 @@
            </spacer>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_33" stretch="2,8">
+           <layout class="QHBoxLayout" name="horizontalLayout_33" stretch="4,6">
             <item>
              <widget class="QLabel" name="label_10">
               <property name="font">

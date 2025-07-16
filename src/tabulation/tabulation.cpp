@@ -4,6 +4,7 @@
 #include "model/xh_dataload_record.hpp"
 
 #include <memory>
+#include <vector>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <zel/utility/logger.h>
@@ -13,7 +14,7 @@
 
 // 键：逻辑标识；值：对应的关键字
 std::unordered_map<std::string, std::string> key_map = {
-    {"order_no", "工程单号(Order No.)"}, {"order_quantity", "下单数量(Qty):"}, {"data", "Product File Name"}};
+    {"order_no", "工程单号(Order No.):"}, {"order_quantity", "下单数量(Qty):"}, {"data", "Product File Name"}};
 
 Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &db)
     : db_(db)
@@ -21,6 +22,18 @@ Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &db)
     , cell_refs_(std::unordered_map<std::string, xlnt::cell_reference>()) {}
 
 Tabulation::~Tabulation() {}
+
+std::vector<std::string> Tabulation::orderList() {
+    std::vector<std::string> order_list;
+
+    XhOrderList xh_order_list(*db_);
+    auto        ol_all = xh_order_list.all();
+    for (auto one : ol_all) {
+        order_list.push_back(one("xh_order_number").asString());
+    }
+
+    return order_list;
+}
 
 bool Tabulation::distributionRecord(const std::string &order_number, const std::string &data_field) {
     dr_->header.order_no = order_number;

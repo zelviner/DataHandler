@@ -4,6 +4,7 @@
 #include "distribution_record.h"
 
 #include <memory>
+#include <qlist.h>
 #include <unordered_map>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -13,6 +14,8 @@ class Tabulation {
   public:
     Tabulation(const std::shared_ptr<zel::myorm::Database> &db);
     ~Tabulation();
+
+    std::vector<std::string> orderList();
 
     bool distributionRecord(const std::string &order_number, const std::string &data_field);
 

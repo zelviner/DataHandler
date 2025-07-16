@@ -51,8 +51,14 @@ class MainWindow : public QMainWindow {
     /// @brief 上传临时存放按钮点击事件
     void uploadTempBtnClicked();
 
-    /// @brief 搜索订单按钮点击事件
-    void searchOrderBtnClicked();
+    /// @brief 选择数据分配表生成路径按钮点击事件
+    void selectGeneratePathBtnClicked();
+
+    /// @brief 生成数据分配表点击事件
+    void generateDistributionRecordBtnClicked();
+
+    /// @brief 选择模板文件径按钮点击事件
+    void selectTemplatePathBtnClicked();
 
     /// @brief 保存按钮点击事件
     void saveBtnClicked();
