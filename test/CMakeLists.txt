@@ -24,3 +24,4 @@ endfunction(add_test_executable name)
 
 # 添加测试
 add_test_executable(time)
+add_test_executable(mariadb)
