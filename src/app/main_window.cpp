@@ -547,12 +547,11 @@ void MainWindow::initConfig(const std::string &config_file) {
 }
 
 void MainWindow::initLogger(const std::string &log_file) {
-    auto logger = Logger::instance();
-    if (!logger->isOpen()) {
-        logger->open(log_file);
-        logger->setFormat(false);
+    if (!Logger::instance().isOpen()) {
+        Logger::instance().open(log_file);
+        Logger::instance().setFormat(false);
         int level = ini_["log"]["level"];
-        logger->setLevel(Logger::Level(level));
+        Logger::instance().setLevel(Logger::Level(level));
     }
 }
 
