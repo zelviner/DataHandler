@@ -34,9 +34,6 @@ class Tabulation {
     /// @brief 计算单元格位置
     xlnt::cell_reference offset(const xlnt::cell_reference &ref, int row_offset, int col_offset);
 
-    /// @brief 复制行样式
-    void copy_row_style(std::uint32_t source_row, std::uint32_t target_row);
-
   private:
     std::shared_ptr<zel::myorm::Database>                 db_;
     zel::utility::IniFile                                 ini_;

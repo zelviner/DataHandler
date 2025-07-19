@@ -9,7 +9,6 @@
 #include "write_card_loading.h"
 #include "myorm/database.h"
 
-#include <cstdlib>
 #include <memory>
 #include <qdesktopservices.h>
 #include <qfiledialog.h>
@@ -34,8 +33,6 @@ using namespace zel::filesystem;
 
 #include <xhlanguage/card-reader/card_reader_factory.hpp>
 using namespace xhlanguage::reader;
-
-#include "utils/fuzzy_filter_proxy_model.hpp"
 
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
@@ -292,7 +289,7 @@ void MainWindow::selectGeneratePathBtnClicked() {
 
     // 获取桌面路径
     QString desktop_path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    QString default_path = desktop_path + "/数据分配表-" + order_no + ".xlsx";
+    QString default_path = desktop_path + "/数据分配表" + order_no + ".xlsx";
     QString file_path    = QFileDialog::getSaveFileName(this, "选择数据分配表路径", default_path, "Excel 文件 (*.xlsx)");
 
     if (file_path.isEmpty()) return;
@@ -593,8 +590,8 @@ void MainWindow::initDatabase() {
 
     log_debug("Connected to database");
 
-    tabulation_            = std::make_shared<Tabulation>(db_, ini_);
-    auto        order_list = tabulation_->orderList();
+    tabulation_     = std::make_shared<Tabulation>(db_, ini_);
+    auto order_list = tabulation_->orderList();
     reverse(order_list.begin(), order_list.end());
     QStringList items;
     for (auto order : order_list) {

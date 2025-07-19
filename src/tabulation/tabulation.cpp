@@ -157,5 +157,3 @@ void Tabulation::fillTemplateWithData(const std::string &output_file) {
 xlnt::cell_reference Tabulation::offset(const xlnt::cell_reference &ref, int row_offset, int col_offset) {
     return xlnt::cell_reference(xlnt::column_t(ref.column().index + col_offset), ref.row() + row_offset);
 }
-
-void Tabulation::copy_row_style(std::uint32_t source_row, std::uint32_t target_row) {}
