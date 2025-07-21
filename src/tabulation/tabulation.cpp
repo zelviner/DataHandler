@@ -44,17 +44,17 @@ bool Tabulation::distributionRecord(const std::string &order_number, const std::
     xh_order_list.where("xh_order_number", order_number);
     auto ol_all = xh_order_list.all();
     if (ol_all.empty() || ol_all.size() > 1) {
-        log_error("xh_order_list.all() failed, order_number: %s", order_number.c_str());
+        log_error("table xh_order_list has no or more than one record, xh_order_number: %s", order_number.c_str());
         return false;
     }
 
-    auto xh_order_number = ol_all[0]("xh_order_number").asInt();
+    auto xh_order_number = ol_all[0]("xh_order_number").asString();
 
     XhDataloadRecord xh_dataload_record(*db_);
     xh_dataload_record.where("ProjectID", xh_order_number);
     auto dr_all = xh_dataload_record.all();
     if (dr_all.empty()) {
-        log_error("xh_dataload_record.all() failed, xh_order_number: %d", xh_order_number);
+        log_error("table xh_dataload_record has no record, ProjectID: %s", xh_order_number.c_str());
         return false;
     }
 

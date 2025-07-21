@@ -6,7 +6,6 @@
 #include "order/script.h"
 #include "order_window.h"
 #include "loading.h"
-#include "tabulation/tabulation.h"
 #include "myorm/database.h"
 
 #include <zel/zel.h>
@@ -116,6 +115,5 @@ class MainWindow : public QMainWindow {
     std::shared_ptr<PersonDataInfo>                 person_data_info_; // 个人化信息
     std::shared_ptr<ScriptInfo>                     script_info_;      // 脚本信息
     std::shared_ptr<xhlanguage::reader::CardReader> card_reader_;      // 读卡器
-    std::shared_ptr<Tabulation>                     tabulation_;       // 制表
     std::shared_ptr<zel::myorm::Database>           db_;               // 数据库
 };

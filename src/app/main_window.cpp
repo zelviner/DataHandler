@@ -1,6 +1,7 @@
 #include "main_window.h"
 
 #include "order_window.h"
+#include "tabulation/tabulation.h"
 #include "task/upload_file.hpp"
 #include "task/handle_order.hpp"
 #include "task/clear_card.hpp"
@@ -43,7 +44,6 @@ MainWindow::MainWindow(QMainWindow *parent)
     , person_data_info_(nullptr)
     , script_info_(nullptr)
     , card_reader_(nullptr)
-    , tabulation_(nullptr)
     , db_(nullptr) {
     ui_->setupUi(this);
 
@@ -298,8 +298,16 @@ void MainWindow::selectGeneratePathBtnClicked() {
 }
 
 void MainWindow::generateDistributionRecordBtnClicked() {
-    auto order_number = ui_->order_combo_box->currentText().toStdString();
-    auto data_field   = ui_->data_field_line->text().toStdString();
+    // 校验配置
+    if (ui_->bank_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
+        ui_->data_line->text().isEmpty()) {
+        QMessageBox::critical(this, "错误", "请先配置模板文件路径、订单号、订单数量、数据项单元格内容");
+        return;
+    }
+
+    auto order_number  = ui_->order_combo_box->currentText().toStdString();
+    auto data_field    = ui_->data_field_line->text().toStdString();
+    auto generate_path = ui_->generate_path_line->text().toStdString();
 
     if (order_number.empty()) {
         QMessageBox::critical(this, "错误", "请输入订单号");
@@ -311,14 +319,19 @@ void MainWindow::generateDistributionRecordBtnClicked() {
         return;
     }
 
-    if (!tabulation_->distributionRecord(order_number, data_field)) {
+    if (generate_path.empty()) {
+        QMessageBox::critical(this, "错误", "请选择数据分配表路径");
+        return;
+    }
+
+    Tabulation tabulation(db_, ini_);
+    if (!tabulation.distributionRecord(order_number, data_field)) {
         QMessageBox::critical(this, "错误", "请核对订单号与数据项是否正确");
         return;
     }
 
     auto template_path = ui_->bank_path_line->text().toStdString();
-    auto generate_path = ui_->generate_path_line->text().toStdString();
-    tabulation_->generateDistributionRecords(template_path, generate_path);
+    tabulation.generateDistributionRecords(template_path, generate_path);
 
     QMessageBox success_box(this);
     success_box.setWindowTitle("提示");
@@ -535,10 +548,10 @@ void MainWindow::initConfig(const std::string &config_file) {
         ini_.set("path", "remote_prd_path", "/data/ftp/output/PRD");
         ini_.set("path", "remote_temp_path", "/data/ftp/output/临时存放");
         ini_.set("path", "local_backup_path", "D:/备份");
-        ini_.set("template", "bank_path", "template/银行卡模板.xlsx");
-        ini_.set("tempalte", "order_no", "工程单号(Order No.):");
-        ini_.set("tempalte", "order_quantity", "下单数量(Qty):");
-        ini_.set("tempalte", "data", "Product File Name");
+        ini_.set("template", "bank_path", "");
+        ini_.set("tempalte", "order_no", "");
+        ini_.set("tempalte", "order_quantity", "");
+        ini_.set("tempalte", "data", "");
 
         ini_.save(config_file);
     } else {
@@ -589,8 +602,8 @@ void MainWindow::initDatabase() {
 
     log_debug("Connected to database");
 
-    tabulation_     = std::make_shared<Tabulation>(db_, ini_);
-    auto order_list = tabulation_->orderList();
+    Tabulation tabulation(db_, ini_);
+    auto       order_list = tabulation.orderList();
     reverse(order_list.begin(), order_list.end());
     QStringList items;
     for (auto order : order_list) {
