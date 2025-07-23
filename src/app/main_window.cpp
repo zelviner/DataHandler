@@ -11,6 +11,7 @@
 #include "myorm/database.h"
 
 #include <memory>
+#include <qaction.h>
 #include <qdesktopservices.h>
 #include <qfiledialog.h>
 #include <qmainwindow.h>
@@ -77,6 +78,10 @@ MainWindow::~MainWindow() {
         card_reader_ = nullptr;
     }
 }
+
+void MainWindow::chineseLanguageAction() { switchLanguage("zh_CN"); }
+
+void MainWindow::englishLanguageAction() { switchLanguage("en_US"); }
 
 void MainWindow::dropEvent(QDropEvent *event) {
     QList<QUrl> urls = event->mimeData()->urls();
@@ -499,6 +504,9 @@ void MainWindow::initUI() {
 void MainWindow::initSignalSlot() {
     QClipboard *clip = QApplication::clipboard();
 
+    connect(ui_->chinese_action, &QAction::triggered, this, &MainWindow::chineseLanguageAction);
+    connect(ui_->english_action, &QAction::triggered, this, &MainWindow::englishLanguageAction);
+
     // 信息 - 订单信息
     connect(ui_->project_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_number.c_str())); });
     connect(ui_->order_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_number.c_str())); });
@@ -665,3 +673,17 @@ void MainWindow::showInfo() {
 
     ui_->ds_check_box->setChecked(script_info_->has_ds);
 }
+
+void MainWindow::switchLanguage(const QString &language_file) {
+    qApp->removeTranslator(&translator_);
+
+    if (translator_.load("translations/" + language_file + ".qm")) {
+        qApp->installTranslator(&translator_);
+        current_lang_ = language_file;
+        retranslateUi();
+    } else {
+        qDebug() << "加载语言失败：" << language_file;
+    }
+}
+
+void MainWindow::retranslateUi() { ui_->retranslateUi(this); }

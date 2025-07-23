@@ -12,6 +12,7 @@
 #include <memory>
 #include <qmainwindow>
 #include <xhlanguage/card-reader/card_reader.hpp>
+#include <qtranslator>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -19,6 +20,10 @@ class MainWindow : public QMainWindow {
   public:
     MainWindow(QMainWindow *parent = nullptr);
     ~MainWindow();
+
+    void chineseLanguageAction();
+
+    void englishLanguageAction();
 
     /// @brief 拖拽释放事件
     void dropEvent(QDropEvent *event);
@@ -104,10 +109,16 @@ class MainWindow : public QMainWindow {
 
     void showInfo();
 
+    void switchLanguage(const QString &language_file);
+
+    void retranslateUi();
+
   private:
     Ui_MainWindow *ui_;           // UI界面
     OrderWindow   *order_window_; // 确认订单窗口
     Loading       *loading_;      // 加载窗口
+    QTranslator    translator_;   // 翻译器
+    QString        current_lang_ = "zh_CN";
 
     zel::utility::IniFile                           ini_;              // 配置文件
     std::shared_ptr<Path>                           path_;             // 路径

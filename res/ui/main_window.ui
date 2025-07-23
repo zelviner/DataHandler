@@ -2434,6 +2434,34 @@
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>825</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Language</string>
+    </property>
+    <addaction name="chinese_action"/>
+    <addaction name="english_action"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
+  <action name="chinese_action">
+   <property name="text">
+    <string>Chinese</string>
+   </property>
+  </action>
+  <action name="english_action">
+   <property name="text">
+    <string>English</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

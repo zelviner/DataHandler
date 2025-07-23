@@ -15,6 +15,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # [4] 查找 Qt5 组件 ---------------------------------------------------
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
+find_package(Qt5LinguistTools REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(zel CONFIG REQUIRED)
 find_package(xhlanguage CONFIG REQUIRED)
@@ -32,8 +33,8 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 file(GLOB RESOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/res/rc/*)
 
 # [7] 添加可执行文件 ---------------------------------------------------
-# add_executable(${APP_NAME} ${SOURCES} ${RESOURCES}) #debug
-add_executable(${APP_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
+add_executable(${APP_NAME} ${SOURCES} ${RESOURCES}) #debug
+# add_executable(${APP_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
 
 # [8] 包含 Qt 的私有头（如果有需要，比如自定义窗口样式）--------------
 include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
@@ -59,3 +60,24 @@ target_link_libraries(${APP_NAME} PRIVATE
     Crypt32
     Winscard
 )
+
+# [11] Qt 翻译处理 -----------------------------------------------------
+# set(TRANSLATIONS
+#     res/translations/zh_CN.ts
+#     res/translations/en_US.ts
+# )
+
+# # 使用 qt5_add_translation 自动将 .ts 转换成 .qm
+# qt5_create_translation(QM_FILES ${SOURCES} ${TRANSLATIONS})
+
+
+# # 拷贝 .qm 文件到可执行文件目录
+# foreach(QM ${QM_FILES})
+#     add_custom_command(TARGET ${APP_NAME} POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#             ${QM}
+#             $<TARGET_FILE_DIR:${APP_NAME}>
+#         COMMENT "Copying translation file: ${QM}"
+#     )
+# endforeach()
+
