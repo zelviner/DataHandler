@@ -1,7 +1,7 @@
 #include "tabulation.h"
 #include "distribution_record.h"
 #include "model/xh_order_list.hpp"
-#include "model/xh_dataload_record.hpp"
+#include "model/xh_datatool_record.hpp"
 
 #include <memory>
 #include <vector>
@@ -48,19 +48,22 @@ bool Tabulation::distributionRecord(const std::string &order_number, const std::
         return false;
     }
 
-    auto xh_order_number = ol_all[0]("xh_order_number").asString();
+    auto rid = ol_all[0]("RID").asInt();
 
-    XhDataloadRecord xh_dataload_record(*db_);
-    xh_dataload_record.where("ProjectID", xh_order_number);
-    auto dr_all = xh_dataload_record.all();
+    XhDatatoolRecord xh_datatool_record(*db_);
+    xh_datatool_record.where("RID", rid);
+    auto dr_all = xh_datatool_record.all();
     if (dr_all.empty()) {
-        log_error("table xh_dataload_record has no record, ProjectID: %s", xh_order_number.c_str());
+        log_error("table xh_datatool_record has no record, RID: %d", rid);
         return false;
     }
 
     for (auto one : dr_all) {
         DistributionRecordData data;
-        data.filename = one("DataFileName").asString();
+        data.filename = one("xh_order_filename").asString();
+        if (data.filename.find(".gpg") == std::string::npos || data.filename.find(".pgp") == std::string::npos) {
+            data.filename = data.filename.substr(0, data.filename.length() - 4);
+        }
 
         // 查询文件数量
         String::toLower(data.filename);

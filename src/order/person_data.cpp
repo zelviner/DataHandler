@@ -22,28 +22,38 @@ std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
     auto      person_data_files = data_dir.files();
 
     auto person_data_file_path_pgp = person_data_files->at(0).path();
-    int  pos                       = person_data_file_path_pgp.find_last_of(".");
-    if (pos == std::string::npos) return nullptr;
-    auto person_data_file_path = person_data_file_path_pgp.substr(0, pos);
+    if (person_data_file_path_pgp.find(".gpg") != std::string::npos || person_data_file_path_pgp.find(".pgp") != std::string::npos) {
+        int pos = person_data_file_path_pgp.find_last_of(".");
+        if (pos == std::string::npos) return nullptr;
+        auto person_data_file_path = person_data_file_path_pgp.substr(0, pos);
 
-    // GPG解密个人化数据文件
-    try {
-        Gpg gpg("libgpgme-11.dll");
-        gpg.decryptFile(person_data_file_path_pgp, person_data_file_path);
-    } catch (const std::exception &e) {
-        log_error("%s error: %s", person_data_file_path_pgp.c_str(), e.what());
-        return nullptr;
+        // GPG解密个人化数据文件
+        try {
+            Gpg gpg("libgpgme-11.dll");
+            gpg.decryptFile(person_data_file_path_pgp, person_data_file_path);
+        } catch (const std::exception &e) {
+            log_error("%s error: %s", person_data_file_path_pgp.c_str(), e.what());
+            return nullptr;
+        }
+
+        File person_data_file(person_data_file_path);
+
+        person_data_info_->filename = person_data_file.name();
+        if (!person_data_file.readLine(person_data_info_->header)) return nullptr;
+        if (!person_data_file.readLine(person_data_info_->data)) return nullptr;
+
+        person_data_info_->json_data = jsonData();
+
+        if (!person_data_file.remove()) return nullptr;
+    } else {
+        File person_data_file(person_data_file_path_pgp);
+
+        person_data_info_->filename = person_data_file.name();
+        if (!person_data_file.readLine(person_data_info_->header)) return nullptr;
+        if (!person_data_file.readLine(person_data_info_->data)) return nullptr;
+
+        person_data_info_->json_data = jsonData();
     }
-
-    File person_data_file(person_data_file_path);
-
-    person_data_info_->filename = person_data_file.name();
-    if (!person_data_file.readLine(person_data_info_->header)) return nullptr;
-    if (!person_data_file.readLine(person_data_info_->data)) return nullptr;
-
-    person_data_info_->json_data = jsonData();
-
-    if (!person_data_file.remove()) return nullptr;
 
     return person_data_info_;
 }
