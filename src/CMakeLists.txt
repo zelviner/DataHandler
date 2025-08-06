@@ -60,24 +60,3 @@ target_link_libraries(${APP_NAME} PRIVATE
     Crypt32
     Winscard
 )
-
-# [11] Qt 翻译处理 -----------------------------------------------------
-# set(TRANSLATIONS
-#     res/translations/zh_CN.ts
-#     res/translations/en_US.ts
-# )
-
-# # 使用 qt5_add_translation 自动将 .ts 转换成 .qm
-# qt5_create_translation(QM_FILES ${SOURCES} ${TRANSLATIONS})
-
-
-# # 拷贝 .qm 文件到可执行文件目录
-# foreach(QM ${QM_FILES})
-#     add_custom_command(TARGET ${APP_NAME} POST_BUILD
-#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#             ${QM}
-#             $<TARGET_FILE_DIR:${APP_NAME}>
-#         COMMENT "Copying translation file: ${QM}"
-#     )
-# endforeach()
-
