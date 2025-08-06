@@ -21,8 +21,10 @@ class MainWindow : public QMainWindow {
     MainWindow(QMainWindow *parent = nullptr);
     ~MainWindow();
 
+    /// @brief 中文语言切换
     void chineseLanguageAction();
 
+    /// @brief 英文语言切换
     void englishLanguageAction();
 
     /// @brief 拖拽释放事件

@@ -4,6 +4,7 @@
 #include <qdir>
 #include <qfileinfo>
 #include <xlnt/xlnt.hpp>
+#include <zel/filesystem/directory.h>
 
 Utils::Utils() {}
 Utils::~Utils() {}
@@ -65,8 +66,13 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
 }
 
 bool Utils::decompressionZipFile(const std::string &file_path, const std::string &save_path, bool remove) {
+    // 创建解压缩后文件夹
+    zel::filesystem::Directory save(save_path);
+    save.create();
+
     QString qfile_path = QString(file_path.c_str());
     QString qsave_path = QString(save_path.c_str());
+
     if (qfile_path.isEmpty() || qsave_path.isEmpty()) {
         return false;
     }

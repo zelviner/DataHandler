@@ -2,6 +2,7 @@
 #include "utils/utils.h"
 
 #include <vector>
+#include <zel/filesystem/filepath.h>
 #include <zel/utility/logger.h>
 #include <zel/zel.h>
 #include <memory>
@@ -36,7 +37,7 @@ bool Order::preProcessing() {
         }
 
         // 解压数据包
-        if (!Utils::decompressionZipFile(datagram_zip_path, datagram_file.dirPath(), true)) {
+        if (!Utils::decompressionZipFile(datagram_zip_path, FilePath::join(datagram_file.dirPath(), datagram_dir_name), true)) {
             log_error("Failed to unzip the packet: %s", datagram_zip_path.c_str());
             return false;
         }
@@ -44,7 +45,7 @@ bool Order::preProcessing() {
         datagram_dir_name = datagram_file.prefix();
 
         // 解压数据包
-        if (!Utils::decompressionZipFile(datagram_file.path(), datagram_file.dirPath(), true)) {
+        if (!Utils::decompressionZipFile(datagram_file.path(), FilePath::join(datagram_file.dirPath(), datagram_dir_name), false)) {
             log_debug("datagram_file: %s, datagram_dir_name: %s", datagram_file.path().c_str(), datagram_dir_name.c_str());
             log_error("Failed to unzip the packet: %s", datagram_file.path().c_str());
             return false;

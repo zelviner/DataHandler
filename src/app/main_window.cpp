@@ -677,7 +677,7 @@ void MainWindow::showInfo() {
 void MainWindow::switchLanguage(const QString &language_file) {
     qApp->removeTranslator(&translator_);
 
-    if (translator_.load("translations/" + language_file + ".qm")) {
+    if (translator_.load(":/translation/" + language_file + ".qm")) {
         qApp->installTranslator(&translator_);
         current_lang_ = language_file;
         retranslateUi();
