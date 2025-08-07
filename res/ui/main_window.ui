@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>825</width>
-    <height>778</height>
+    <height>789</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1991,7 +1991,7 @@
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_37">
+            <layout class="QHBoxLayout" name="horizontalLayout_37" stretch="0,4,0,4,0">
              <item>
               <spacer name="horizontalSpacer_10">
                <property name="orientation">
@@ -2025,7 +2025,7 @@
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
-                   <pointsize>10</pointsize>
+                   <pointsize>14</pointsize>
                   </font>
                  </property>
                 </widget>
@@ -2065,7 +2065,7 @@
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
-                   <pointsize>10</pointsize>
+                   <pointsize>14</pointsize>
                   </font>
                  </property>
                 </widget>
@@ -2131,7 +2131,7 @@
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
-                   <pointsize>10</pointsize>
+                   <pointsize>14</pointsize>
                   </font>
                  </property>
                 </widget>

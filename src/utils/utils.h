@@ -37,6 +37,9 @@ class Utils {
     /// @param new_str 新字符串
     static void replaceStringInXlsx(const std::string &filename, const std::string &old_str, const std::string &new_str);
 
+    static bool ftpUploadDir(const std::string &local_dir,std::string &remote_path, const std::string &userpwd);
+    static bool ftpUploadFile(const std::string &local_file, const std::string &ftp_url, const std::string &userpwd);
+
   private:
     static QFileInfoList ergodicCompressionFile(QZipWriter *writer, const QString &rootPath, QString dirPath);
 

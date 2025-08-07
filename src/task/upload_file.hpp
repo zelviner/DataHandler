@@ -50,24 +50,22 @@ class UploadFile : public QThread {
         std::string username = ini_["ftp"]["username"];
         std::string password = ini_["ftp"]["password"];
 
-        zel::ftp::FtpClient ftp(host, username, password, port);
-        if (!ftp.connect()) {
-            emit failure("服务器连接失败", "请检查FTP服务器IP和端口是否正确");
-            return;
-        }
+        // zel::ftp::FtpClient ftp(host, username, password, port);
+        // if (!ftp.connect()) {
+        //     emit failure("服务器连接失败", "请检查FTP服务器IP和端口是否正确");
+        //     return;
+        // }
 
-        if (!ftp.login()) {
-            emit failure("FTP登录失败", "请检查用户名和密码是否正确");
-            return;
-        }
-
-        if (!ftp.upload(local_path_, remote_path_)) {
-            ftp.disconnect();
+        // if (!ftp.login()) {
+        //     emit failure("FTP登录失败", "请检查用户名和密码是否正确");
+        //     return;
+        // }
+        std::string remote = "ftp://" + host + remote_path_;
+        if (!Utils::ftpUploadDir(local_path_, remote, username + ":" + password)) {
             emit failure("上传失败", "请检查远程路径是否正确");
             return;
         }
 
-        ftp.disconnect();
         emit success();
     }
 

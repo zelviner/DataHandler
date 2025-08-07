@@ -5,6 +5,10 @@
 #include <qfileinfo>
 #include <xlnt/xlnt.hpp>
 #include <zel/filesystem/directory.h>
+#include <zel/filesystem/filepath.h>
+#include <curl/curl.h>
+#include <zel/utility/logger.h>
+#include <zel/utility/string.h>
 
 Utils::Utils() {}
 Utils::~Utils() {}
@@ -163,6 +167,67 @@ void Utils::replaceStringInXlsx(const std::string &filename, const std::string &
 
     // 保存 Excel 文件
     workbook.save(filename);
+}
+
+bool Utils::ftpUploadDir(const std::string &local_dir, std::string &remote_path, const std::string &userpwd) {
+    // 判断local_path是否是目录
+    if (zel::filesystem::FilePath::isDir(local_dir)) {
+        // 如果是目录，执行目录上传逻辑
+        auto walkFunc = [=](std::string relative_path, zel::filesystem::Directory dir, zel::filesystem::File file) -> bool {
+            if (!dir.exists()) {
+                auto local_file_gbk = zel::utility::String::utf8ToGbk(file.path());
+                auto remote_file    = zel::filesystem::FilePath::join(remote_path, relative_path);
+                if (!ftpUploadFile(local_file_gbk, remote_file, userpwd)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        return zel::filesystem::FilePath::walk(local_dir, walkFunc, true);
+    } else {
+        // 如果是文件，执行文件上传逻辑
+        auto local_file_gbk = zel::utility::String::utf8ToGbk(local_dir);
+        if (!ftpUploadFile(local_file_gbk, remote_path, userpwd)) {
+            return false;
+        }
+        return true;
+    }
+}
+
+bool Utils::ftpUploadFile(const std::string &local_file, const std::string &ftp_url, const std::string &userpwd) {
+    CURL *curl = curl_easy_init();
+    if (!curl) {
+        log_error("Failed to init curl");
+        return false;
+    }
+
+    FILE *file = fopen(local_file.c_str(), "rb");
+    if (!file) {
+        log_error("Failed to open local file: %s", local_file.c_str());
+        return false;
+    }
+
+    curl_easy_setopt(curl, CURLOPT_URL, ftp_url.c_str()); // ftp://host/path/file.txt
+    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+    curl_easy_setopt(curl, CURLOPT_USERPWD, userpwd.c_str()); // user:password
+    curl_easy_setopt(curl, CURLOPT_READDATA, file);
+    curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, CURLFTP_CREATE_DIR_RETRY);
+
+    // 允许自动创建目录
+    curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, CURLFTP_CREATE_DIR_RETRY);
+
+    CURLcode res = curl_easy_perform(curl);
+    fclose(file);
+    curl_easy_cleanup(curl);
+
+    if (res != CURLE_OK) {
+        log_error("FTP upload failed: %s", curl_easy_strerror(res));
+        return false;
+    }
+
+    log_info("FTP upload successful: %s", ftp_url.c_str());
+    return true;
 }
 
 QFileInfoList Utils::ergodicCompressionFile(QZipWriter *writer, const QString &rootPath, QString dirPath) {

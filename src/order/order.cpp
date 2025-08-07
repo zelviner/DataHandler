@@ -129,9 +129,11 @@ bool Order::processing() {
     }
 
     // 生成标签数据文件夹
-    if (!tagDataDir()) {
-        log_error("Failed to generate tag data dir.");
-        return false;
+    if (!path_->tag_data.empty()) {
+        if (!tagDataDir()) {
+            log_error("Failed to generate tag data dir.");
+            return false;
+        }
     }
 
     // 获取脚本信息
