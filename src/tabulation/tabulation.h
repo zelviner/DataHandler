@@ -13,14 +13,17 @@
 
 class Tabulation {
   public:
-    Tabulation(const std::shared_ptr<zel::myorm::Database> &db, const zel::utility::IniFile &ini);
+    Tabulation(const std::shared_ptr<zel::myorm::Database> &finance_db, const std::shared_ptr<zel::myorm::Database> &telecom_db, const zel::utility::IniFile &ini);
     ~Tabulation();
 
-    std::vector<std::string> orderList();
+    std::vector<std::string> financeOrderList();
+    std::vector<std::string> telecomOrderList();
 
-    bool distributionRecord(const std::string &order_number, const std::string &data_field);
+    bool financeRecords(const std::string &order_number, const std::string &data_field);
+    bool telecomRecords(const std::string &order_number, const std::string &data_field);
 
-    void generateDistributionRecords(const std::string &template_file, const std::string &output_file);
+    void generatingFinanceRecords(const std::string &template_file, const std::string &output_file);
+    void generatingTelecomRecords(const std::string &template_file, const std::string &output_file);
 
   private:
     bool loadTemplate(const std::string &path);
@@ -35,11 +38,12 @@ class Tabulation {
     xlnt::cell_reference offset(const xlnt::cell_reference &ref, int row_offset, int col_offset);
 
   private:
-    std::shared_ptr<zel::myorm::Database>                 db_;
+    std::shared_ptr<zel::myorm::Database>                 finance_db_;
+    std::shared_ptr<zel::myorm::Database>                 telecom_db_;
     zel::utility::IniFile                                 ini_;
     std::shared_ptr<DistributionRecord>                   dr_;
     xlnt::workbook                                        workbook_;
     xlnt::worksheet                                       worksheet_;
     std::unordered_map<std::string, xlnt::cell_reference> cell_refs_;
-    std::unordered_map<std::string, std::string>           key_map_;
+    std::unordered_map<std::string, std::string>          key_map_;
 };

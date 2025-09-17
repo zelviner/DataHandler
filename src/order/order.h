@@ -40,9 +40,11 @@ class Order {
     /// @brief 显示路径
     void showPath();
 
-    std::shared_ptr<OrderInfo>      orderInfo();
+    std::shared_ptr<OrderInfo> orderInfo();
+
     std::shared_ptr<PersonDataInfo> personDataInfo();
-    std::shared_ptr<ScriptInfo>     scriptInfo();
+
+    std::shared_ptr<ScriptInfo> scriptInfo();
 
   private:
     /// @brief 截图文件夹
@@ -55,9 +57,11 @@ class Order {
     bool tagDataDir();
 
     std::shared_ptr<OrderInfo> orderInfo(const std::string &order_dir_name);
+    std::shared_ptr<OrderInfo> orderInfoOutgoing(const std::string &order_dir_name);
 
   private:
     std::shared_ptr<Path>           path_;
+    bool                            outgoing_; // 是否是外发数据
     std::shared_ptr<OrderInfo>      order_info_;
     std::shared_ptr<PersonDataInfo> person_data_info_;
     std::shared_ptr<ScriptInfo>     script_info_;

@@ -2,6 +2,10 @@
 #include "distribution_record.h"
 #include "model/xh_order_list.hpp"
 #include "model/xh_datatool_record.hpp"
+#include "model/dms_product_orders.hpp"
+#include "model/dms_order_conf.hpp"
+#include "model/dms_batch_list.hpp"
+#include "model/dms_batch_files.hpp"
 
 #include <memory>
 #include <vector>
@@ -13,8 +17,10 @@
 #include <zel/utility/string.h>
 #include <zel/filesystem/file.h>
 
-Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &db, const zel::utility::IniFile &ini)
-    : db_(db)
+Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &finance_db, const std::shared_ptr<zel::myorm::Database> &telecom_db,
+                       const zel::utility::IniFile &ini)
+    : finance_db_(finance_db)
+    , telecom_db_(telecom_db)
     , ini_(ini)
     , dr_(std::make_shared<DistributionRecord>())
     , cell_refs_(std::unordered_map<std::string, xlnt::cell_reference>()) {
@@ -25,10 +31,10 @@ Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &db, const ze
 
 Tabulation::~Tabulation() {}
 
-std::vector<std::string> Tabulation::orderList() {
+std::vector<std::string> Tabulation::financeOrderList() {
     std::vector<std::string> order_list;
 
-    XhOrderList xh_order_list(*db_);
+    XhOrderList xh_order_list(*finance_db_);
     auto        ol_all = xh_order_list.all();
     for (auto one : ol_all) {
         order_list.push_back(one("xh_order_number").asString());
@@ -37,10 +43,22 @@ std::vector<std::string> Tabulation::orderList() {
     return order_list;
 }
 
-bool Tabulation::distributionRecord(const std::string &order_number, const std::string &data_field) {
+std::vector<std::string> Tabulation::telecomOrderList() {
+    std::vector<std::string> order_list;
+
+    DmsProductOrders dms_product_orders(*telecom_db_);
+    auto             ol_all = dms_product_orders.all();
+    for (auto one : ol_all) {
+        order_list.push_back(one("Code").asString());
+    }
+
+    return order_list;
+}
+
+bool Tabulation::financeRecords(const std::string &order_number, const std::string &data_field) {
     dr_->header.order_no = order_number;
 
-    XhOrderList xh_order_list(*db_);
+    XhOrderList xh_order_list(*finance_db_);
     xh_order_list.where("xh_order_number", order_number);
     auto ol_all = xh_order_list.all();
     if (ol_all.empty() || ol_all.size() > 1) {
@@ -50,7 +68,7 @@ bool Tabulation::distributionRecord(const std::string &order_number, const std::
 
     auto rid = ol_all[0]("RID").asInt();
 
-    XhDatatoolRecord xh_datatool_record(*db_);
+    XhDatatoolRecord xh_datatool_record(*finance_db_);
     xh_datatool_record.where("RID", rid);
     auto dr_all = xh_datatool_record.all();
     if (dr_all.empty()) {
@@ -68,13 +86,13 @@ bool Tabulation::distributionRecord(const std::string &order_number, const std::
         // 查询文件数量
         String::toLower(data.filename);
         std::string sql    = fmt::format("SELECT COUNT(*), MIN(ID), MAX(ID) FROM `{}`", data.filename);
-        auto        result = db_->query(sql);
+        auto        result = finance_db_->query(sql);
         data.quantity      = result[0].find("COUNT(*)")->second.asInt();
         std::string min_id = result[0].find("MIN(ID)")->second.asString();
         std::string max_id = result[0].find("MAX(ID)")->second.asString();
 
         sql    = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, min_id);
-        result = db_->query(sql);
+        result = finance_db_->query(sql);
         if (result.empty()) {
             log_error("query failed, sql: %s", sql.c_str());
             break;
@@ -82,7 +100,7 @@ bool Tabulation::distributionRecord(const std::string &order_number, const std::
         data.start_iccid = result[0].find(data_field)->second.asString();
 
         sql            = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, max_id);
-        result         = db_->query(sql);
+        result         = finance_db_->query(sql);
         data.end_iccid = result[0].find(data_field)->second.asString();
 
         dr_->datas.push_back(data);
@@ -93,7 +111,116 @@ bool Tabulation::distributionRecord(const std::string &order_number, const std::
     return true;
 }
 
-void Tabulation::generateDistributionRecords(const std::string &template_file, const std::string &output_file) {
+bool Tabulation::telecomRecords(const std::string &order_number, const std::string &data_field) {
+    dr_->header.order_no = order_number;
+
+    DmsProductOrders dms_product_orders(*telecom_db_);
+    dms_product_orders.where("Code", order_number);
+    auto dpo_all = dms_product_orders.all();
+    if (dpo_all.empty() || dpo_all.size() > 1) {
+        log_error("table dms_product_orders has no or more than one record, xh_order_number: %s", order_number.c_str());
+        return false;
+    }
+
+    auto order_id = dpo_all[0]("ID").asInt();
+
+    DmsOrderConf dms_order_conf(*telecom_db_);
+    dms_order_conf.where("Order", order_id);
+    auto doc_all = dms_order_conf.all();
+    if (doc_all.empty()) {
+        log_error("table dms_order_conf has no record, Order: %d", order_id);
+        return false;
+    }
+
+    auto batch_list_id = doc_all[0]("Batch").asInt();
+
+    DmsBatchList dms_batch_list(*telecom_db_);
+    dms_batch_list.where("ID", batch_list_id);
+    auto dbl_all = dms_batch_list.all();
+    if (dbl_all.empty()) {
+        log_error("table dms_batch_list has no record, ID: %d", batch_list_id);
+        return false;
+    }
+
+    auto data_table = dbl_all[0]("Uuid").asString();
+    String::toLower(data_table);
+
+    // 创建索引，加速查询
+    std::string sql = fmt::format("CREATE INDEX idx_file_id ON `{}` (File, ID)", data_table);
+    telecom_db_->execute(sql);
+
+    DmsBatchFiles dms_batch_files(*telecom_db_);
+    dms_batch_files.where("Batch", batch_list_id);
+    auto dbf_all = dms_batch_files.all();
+    if (dbf_all.empty()) {
+        log_error("table dms_batch_files has no record, Batch: %d", batch_list_id);
+        return false;
+    }
+
+    for (auto one : dbf_all) {
+        DistributionRecordData data;
+        data.filename = one("Filename").asString();
+        if (data.filename.find("Remake") != std::string::npos) {
+            continue;
+        }
+
+        if (data.filename.find(".gpg") == std::string::npos || data.filename.find(".pgp") == std::string::npos) {
+            data.filename = data.filename.substr(0, data.filename.length() - 4);
+        }
+
+        // 查询文件数量
+        data.quantity = one("Quantity").asInt();
+
+        String::toLower(data.filename);
+        std::string sql = fmt::format("SELECT MIN(ID), MAX(ID) FROM `{}` WHERE File = {}", data_table, one("ID").asInt());
+        printf("sql: %s\n", sql.c_str());
+        auto result   = telecom_db_->query(sql);
+        int  start_id = result[0].find("MIN(ID)")->second.asInt();
+        int  end_id   = result[0].find("MAX(ID)")->second.asInt();
+
+        sql = fmt::format("SELECT {} FROM `{}` WHERE ID = {} OR ID = {}", data_field, data_table, start_id, end_id);
+        printf("sql: %s\n", sql.c_str());
+        result           = telecom_db_->query(sql);
+        data.start_iccid = result[0].find(data_field)->second.asString();
+        data.end_iccid   = result[1].find(data_field)->second.asString();
+
+        dr_->datas.push_back(data);
+    }
+
+    dr_->header.order_quantity = dr_->datas[0].quantity * dr_->datas.size();
+
+    // 删除索引
+    sql = fmt::format("DROP INDEX idx_file_id ON `{}`", data_table);
+    telecom_db_->execute(sql);
+
+    return true;
+}
+
+void Tabulation::generatingFinanceRecords(const std::string &template_file, const std::string &output_file) {
+    zel::filesystem::File file(template_file);
+    if (!file.exists()) {
+        log_error("template file not exists: %s", template_file.c_str());
+        return;
+    }
+
+    if (!loadTemplate(template_file)) {
+        log_error("load template failed: %s", template_file.c_str());
+        return;
+    }
+
+    locateTemplateTags();
+
+    if (!file.copy(output_file)) {
+        log_error("copy file failed: %s -> %s", template_file.c_str(), output_file.c_str());
+        return;
+    }
+
+    // 注意：output_file 中的数据还没写入，所以要重新 load
+    loadTemplate(output_file);
+    fillTemplateWithData(output_file);
+}
+
+void Tabulation::generatingTelecomRecords(const std::string &template_file, const std::string &output_file) {
     zel::filesystem::File file(template_file);
     if (!file.exists()) {
         log_error("template file not exists: %s", template_file.c_str());

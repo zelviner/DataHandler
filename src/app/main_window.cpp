@@ -44,8 +44,7 @@ MainWindow::MainWindow(QMainWindow *parent)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
     , script_info_(nullptr)
-    , card_reader_(nullptr)
-    , db_(nullptr) {
+    , card_reader_(nullptr) {
     ui_->setupUi(this);
 
     // 初始化窗口
@@ -92,7 +91,7 @@ void MainWindow::dropEvent(QDropEvent *event) {
     path_->directory          = FilePath::dir(datagram_path);
 
     auto datagram_format = String::split(FilePath::base(datagram_path), " ");
-    if (datagram_format.size() < 6) {
+    if (datagram_format.size() < 4) {
         QMessageBox::critical(this, "警告", "未知文件，请拖入星汉总部数据包");
         return;
     }
@@ -107,30 +106,30 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::saveBtnClicked() {
-    std::string mysql_host          = ui_->mysql_ip_line->text().toStdString();
-    int         mysql_port          = ui_->mysql_port_line->text().toInt();
-    std::string mysql_username      = ui_->mysql_username_line->text().toStdString();
-    std::string mysql_password      = ui_->mysql_password_line->text().toStdString();
-    std::string mysql_sim_database  = ui_->sim_database_line->text().toStdString();
-    std::string mysql_bank_database = ui_->bank_database_line->text().toStdString();
-    std::string ftp_host            = ui_->ftp_ip_line->text().toStdString();
-    int         ftp_port            = ui_->ftp_port_line->text().toInt();
-    std::string ftp_username        = ui_->ftp_username_line->text().toStdString();
-    std::string ftp_password        = ui_->ftp_password_line->text().toStdString();
-    std::string remote_prd_path     = ui_->prd_line->text().toStdString();
-    std::string remote_temp_path    = ui_->temp_line->text().toStdString();
-    std::string local_backup_path   = ui_->backup_line->text().toStdString();
-    std::string bank_path           = ui_->bank_path_line->text().toStdString();
-    std::string order_no            = ui_->order_no_line->text().toStdString();
-    std::string order_quantity      = ui_->order_quantity_line->text().toStdString();
-    std::string data                = ui_->data_line->text().toStdString();
+    std::string mysql_host             = ui_->mysql_ip_line->text().toStdString();
+    int         mysql_port             = ui_->mysql_port_line->text().toInt();
+    std::string mysql_username         = ui_->mysql_username_line->text().toStdString();
+    std::string mysql_password         = ui_->mysql_password_line->text().toStdString();
+    std::string mysql_telecom_database = ui_->telecom_database_line->text().toStdString();
+    std::string mysql_finance_database = ui_->finance_database_line->text().toStdString();
+    std::string ftp_host               = ui_->ftp_ip_line->text().toStdString();
+    int         ftp_port               = ui_->ftp_port_line->text().toInt();
+    std::string ftp_username           = ui_->ftp_username_line->text().toStdString();
+    std::string ftp_password           = ui_->ftp_password_line->text().toStdString();
+    std::string remote_prd_path        = ui_->prd_line->text().toStdString();
+    std::string remote_temp_path       = ui_->temp_line->text().toStdString();
+    std::string local_backup_path      = ui_->backup_line->text().toStdString();
+    std::string finance_path           = ui_->finance_path_line->text().toStdString();
+    std::string order_no               = ui_->order_no_line->text().toStdString();
+    std::string order_quantity         = ui_->order_quantity_line->text().toStdString();
+    std::string data                   = ui_->data_line->text().toStdString();
 
     ini_.set("mysql", "host", mysql_host);
     ini_.set("mysql", "port", mysql_port);
     ini_.set("mysql", "username", mysql_username);
     ini_.set("mysql", "password", mysql_password);
-    ini_.set("mysql", "sim_database", mysql_sim_database);
-    ini_.set("mysql", "bank_database", mysql_bank_database);
+    ini_.set("mysql", "telecom_database", mysql_telecom_database);
+    ini_.set("mysql", "finance_database", mysql_finance_database);
     ini_.set("ftp", "host", ftp_host);
     ini_.set("ftp", "port", ftp_port);
     ini_.set("ftp", "username", ftp_username);
@@ -138,7 +137,7 @@ void MainWindow::saveBtnClicked() {
     ini_.set("path", "remote_prd_path", remote_prd_path);
     ini_.set("path", "remote_temp_path", remote_temp_path);
     ini_.set("path", "local_backup_path", local_backup_path);
-    ini_.set("template", "bank_path", bank_path);
+    ini_.set("template", "finance_path", finance_path);
     ini_.set("template", "order_no", order_no);
     ini_.set("template", "order_quantity", order_quantity);
     ini_.set("template", "data", data);
@@ -288,9 +287,9 @@ void MainWindow::uploadTempBtnClicked() {
     upload_prd->start();
 }
 
-void MainWindow::selectGeneratePathBtnClicked() {
+void MainWindow::selectFinanceGeneratePathBtnClicked() {
 
-    QString order_no = ui_->order_combo_box->currentText();
+    QString order_no = ui_->finance_order_combo_box->currentText();
 
     // 获取桌面路径
     QString desktop_path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
@@ -299,20 +298,34 @@ void MainWindow::selectGeneratePathBtnClicked() {
 
     if (file_path.isEmpty()) return;
 
-    ui_->generate_path_line->setText(file_path);
+    ui_->finance_generate_path_line->setText(file_path);
 }
 
-void MainWindow::generateDistributionRecordBtnClicked() {
+void MainWindow::selectTelecomGeneratePathBtnClicked() {
+
+    QString order_no = ui_->telecom_order_combo_box->currentText();
+
+    // 获取桌面路径
+    QString desktop_path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString default_path = desktop_path + "/数据分配表" + order_no + ".xlsx";
+    QString file_path    = QFileDialog::getSaveFileName(this, "选择数据分配表路径", default_path, "Excel 文件 (*.xlsx)");
+
+    if (file_path.isEmpty()) return;
+
+    ui_->telecom_generate_path_line->setText(file_path);
+}
+
+void MainWindow::generatingFinanceRecordBtnClicked() {
     // 校验配置
-    if (ui_->bank_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
+    if (ui_->finance_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
         ui_->data_line->text().isEmpty()) {
         QMessageBox::critical(this, "错误", "请先配置模板文件路径、订单号、订单数量、数据项单元格内容");
         return;
     }
 
-    auto order_number  = ui_->order_combo_box->currentText().toStdString();
-    auto data_field    = ui_->data_field_line->text().toStdString();
-    auto generate_path = ui_->generate_path_line->text().toStdString();
+    auto order_number  = ui_->finance_order_combo_box->currentText().toStdString();
+    auto data_field    = ui_->finance_data_field_line->text().toStdString();
+    auto generate_path = ui_->finance_generate_path_line->text().toStdString();
 
     if (order_number.empty()) {
         QMessageBox::critical(this, "错误", "请输入订单号");
@@ -329,14 +342,55 @@ void MainWindow::generateDistributionRecordBtnClicked() {
         return;
     }
 
-    Tabulation tabulation(db_, ini_);
-    if (!tabulation.distributionRecord(order_number, data_field)) {
+    Tabulation tabulation(finance_db_, telecom_db_, ini_);
+    if (!tabulation.financeRecords(order_number, data_field)) {
         QMessageBox::critical(this, "错误", "请核对订单号与数据项是否正确");
         return;
     }
 
-    auto template_path = ui_->bank_path_line->text().toStdString();
-    tabulation.generateDistributionRecords(template_path, generate_path);
+    auto template_path = ui_->finance_path_line->text().toStdString();
+    tabulation.generatingFinanceRecords(template_path, generate_path);
+
+    QMessageBox success_box(this);
+    success_box.setWindowTitle("提示");
+    success_box.setText(QString("生成成功"));
+    QPixmap pix(":/image/success.png");
+    pix = pix.scaled(32, 32);
+    success_box.setIconPixmap(pix);
+    success_box.setStandardButtons(QMessageBox::Ok);
+    success_box.setButtonText(QMessageBox::Ok, "确定");
+    success_box.exec();
+}
+
+void MainWindow::generatingTelecomRecordBtnClicked() {
+    // 校验配置
+    if (ui_->finance_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
+        ui_->data_line->text().isEmpty()) {
+        QMessageBox::critical(this, "错误", "请先配置模板文件路径、订单号、订单数量、数据项单元格内容");
+        return;
+    }
+
+    auto order_number  = ui_->telecom_order_combo_box->currentText().toStdString();
+    auto generate_path = ui_->telecom_generate_path_line->text().toStdString();
+
+    if (order_number.empty()) {
+        QMessageBox::critical(this, "错误", "请输入订单号");
+        return;
+    }
+
+    if (generate_path.empty()) {
+        QMessageBox::critical(this, "错误", "请选择数据分配表路径");
+        return;
+    }
+
+    Tabulation tabulation(finance_db_, telecom_db_, ini_);
+    if (!tabulation.telecomRecords(order_number, "Iccid")) {
+        QMessageBox::critical(this, "错误", "请核对订单号与数据项是否正确");
+        return;
+    }
+
+    auto template_path = ui_->finance_path_line->text().toStdString();
+    tabulation.generatingTelecomRecords(template_path, generate_path);
 
     QMessageBox success_box(this);
     success_box.setWindowTitle("提示");
@@ -354,7 +408,7 @@ void MainWindow::selectTemplatePathBtnClicked() {
 
     if (file_path.isEmpty()) return;
 
-    ui_->bank_path_line->setText(file_path);
+    ui_->finance_path_line->setText(file_path);
 }
 
 void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
@@ -461,30 +515,30 @@ void MainWindow::initUI() {
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 
     buttonDisabled(true);
-    std::string mysql_host          = ini_["mysql"]["host"];
-    int         mysql_port          = ini_["mysql"]["port"];
-    std::string mysql_username      = ini_["mysql"]["username"];
-    std::string mysql_password      = ini_["mysql"]["password"];
-    std::string mysql_bank_database = ini_["mysql"]["bank_database"];
-    std::string mysql_sim_database  = ini_["mysql"]["sim_database"];
-    std::string ftp_host            = ini_["ftp"]["host"];
-    int         ftp_port            = ini_["ftp"]["port"];
-    std::string ftp_username        = ini_["ftp"]["username"];
-    std::string ftp_password        = ini_["ftp"]["password"];
-    std::string remote_prd_path     = ini_["path"]["remote_prd_path"];
-    std::string remote_temp_path    = ini_["path"]["remote_temp_path"];
-    std::string local_backup_path   = ini_["path"]["local_backup_path"];
-    std::string bank_path           = ini_["template"]["bank_path"];
-    std::string order_no            = ini_["template"]["order_no"];
-    std::string order_quantity      = ini_["template"]["order_quantity"];
-    std::string data                = ini_["template"]["data"];
+    std::string mysql_host             = ini_["mysql"]["host"];
+    int         mysql_port             = ini_["mysql"]["port"];
+    std::string mysql_username         = ini_["mysql"]["username"];
+    std::string mysql_password         = ini_["mysql"]["password"];
+    std::string mysql_finance_database = ini_["mysql"]["finance_database"];
+    std::string mysql_telecom_database = ini_["mysql"]["telecom_database"];
+    std::string ftp_host               = ini_["ftp"]["host"];
+    int         ftp_port               = ini_["ftp"]["port"];
+    std::string ftp_username           = ini_["ftp"]["username"];
+    std::string ftp_password           = ini_["ftp"]["password"];
+    std::string remote_prd_path        = ini_["path"]["remote_prd_path"];
+    std::string remote_temp_path       = ini_["path"]["remote_temp_path"];
+    std::string local_backup_path      = ini_["path"]["local_backup_path"];
+    std::string finance_path           = ini_["template"]["finance_path"];
+    std::string order_no               = ini_["template"]["order_no"];
+    std::string order_quantity         = ini_["template"]["order_quantity"];
+    std::string data                   = ini_["template"]["data"];
 
     ui_->mysql_ip_line->setText(QString::fromStdString(mysql_host));
     ui_->mysql_port_line->setText(QString::number(mysql_port));
     ui_->mysql_username_line->setText(QString::fromStdString(mysql_username));
     ui_->mysql_password_line->setText(QString::fromStdString(mysql_password));
-    ui_->bank_database_line->setText(QString::fromStdString(mysql_bank_database));
-    ui_->sim_database_line->setText(QString::fromStdString(mysql_sim_database));
+    ui_->finance_database_line->setText(QString::fromStdString(mysql_finance_database));
+    ui_->telecom_database_line->setText(QString::fromStdString(mysql_telecom_database));
     ui_->ftp_ip_line->setText(QString::fromStdString(ftp_host));
     ui_->ftp_port_line->setText(QString::number(ftp_port));
     ui_->ftp_username_line->setText(QString::fromStdString(ftp_username));
@@ -492,7 +546,7 @@ void MainWindow::initUI() {
     ui_->prd_line->setText(QString::fromStdString(remote_prd_path));
     ui_->temp_line->setText(QString::fromStdString(remote_temp_path));
     ui_->backup_line->setText(QString::fromStdString(local_backup_path));
-    ui_->bank_path_line->setText(QString::fromStdString(bank_path));
+    ui_->finance_path_line->setText(QString::fromStdString(finance_path));
     ui_->order_no_line->setText(QString::fromStdString(order_no));
     ui_->order_quantity_line->setText(QString::fromStdString(order_quantity));
     ui_->data_line->setText(QString::fromStdString(data));
@@ -532,8 +586,10 @@ void MainWindow::initSignalSlot() {
     connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
 
     // 制表
-    connect(ui_->select_generate_file_ptn, &QPushButton::clicked, this, &MainWindow::selectGeneratePathBtnClicked);
-    connect(ui_->search_ptn, &QPushButton::clicked, this, &MainWindow::generateDistributionRecordBtnClicked);
+    connect(ui_->finance_select_generate_file_ptn, &QPushButton::clicked, this, &MainWindow::selectFinanceGeneratePathBtnClicked);
+    connect(ui_->finance_generating_ptn, &QPushButton::clicked, this, &MainWindow::generatingFinanceRecordBtnClicked);
+    connect(ui_->telecom_select_generate_file_ptn, &QPushButton::clicked, this, &MainWindow::selectTelecomGeneratePathBtnClicked);
+    connect(ui_->telecom_generating_ptn, &QPushButton::clicked, this, &MainWindow::generatingTelecomRecordBtnClicked);
 
     // 配置
     connect(ui_->select_template_file_ptn, &QPushButton::clicked, this, &MainWindow::selectTemplatePathBtnClicked);
@@ -547,8 +603,8 @@ void MainWindow::initConfig(const std::string &config_file) {
         ini_.set("mysql", "port", "3306");
         ini_.set("mysql", "username", "admin");
         ini_.set("mysql", "password", "admin");
-        ini_.set("mysql", "sim_database", "dms");
-        ini_.set("mysql", "bank_database", "dms_bank");
+        ini_.set("mysql", "telecom_database", "dms");
+        ini_.set("mysql", "finance_database", "dms_finance");
         ini_.set("ftp", "host", "127.0.0.1");
         ini_.set("ftp", "port", "21");
         ini_.set("ftp", "username", "admin");
@@ -556,7 +612,7 @@ void MainWindow::initConfig(const std::string &config_file) {
         ini_.set("path", "remote_prd_path", "/data/ftp/output/PRD");
         ini_.set("path", "remote_temp_path", "/data/ftp/output/临时存放");
         ini_.set("path", "local_backup_path", "D:/备份");
-        ini_.set("template", "bank_path", "");
+        ini_.set("template", "finance_path", "");
         ini_.set("tempalte", "order_no", "");
         ini_.set("tempalte", "order_quantity", "");
         ini_.set("tempalte", "data", "");
@@ -600,26 +656,44 @@ void MainWindow::initCardReader() {
 }
 
 void MainWindow::initDatabase() {
-    db_ = std::make_shared<zel::myorm::Database>();
-    if (!db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"], ini_["mysql"]["bank_database"])) {
+    finance_db_ = std::make_shared<zel::myorm::Database>();
+    if (!finance_db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"],
+                              ini_["mysql"]["finance_database"])) {
         log_error("Failed to connect to database");
-        QMessageBox::critical(this, "警告", "连接数据库失败，请检查配置");
-        ui_->search_ptn->setDisabled(true);
+        QMessageBox::critical(this, "警告", "连接金融数据库失败，请检查配置");
+        ui_->finance_generating_ptn->setDisabled(true);
         return;
     }
 
-    log_debug("Connected to database");
-
-    Tabulation tabulation(db_, ini_);
-    auto       order_list = tabulation.orderList();
-    reverse(order_list.begin(), order_list.end());
-    QStringList items;
-    for (auto order : order_list) {
-        items.append(QString::fromStdString(order));
+    telecom_db_ = std::make_shared<zel::myorm::Database>();
+    if (!telecom_db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"],
+                              ini_["mysql"]["telecom_database"])) {
+        log_error("Failed to connect to database");
+        QMessageBox::critical(this, "警告", "连接电信数据库失败，请检查配置");
+        ui_->finance_generating_ptn->setDisabled(true);
+        return;
     }
 
-    ui_->order_combo_box->addItems(items);
-    ui_->order_combo_box->setCurrentText("");
+    Tabulation tabulation(finance_db_, telecom_db_, ini_);
+    auto       finance_order_list = tabulation.financeOrderList();
+    reverse(finance_order_list.begin(), finance_order_list.end());
+    QStringList finance_items;
+    for (auto order : finance_order_list) {
+        finance_items.append(QString::fromStdString(order));
+    }
+
+    auto telecom_order_list = tabulation.telecomOrderList();
+    reverse(telecom_order_list.begin(), telecom_order_list.end());
+    QStringList telecom_items;
+    for (auto order : telecom_order_list) {
+        telecom_items.append(QString::fromStdString(order));
+    }
+
+    ui_->finance_order_combo_box->addItems(finance_items);
+    ui_->finance_order_combo_box->setCurrentText("");
+
+    ui_->telecom_order_combo_box->addItems(telecom_items);
+    ui_->telecom_order_combo_box->setCurrentText("");
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {

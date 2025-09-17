@@ -57,11 +57,17 @@ class MainWindow : public QMainWindow {
     /// @brief 上传临时存放按钮点击事件
     void uploadTempBtnClicked();
 
-    /// @brief 选择数据分配表生成路径按钮点击事件
-    void selectGeneratePathBtnClicked();
+    /// @brief 选择金融数据分配表生成路径按钮点击事件
+    void selectFinanceGeneratePathBtnClicked();
 
-    /// @brief 生成数据分配表点击事件
-    void generateDistributionRecordBtnClicked();
+    /// @brief 选择电信数据分配表生成路径按钮点击事件
+    void selectTelecomGeneratePathBtnClicked();
+
+    /// @brief 生成金融数据分配表点击事件
+    void generatingFinanceRecordBtnClicked();
+
+    /// @brief 生成电信数据分配表点击事件
+    void generatingTelecomRecordBtnClicked();
 
     /// @brief 选择模板文件径按钮点击事件
     void selectTemplatePathBtnClicked();
@@ -128,5 +134,6 @@ class MainWindow : public QMainWindow {
     std::shared_ptr<PersonDataInfo>                 person_data_info_; // 个人化信息
     std::shared_ptr<ScriptInfo>                     script_info_;      // 脚本信息
     std::shared_ptr<xhlanguage::reader::CardReader> card_reader_;      // 读卡器
-    std::shared_ptr<zel::myorm::Database>           db_;               // 数据库
+    std::shared_ptr<zel::myorm::Database>           finance_db_;       // 金融数据库
+    std::shared_ptr<zel::myorm::Database>           telecom_db_;       // 电信数据库
 };

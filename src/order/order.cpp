@@ -12,7 +12,8 @@ using namespace zel::filesystem;
 using namespace zel::crypto;
 
 Order::Order(std::shared_ptr<Path> path)
-    : path_(path) {}
+    : path_(path)
+    , outgoing_(false) {}
 
 Order::~Order() {}
 
@@ -41,6 +42,8 @@ bool Order::preProcessing() {
             log_error("Failed to unzip the packet: %s", datagram_zip_path.c_str());
             return false;
         }
+
+        outgoing_ = true;
     } else if (datagram_file.extension() == ".zip") {
         datagram_dir_name = datagram_file.prefix();
 
@@ -101,8 +104,12 @@ bool Order::modify() {
 bool Order::processing() {
 
     // 获取订单信息
-    Order order(path_);
-    order_info_ = order.orderInfo(FilePath::base(path_->order));
+    std::shared_ptr<OrderInfo> order_info;
+    if (outgoing_)
+        order_info_ = orderInfoOutgoing(FilePath::base(path_->order));
+    else
+        order_info_ = orderInfo(FilePath::base(path_->order));
+
     if (order_info_ == nullptr) {
         log_error("Failed to get order infomation.");
         return false;
@@ -116,23 +123,25 @@ bool Order::processing() {
         return false;
     }
 
-    // 生成截图文件夹
-    if (!screenshotDir()) {
-        log_error("Failed to generate screenshot dir.");
-        return false;
-    }
-
-    // 生成打印文件夹
-    if (!printDir()) {
-        log_error("Failed to generate print dir.");
-        return false;
-    }
-
-    // 生成标签数据文件夹
-    if (!path_->tag_data.empty()) {
-        if (!tagDataDir()) {
-            log_error("Failed to generate tag data dir.");
+    if (outgoing_) {
+        // 生成截图文件夹
+        if (!screenshotDir()) {
+            log_error("Failed to generate screenshot dir.");
             return false;
+        }
+
+        // 生成打印文件夹
+        if (!printDir()) {
+            log_error("Failed to generate print dir.");
+            return false;
+        }
+
+        // 生成标签数据文件夹
+        if (!path_->tag_data.empty()) {
+            if (!tagDataDir()) {
+                log_error("Failed to generate tag data dir.");
+                return false;
+            }
         }
     }
 
@@ -233,6 +242,37 @@ bool Order::tagDataDir() {
 }
 
 std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
+    order_info_                 = std::make_shared<OrderInfo>();
+    order_info_->order_dir_name = order_dir_name;
+
+    auto infos                  = String::split(order_dir_name, " ");
+    order_info_->project_number = infos[0];
+    order_info_->order_number   = infos[1];
+    order_info_->project_name   = String::matches(infos[2], "[A-Z]+[0-9]+")[0];
+
+    path_->order = FilePath::join(path_->directory, order_info_->order_dir_name);
+    path_->data  = FilePath::join(path_->order, "INP");
+
+    auto walkFunc = [&](std::string relative_path, Directory dir, File file) -> bool {
+        if (dir.exists()) {
+            if (dir.name().rfind("Tag_data") != std::string::npos) {
+                path_->tag_data = dir.path();
+            } else if (String::matches(dir.name(), "([A-Z0-9]+_[A-Z0-9]+_[A-Z0-9]+)").size() != 0) {
+                order_info_->script_package = dir.name();
+                path_->script               = FilePath::join(dir.path(), "Script");
+                auto infos                  = String::split(dir.name(), "_");
+                order_info_->chip_model     = String::matches(dir.name(), "_C([A-Z0-9]+)")[0];
+                order_info_->rf_code        = "RF_F1_" + String::matches(dir.name(), "(P[A-Z0-9_]+)_C")[0] + " " + order_info_->chip_model;
+            }
+        }
+        return true;
+    };
+    FilePath::walk(FilePath::join(path_->order, "DATA"), walkFunc);
+
+    return order_info_;
+}
+
+std::shared_ptr<OrderInfo> Order::orderInfoOutgoing(const std::string &order_dir_name) {
     order_info_                 = std::make_shared<OrderInfo>();
     order_info_->order_dir_name = order_dir_name;
 
