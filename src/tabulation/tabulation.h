@@ -13,7 +13,8 @@
 
 class Tabulation {
   public:
-    Tabulation(const std::shared_ptr<zel::myorm::Database> &finance_db, const std::shared_ptr<zel::myorm::Database> &telecom_db, const zel::utility::IniFile &ini);
+    Tabulation(const std::shared_ptr<zel::myorm::Database> &finance_db, const std::shared_ptr<zel::myorm::Database> &telecom_db,
+               const zel::utility::IniFile &ini);
     ~Tabulation();
 
     std::vector<std::string> financeOrderList();
@@ -36,6 +37,9 @@ class Tabulation {
 
     /// @brief 计算单元格位置
     xlnt::cell_reference offset(const xlnt::cell_reference &ref, int row_offset, int col_offset);
+
+    /// @brief 两两交换 iccid
+    void exchangeIccid(std::string &iccid);
 
   private:
     std::shared_ptr<zel::myorm::Database>                 finance_db_;

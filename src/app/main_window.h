@@ -69,8 +69,11 @@ class MainWindow : public QMainWindow {
     /// @brief 生成电信数据分配表点击事件
     void generatingTelecomRecordBtnClicked();
 
-    /// @brief 选择模板文件径按钮点击事件
-    void selectTemplatePathBtnClicked();
+    /// @brief 选择金融模板文件径按钮点击事件
+    void selectFinanceTemplatePathBtnClicked();
+
+    /// @brief 选择电信模板文件径按钮点击事件
+    void selectTelecomTemplatePathBtnClicked();
 
     /// @brief 保存按钮点击事件
     void saveBtnClicked();
@@ -88,6 +91,9 @@ class MainWindow : public QMainWindow {
 
     void handleOrderFailure(const QString &err_msg);
     void handleOrderSuccess(std::shared_ptr<OrderInfo> order_info, std::shared_ptr<PersonDataInfo> person_data_info, std::shared_ptr<ScriptInfo> script_info);
+
+    void generatingRecordFailure();
+    void generatingRecordSuccess();
 
   private:
     /// @brief 初始化窗口

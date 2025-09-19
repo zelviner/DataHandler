@@ -7,7 +7,9 @@
 #include "model/dms_batch_list.hpp"
 #include "model/dms_batch_files.hpp"
 
+#include <cstddef>
 #include <memory>
+#include <utility>
 #include <vector>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -164,25 +166,27 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
             continue;
         }
 
-        if (data.filename.find(".gpg") == std::string::npos || data.filename.find(".pgp") == std::string::npos) {
-            data.filename = data.filename.substr(0, data.filename.length() - 4);
+        // 去掉文件名后缀
+        size_t index = data.filename.find(".");
+        if (index != std::string::npos) {
+            data.filename = data.filename.substr(0, index);
         }
 
         // 查询文件数量
         data.quantity = one("Quantity").asInt();
 
         String::toLower(data.filename);
-        std::string sql = fmt::format("SELECT MIN(ID), MAX(ID) FROM `{}` WHERE File = {}", data_table, one("ID").asInt());
-        printf("sql: %s\n", sql.c_str());
-        auto result   = telecom_db_->query(sql);
-        int  start_id = result[0].find("MIN(ID)")->second.asInt();
-        int  end_id   = result[0].find("MAX(ID)")->second.asInt();
+        std::string sql      = fmt::format("SELECT MIN(ID), MAX(ID) FROM `{}` WHERE File = {}", data_table, one("ID").asInt());
+        auto        result   = telecom_db_->query(sql);
+        int         start_id = result[0].find("MIN(ID)")->second.asInt();
+        int         end_id   = result[0].find("MAX(ID)")->second.asInt();
 
-        sql = fmt::format("SELECT {} FROM `{}` WHERE ID = {} OR ID = {}", data_field, data_table, start_id, end_id);
-        printf("sql: %s\n", sql.c_str());
+        sql              = fmt::format("SELECT {} FROM `{}` WHERE ID = {} OR ID = {}", data_field, data_table, start_id, end_id);
         result           = telecom_db_->query(sql);
         data.start_iccid = result[0].find(data_field)->second.asString();
         data.end_iccid   = result[1].find(data_field)->second.asString();
+        exchangeIccid(data.start_iccid);
+        exchangeIccid(data.end_iccid);
 
         dr_->datas.push_back(data);
     }
@@ -251,8 +255,11 @@ bool Tabulation::loadTemplate(const std::string &path) {
 }
 
 void Tabulation::locateTemplateTags() {
-
+    int rowIndex = 0;
     for (const auto &row : worksheet_.rows()) {
+        rowIndex++;
+        if (rowIndex <= 2) continue; // 跳过前两行
+
         for (const auto &cell : row) {
             if (!cell.has_value()) continue;
             std::string val = cell.to_string();
@@ -286,4 +293,10 @@ void Tabulation::fillTemplateWithData(const std::string &output_file) {
 
 xlnt::cell_reference Tabulation::offset(const xlnt::cell_reference &ref, int row_offset, int col_offset) {
     return xlnt::cell_reference(xlnt::column_t(ref.column().index + col_offset), ref.row() + row_offset);
+}
+
+void Tabulation::exchangeIccid(std::string &iccid) {
+    for (size_t i = 0; i + 1 < iccid.size(); i += 2) {
+        std::swap(iccid[i], iccid[i + 1]);
+    }
 }

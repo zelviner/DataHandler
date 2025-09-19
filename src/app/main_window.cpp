@@ -6,10 +6,12 @@
 #include "task/handle_order.hpp"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
+#include "task/generating_records.hpp"
 #include "clear_card_loading.h"
 #include "write_card_loading.h"
 #include "myorm/database.h"
 
+#include <WinSock2.h>
 #include <memory>
 #include <qaction.h>
 #include <qdesktopservices.h>
@@ -118,11 +120,12 @@ void MainWindow::saveBtnClicked() {
     std::string ftp_password           = ui_->ftp_password_line->text().toStdString();
     std::string remote_prd_path        = ui_->prd_line->text().toStdString();
     std::string remote_temp_path       = ui_->temp_line->text().toStdString();
-    std::string local_backup_path      = ui_->backup_line->text().toStdString();
-    std::string finance_path           = ui_->finance_path_line->text().toStdString();
-    std::string order_no               = ui_->order_no_line->text().toStdString();
-    std::string order_quantity         = ui_->order_quantity_line->text().toStdString();
-    std::string data                   = ui_->data_line->text().toStdString();
+    // std::string local_backup_path      = ui_->backup_line->text().toStdString();
+    std::string finance_path   = ui_->finance_path_line->text().toStdString();
+    std::string telecom_path   = ui_->telecom_path_line->text().toStdString();
+    std::string order_no       = ui_->order_no_line->text().toStdString();
+    std::string order_quantity = ui_->order_quantity_line->text().toStdString();
+    std::string data           = ui_->data_line->text().toStdString();
 
     ini_.set("mysql", "host", mysql_host);
     ini_.set("mysql", "port", mysql_port);
@@ -136,8 +139,9 @@ void MainWindow::saveBtnClicked() {
     ini_.set("ftp", "password", ftp_password);
     ini_.set("path", "remote_prd_path", remote_prd_path);
     ini_.set("path", "remote_temp_path", remote_temp_path);
-    ini_.set("path", "local_backup_path", local_backup_path);
+    // ini_.set("path", "local_backup_path", local_backup_path);
     ini_.set("template", "finance_path", finance_path);
+    ini_.set("template", "telecom_path", telecom_path);
     ini_.set("template", "order_no", order_no);
     ini_.set("template", "order_quantity", order_quantity);
     ini_.set("template", "data", data);
@@ -244,7 +248,7 @@ void MainWindow::clearCardBtnClicked() {
 }
 
 void MainWindow::uploadPrdBtnClicked() {
-    loading_ = new Loading(this);
+
     loading_->setWindowTitle("正在上传个人化数据...");
     loading_->show();
 
@@ -316,10 +320,13 @@ void MainWindow::selectTelecomGeneratePathBtnClicked() {
 }
 
 void MainWindow::generatingFinanceRecordBtnClicked() {
+    loading_->setWindowTitle("金融数据分配表生成中...");
+    loading_->show();
+
     // 校验配置
     if (ui_->finance_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
         ui_->data_line->text().isEmpty()) {
-        QMessageBox::critical(this, "错误", "请先配置模板文件路径、订单号、订单数量、数据项单元格内容");
+        QMessageBox::critical(this, "错误", "请先配置金融模板文件路径、订单号、订单数量、数据项单元格内容");
         return;
     }
 
@@ -342,31 +349,25 @@ void MainWindow::generatingFinanceRecordBtnClicked() {
         return;
     }
 
-    Tabulation tabulation(finance_db_, telecom_db_, ini_);
-    if (!tabulation.financeRecords(order_number, data_field)) {
-        QMessageBox::critical(this, "错误", "请核对订单号与数据项是否正确");
-        return;
-    }
+    auto template_path      = ui_->finance_path_line->text().toStdString();
+    auto generating_records = new GeneratingRecords(false, finance_db_, telecom_db_, ini_, order_number, data_field, template_path, generate_path);
 
-    auto template_path = ui_->finance_path_line->text().toStdString();
-    tabulation.generatingFinanceRecords(template_path, generate_path);
+    // 连接信号槽
+    connect(generating_records, &GeneratingRecords::failure, this, &MainWindow::generatingRecordFailure);
+    connect(generating_records, &GeneratingRecords::success, this, &MainWindow::generatingRecordSuccess);
 
-    QMessageBox success_box(this);
-    success_box.setWindowTitle("提示");
-    success_box.setText(QString("生成成功"));
-    QPixmap pix(":/image/success.png");
-    pix = pix.scaled(32, 32);
-    success_box.setIconPixmap(pix);
-    success_box.setStandardButtons(QMessageBox::Ok);
-    success_box.setButtonText(QMessageBox::Ok, "确定");
-    success_box.exec();
+    // 启动工作线程
+    generating_records->start();
 }
 
 void MainWindow::generatingTelecomRecordBtnClicked() {
+    loading_->setWindowTitle("电信数据分配表生成中...");
+    loading_->show();
+
     // 校验配置
-    if (ui_->finance_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
+    if (ui_->telecom_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
         ui_->data_line->text().isEmpty()) {
-        QMessageBox::critical(this, "错误", "请先配置模板文件路径、订单号、订单数量、数据项单元格内容");
+        QMessageBox::critical(this, "错误", "请先配置电信模板文件路径、订单号、订单数量、数据项单元格内容");
         return;
     }
 
@@ -383,38 +384,36 @@ void MainWindow::generatingTelecomRecordBtnClicked() {
         return;
     }
 
-    Tabulation tabulation(finance_db_, telecom_db_, ini_);
-    if (!tabulation.telecomRecords(order_number, "Iccid")) {
-        QMessageBox::critical(this, "错误", "请核对订单号与数据项是否正确");
-        return;
-    }
+    auto template_path      = ui_->telecom_path_line->text().toStdString();
+    auto generating_records = new GeneratingRecords(true, finance_db_, telecom_db_, ini_, order_number, "Iccid", template_path, generate_path);
 
-    auto template_path = ui_->finance_path_line->text().toStdString();
-    tabulation.generatingTelecomRecords(template_path, generate_path);
+    // 连接信号槽
+    connect(generating_records, &GeneratingRecords::failure, this, &MainWindow::generatingRecordFailure);
+    connect(generating_records, &GeneratingRecords::success, this, &MainWindow::generatingRecordSuccess);
 
-    QMessageBox success_box(this);
-    success_box.setWindowTitle("提示");
-    success_box.setText(QString("生成成功"));
-    QPixmap pix(":/image/success.png");
-    pix = pix.scaled(32, 32);
-    success_box.setIconPixmap(pix);
-    success_box.setStandardButtons(QMessageBox::Ok);
-    success_box.setButtonText(QMessageBox::Ok, "确定");
-    success_box.exec();
+    // 启动工作线程
+    generating_records->start();
 }
 
-void MainWindow::selectTemplatePathBtnClicked() {
-    QString file_path = QFileDialog::getOpenFileName(this, "选择数据分配表路径", "templates", "*.xlsx");
+void MainWindow::selectFinanceTemplatePathBtnClicked() {
+    QString file_path = QFileDialog::getOpenFileName(this, "选择金融数据分配表路径", "templates", "*.xlsx");
 
     if (file_path.isEmpty()) return;
 
     ui_->finance_path_line->setText(file_path);
 }
 
+void MainWindow::selectTelecomTemplatePathBtnClicked() {
+    QString file_path = QFileDialog::getOpenFileName(this, "选择电信数据分配表路径", "templates", "*.xlsx");
+
+    if (file_path.isEmpty()) return;
+
+    ui_->telecom_path_line->setText(file_path);
+}
+
 void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
     order_window_->hide();
 
-    loading_ = new Loading(this);
     loading_->setWindowTitle("订单处理中...");
     loading_->show();
 
@@ -448,13 +447,13 @@ void MainWindow::finishedAtr(const QString &finished_atr) {
 }
 
 void MainWindow::uploadFileFailure(const QString &err_type, const QString &err_msg) {
-    loading_->close();
+    loading_->hide();
     QMessageBox::critical(this, err_type, err_msg);
 }
 
 void MainWindow::uploadFileSuccess() {
     ui_->upload_temp_btn->setDisabled(false);
-    loading_->close();
+    loading_->hide();
 
     QMessageBox success_box(this);
     success_box.setWindowTitle("提示");
@@ -497,16 +496,39 @@ void MainWindow::handleOrderSuccess(std::shared_ptr<OrderInfo> order_info, std::
 
 void MainWindow::handleOrderFailure(const QString &err_msg) {
     loading_->hide();
+
     QMessageBox::critical(this, "警告", err_msg);
+}
+
+void MainWindow::generatingRecordFailure() {
+    loading_->hide();
+
+    QMessageBox::critical(this, "错误", "请核对订单号与数据项是否正确");
+}
+
+void MainWindow::generatingRecordSuccess() {
+    loading_->hide();
+
+    QMessageBox success_box(this);
+    success_box.setWindowTitle("提示");
+    success_box.setText(QString("生成成功"));
+    QPixmap pix(":/image/success.png");
+    pix = pix.scaled(32, 32);
+    success_box.setIconPixmap(pix);
+    success_box.setStandardButtons(QMessageBox::Ok);
+    success_box.setButtonText(QMessageBox::Ok, "确定");
+    success_box.exec();
 }
 
 void MainWindow::initWindow() {
 
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.0.3");
+    setWindowTitle("智能卡生产预处理软件 v3.0.4");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
+
+    loading_ = new Loading(this);
 }
 
 void MainWindow::initUI() {
@@ -529,6 +551,7 @@ void MainWindow::initUI() {
     std::string remote_temp_path       = ini_["path"]["remote_temp_path"];
     std::string local_backup_path      = ini_["path"]["local_backup_path"];
     std::string finance_path           = ini_["template"]["finance_path"];
+    std::string telecom_path           = ini_["template"]["telecom_path"];
     std::string order_no               = ini_["template"]["order_no"];
     std::string order_quantity         = ini_["template"]["order_quantity"];
     std::string data                   = ini_["template"]["data"];
@@ -545,8 +568,9 @@ void MainWindow::initUI() {
     ui_->ftp_password_line->setText(QString::fromStdString(ftp_password));
     ui_->prd_line->setText(QString::fromStdString(remote_prd_path));
     ui_->temp_line->setText(QString::fromStdString(remote_temp_path));
-    ui_->backup_line->setText(QString::fromStdString(local_backup_path));
+    // ui_->backup_line->setText(QString::fromStdString(local_backup_path));
     ui_->finance_path_line->setText(QString::fromStdString(finance_path));
+    ui_->telecom_path_line->setText(QString::fromStdString(telecom_path));
     ui_->order_no_line->setText(QString::fromStdString(order_no));
     ui_->order_quantity_line->setText(QString::fromStdString(order_quantity));
     ui_->data_line->setText(QString::fromStdString(data));
@@ -592,7 +616,8 @@ void MainWindow::initSignalSlot() {
     connect(ui_->telecom_generating_ptn, &QPushButton::clicked, this, &MainWindow::generatingTelecomRecordBtnClicked);
 
     // 配置
-    connect(ui_->select_template_file_ptn, &QPushButton::clicked, this, &MainWindow::selectTemplatePathBtnClicked);
+    connect(ui_->select_finance_template_file_ptn, &QPushButton::clicked, this, &MainWindow::selectFinanceTemplatePathBtnClicked);
+    connect(ui_->select_telecom_template_file_ptn, &QPushButton::clicked, this, &MainWindow::selectTelecomTemplatePathBtnClicked);
     connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
 }
 
@@ -601,21 +626,22 @@ void MainWindow::initConfig(const std::string &config_file) {
         ini_.set("log", "level", 0);
         ini_.set("mysql", "host", "127.0.0.1");
         ini_.set("mysql", "port", "3306");
-        ini_.set("mysql", "username", "admin");
-        ini_.set("mysql", "password", "admin");
-        ini_.set("mysql", "telecom_database", "dms");
-        ini_.set("mysql", "finance_database", "dms_finance");
+        ini_.set("mysql", "username", "");
+        ini_.set("mysql", "password", "");
+        ini_.set("mysql", "telecom_database", "");
+        ini_.set("mysql", "finance_database", "");
         ini_.set("ftp", "host", "127.0.0.1");
         ini_.set("ftp", "port", "21");
-        ini_.set("ftp", "username", "admin");
-        ini_.set("ftp", "password", "admin");
-        ini_.set("path", "remote_prd_path", "/data/ftp/output/PRD");
-        ini_.set("path", "remote_temp_path", "/data/ftp/output/临时存放");
-        ini_.set("path", "local_backup_path", "D:/备份");
+        ini_.set("ftp", "username", "");
+        ini_.set("ftp", "password", "");
+        ini_.set("path", "remote_prd_path", "");
+        ini_.set("path", "remote_temp_path", "");
+        ini_.set("path", "local_backup_path", "");
         ini_.set("template", "finance_path", "");
-        ini_.set("tempalte", "order_no", "");
-        ini_.set("tempalte", "order_quantity", "");
-        ini_.set("tempalte", "data", "");
+        ini_.set("template", "telecom_path", "");
+        ini_.set("template", "order_no", "");
+        ini_.set("template", "order_quantity", "");
+        ini_.set("template", "data", "");
 
         ini_.save(config_file);
     } else {
