@@ -56,6 +56,7 @@ target_link_libraries(${APP_NAME} PRIVATE
     zel::zel
     xhlanguage::xhlanguage
     xlnt::xlnt
+    mysql/libmysql
     openssl/VC/libcrypto32MD
     openssl/VC/libssl32MD
     CURL::libcurl

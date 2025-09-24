@@ -11,7 +11,6 @@
 #include <zel/zel.h>
 #include <memory>
 #include <qmainwindow>
-#include <xhlanguage/card-reader/card_reader.hpp>
 #include <qtranslator>
 
 class MainWindow : public QMainWindow {
@@ -95,6 +94,9 @@ class MainWindow : public QMainWindow {
     void generatingRecordFailure();
     void generatingRecordSuccess();
 
+    void resetCardFailure(const QString &err_msg);
+    void resetCardSuccess(const QString &atr);
+
   private:
     /// @brief 初始化窗口
     void initWindow();
@@ -134,12 +136,11 @@ class MainWindow : public QMainWindow {
     QTranslator    translator_;   // 翻译器
     QString        current_lang_ = "zh_CN";
 
-    zel::utility::IniFile                           ini_;              // 配置文件
-    std::shared_ptr<Path>                           path_;             // 路径
-    std::shared_ptr<OrderInfo>                      order_info_;       // 订单信息
-    std::shared_ptr<PersonDataInfo>                 person_data_info_; // 个人化信息
-    std::shared_ptr<ScriptInfo>                     script_info_;      // 脚本信息
-    std::shared_ptr<xhlanguage::reader::CardReader> card_reader_;      // 读卡器
-    std::shared_ptr<zel::myorm::Database>           finance_db_;       // 金融数据库
-    std::shared_ptr<zel::myorm::Database>           telecom_db_;       // 电信数据库
+    zel::utility::IniFile                 ini_;              // 配置文件
+    std::shared_ptr<Path>                 path_;             // 路径
+    std::shared_ptr<OrderInfo>            order_info_;       // 订单信息
+    std::shared_ptr<PersonDataInfo>       person_data_info_; // 个人化信息
+    std::shared_ptr<ScriptInfo>           script_info_;      // 脚本信息
+    std::shared_ptr<zel::myorm::Database> finance_db_;       // 金融数据库
+    std::shared_ptr<zel::myorm::Database> telecom_db_;       // 电信数据库
 };

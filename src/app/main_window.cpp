@@ -4,6 +4,7 @@
 #include "tabulation/tabulation.h"
 #include "task/upload_file.hpp"
 #include "task/handle_order.hpp"
+#include "task/reset_card.hpp"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
 #include "task/generating_records.hpp"
@@ -31,12 +32,10 @@
 #include <qstringlistmodel>
 #include <qcompleter>
 
+#include <xhlanguage/repl/repl_bridge.h>
 #include <zel/utility/logger.h>
 using namespace zel::utility;
 using namespace zel::filesystem;
-
-#include <xhlanguage/card-reader/card_reader_factory.hpp>
-using namespace xhlanguage::reader;
 
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
@@ -45,8 +44,7 @@ MainWindow::MainWindow(QMainWindow *parent)
     , path_(nullptr)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
-    , script_info_(nullptr)
-    , card_reader_(nullptr) {
+    , script_info_(nullptr) {
     ui_->setupUi(this);
 
     // 初始化窗口
@@ -74,10 +72,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 MainWindow::~MainWindow() {
     delete ui_;
 
-    if (card_reader_ != nullptr) {
-        card_reader_->disconnect();
-        card_reader_ = nullptr;
-    }
+    // if (card_reader_ != nullptr) {
+    //     card_reader_->disconnect();
+    //     card_reader_ = nullptr;
+    // }
 }
 
 void MainWindow::chineseLanguageAction() { switchLanguage("zh_CN"); }
@@ -174,40 +172,26 @@ void MainWindow::openClearCardBtnClicked() {
 }
 
 void MainWindow::resetCardBtnClicked() {
+    int reader_id = ui_->reader_combo_box->currentIndex() + 1;
 
-    try {
-        // 连接读卡器
-        card_reader_->connect(ui_->reader_combo_box->currentText().toStdString());
-    } catch (std::exception &e) {
-        QString err_msg = "connect card reader error: " + QString::fromStdString(e.what());
-        QMessageBox::critical(this, "错误", err_msg);
-        return;
-    }
+    auto reset_card = new ResetCard(reader_id, this);
 
-    // 复位卡片
-    try {
-        auto atr = card_reader_->reset();
-        ui_->current_card_line->setText(QString::fromStdString(atr));
-        card_reader_->disconnect();
-    } catch (std::exception &e) {
-        QString err_msg = "reset card error: " + QString::fromStdString(e.what());
-        QMessageBox::critical(this, "错误", err_msg);
-        return;
-    }
+    connect(reset_card, &ResetCard::resetSuccess, this, &MainWindow::resetCardSuccess);
+    connect(reset_card, &ResetCard::resetFailure, this, &MainWindow::resetCardFailure);
+
+    reset_card->start();
 }
 
 void MainWindow::writeCardBtnClicked() {
-
     // 弹出写卡加载窗口, 并停留
     WriteCardLoading *write_card_loading = new WriteCardLoading(this);
     write_card_loading->show();
 
     // 创建工作线程
     auto write_card = new WriteCard();
-    write_card->cardReader(card_reader_);
     write_card->scriptInfo(script_info_);
     write_card->jsonData(person_data_info_->json_data);
-    write_card->readerName(ui_->reader_combo_box->currentText().toStdString());
+    write_card->readerId(ui_->reader_combo_box->currentIndex() + 1);
     write_card->xhlanguageType(ui_->xhlanguage_combo_box->currentIndex());
 
     // 连接信号槽
@@ -222,17 +206,15 @@ void MainWindow::writeCardBtnClicked() {
 }
 
 void MainWindow::clearCardBtnClicked() {
-
     // 弹出清卡加载窗口, 并停留
     ClearCardLoading *clear_card_loading = new ClearCardLoading(this);
     clear_card_loading->show();
 
     // 创建工作线程
     auto clear_card = new ClearCard();
-    clear_card->cardReader(card_reader_);
     clear_card->scriptInfo(script_info_);
     clear_card->jsonData(person_data_info_->json_data);
-    clear_card->readerName(ui_->reader_combo_box->currentText().toStdString());
+    clear_card->readerId(ui_->reader_combo_box->currentIndex() + 1);
     clear_card->xhlanguageType(ui_->xhlanguage_combo_box->currentIndex());
 
     // 连接信号槽
@@ -248,7 +230,6 @@ void MainWindow::clearCardBtnClicked() {
 }
 
 void MainWindow::uploadPrdBtnClicked() {
-
     loading_->setWindowTitle("正在上传个人化数据...");
     loading_->show();
 
@@ -292,7 +273,6 @@ void MainWindow::uploadTempBtnClicked() {
 }
 
 void MainWindow::selectFinanceGeneratePathBtnClicked() {
-
     QString order_no = ui_->finance_order_combo_box->currentText();
 
     // 获取桌面路径
@@ -306,7 +286,6 @@ void MainWindow::selectFinanceGeneratePathBtnClicked() {
 }
 
 void MainWindow::selectTelecomGeneratePathBtnClicked() {
-
     QString order_no = ui_->telecom_order_combo_box->currentText();
 
     // 获取桌面路径
@@ -432,17 +411,23 @@ void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
 void MainWindow::cancelOrder() { order_window_->hide(); }
 
 void MainWindow::bareAtr(const QString &bare_atr) {
-    ui_->bare_card_line->setText(bare_atr);
+    QString str = bare_atr;
+    str = str.mid(8, str.size() - 9);
+    ui_->bare_card_line->setText(str);
     ui_->bare_card_line->setCursorPosition(0);
 }
 
 void MainWindow::whiteAtr(const QString &white_atr) {
-    ui_->white_card_line->setText(white_atr);
+    QString str = white_atr;
+    str = str.mid(8, str.size() - 9);
+    ui_->white_card_line->setText(str);
     ui_->white_card_line->setCursorPosition(0);
 }
 
 void MainWindow::finishedAtr(const QString &finished_atr) {
-    ui_->finished_card_line->setText(finished_atr);
+    QString str = finished_atr;
+    str = str.mid(8, str.size() - 9);
+    ui_->finished_card_line->setText(str);
     ui_->finished_card_line->setCursorPosition(0);
 }
 
@@ -520,8 +505,16 @@ void MainWindow::generatingRecordSuccess() {
     success_box.exec();
 }
 
-void MainWindow::initWindow() {
+void MainWindow::resetCardFailure(const QString &err_msg) { QMessageBox::critical(this, "复位失败", err_msg); }
 
+void MainWindow::resetCardSuccess(const QString &atr) {
+    QString str = atr;
+    str = str.mid(8, str.size() - 9);
+    ui_->current_card_line->setText(str);
+    log_info(atr.toStdString().c_str());
+}
+
+void MainWindow::initWindow() {
     // 设置窗口标题
     setWindowTitle("智能卡生产预处理软件 v3.0.4");
 
@@ -532,7 +525,6 @@ void MainWindow::initWindow() {
 }
 
 void MainWindow::initUI() {
-
     // 使窗口始终在其他窗口之上
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 
@@ -660,20 +652,30 @@ void MainWindow::initLogger(const std::string &log_file) {
 
 void MainWindow::initCardReader() {
     try {
-        // 创建 PCSC 读卡器工厂
-        std::unique_ptr<CardReaderFactory> card_reader_factory = std::make_unique<PCSCReaderFactory>();
+        // 读卡器类型
+        ui_->reader_type_combo_box->addItem("PCSC");
+        ui_->reader_type_combo_box->addItem("QSC");
 
-        // 使用工厂创建 PCSC 读卡器
-        card_reader_ = card_reader_factory->createCardReader();
-
-        auto reader_list = card_reader_->readers();
-
-        for (auto reader : reader_list) {
-            ui_->reader_combo_box->addItem(QString::fromStdString(reader));
-        }
-
+        // 脚本运行器
         ui_->xhlanguage_combo_box->addItem("编译器");
         ui_->xhlanguage_combo_box->addItem("解释器");
+
+        logger("reader.log", "info");
+
+        // char *reader_list[10] = {0};
+        // initReaders(ui_->reader_type_combo_box->currentIndex(), reader_list, 10);
+
+        char  reader_list[10][256] = {0};
+        char *ptrs[10];
+        for (int i = 0; i < 10; i++)
+            ptrs[i] = reader_list[i];
+
+        initReaders(ui_->reader_type_combo_box->currentIndex(), ptrs, 10);
+        for (auto reader : ptrs) {
+            if (reader[0] != '\0') {
+                ui_->reader_combo_box->addItem(reader);
+            }
+        }
 
     } catch (std::exception &e) {
         QMessageBox::critical(this, "警告", "未找到读卡器，请检查读卡器是否连接");

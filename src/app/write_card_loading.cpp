@@ -40,8 +40,11 @@ void WriteCardLoading::startPrePersonal(const QString &duration, const QString &
 
     movie->setScaledSize(QSize(32, 32));
     movie->start();
-    emit bareAtr(atr);
+    QString str = atr;
+    emit    bareAtr(str);
 }
+
+void WriteCardLoading::prePersonal(const QString &duration, const QString &apdu_response) { ui_->prepersonal_duration_label->setText(apdu_response); }
 
 void WriteCardLoading::startPostPersonal(const QString &duration, const QString &atr) {
 
@@ -57,8 +60,11 @@ void WriteCardLoading::startPostPersonal(const QString &duration, const QString 
     movie->start();
 
     ui_->prepersonal_duration_label->setText(duration);
-    emit whiteAtr(atr);
+    QString str = atr;
+    emit    whiteAtr(str);
 }
+
+void WriteCardLoading::postPersonal(const QString &duration, const QString &apdu_response) { ui_->postpersonal_duration_label->setText(apdu_response); }
 
 void WriteCardLoading::startCheck(const QString &duration, const QString &atr) {
 
@@ -77,6 +83,8 @@ void WriteCardLoading::startCheck(const QString &duration, const QString &atr) {
 
     emit finishedAtr(atr);
 }
+
+void WriteCardLoading::check(const QString &duration, const QString &apdu_response) { ui_->check_duration_label->setText(apdu_response); }
 
 void WriteCardLoading::finish(const QString &duration) {
 
@@ -120,22 +128,37 @@ void WriteCardLoading::failure(WriteCard::Type type, const QString &err_msg) {
     }
 }
 
-void WriteCardLoading::success(WriteCard::Type type, const QString &duration, const QString &atr) {
+void WriteCardLoading::success(WriteCard::Type type, const QString &duration, const QString &apdu_response) {
 
     switch (type) {
 
+    case WriteCard::BARE_ATR: {
+        startPrePersonal(duration, apdu_response);
+        break;
+    }
+
     case WriteCard::PREPERSONAL: {
-        startPrePersonal(duration, atr);
+        prePersonal(duration, apdu_response);
+        break;
+    }
+
+    case WriteCard::WHITE_ATR: {
+        startPostPersonal(duration, apdu_response);
         break;
     }
 
     case WriteCard::POSTPERSONAL: {
-        startPostPersonal(duration, atr);
+        postPersonal(duration, apdu_response);
+        break;
+    }
+
+    case WriteCard::FINISHED_ATR: {
+        startCheck(duration, apdu_response);
         break;
     }
 
     case WriteCard::CHECK: {
-        startCheck(duration, atr);
+        check(duration, apdu_response);
         break;
     }
 

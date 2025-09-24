@@ -26,12 +26,13 @@ class ClearCardLoading : public QMainWindow {
 
     void startClear();
 
+    void clear(const QString &apdu_response);
+
     void finish(const QString &duration);
 
   public slots:
     void failure(ClearCard::Type type, const QString &err_msg);
-
-    void success(ClearCard::Type type, const QString &duration);
+    void success(ClearCard::Type type, const QString &duration, const QString &apdu_response);
 
   private:
     Ui_ClearCardLoading *ui_;

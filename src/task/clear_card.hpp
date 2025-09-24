@@ -7,16 +7,15 @@
 #include <qcoreapplication>
 #include <qthread>
 #include <zel/zel.h>
-#include <xhlanguage/card-reader/card_reader.hpp>
-#include <xhlanguage/repl/repl.h>
-using namespace xhlanguage::reader;
+#include <xhlanguage/repl/repl_bridge.h>
+#include <qqueue>
 
 // 自定义的工作线程类
 class ClearCard : public QThread {
     Q_OBJECT
 
   public:
-    enum Type { CONNECT, CLEAR, FINISH };
+    enum Type { CONNECT, START, CLEAR, FINISH };
 
     ClearCard() {}
 
@@ -24,62 +23,70 @@ class ClearCard : public QThread {
 
     void jsonData(const zel::json::Json &json_data) { json_data_ = json_data; }
 
-    void cardReader(std::shared_ptr<CardReader> card_reader) { card_reader_ = card_reader; }
-
-    void readerName(const std::string &reader_name) { reader_name_ = reader_name; }
+    void readerId(int reader_id) { reader_id_ = reader_id; }
 
     void xhlanguageType(int xhlanguage_type) { xhlanguage_type_ = xhlanguage_type; }
-
-    // 重写run函数，在这里执行线程的工作
-    void run() override {
-
-        // 连接读卡器
-        card_reader_->connect(reader_name_);
-
-        json_data_["has_ds"] = script_info_->has_ds;
-        auto personal_data   = json_data_.str();
-
-        xhlanguage::repl::Repl repl;
-        std::string            duration;
-
-        // 清卡
-        emit success(CLEAR, QString::fromStdString(duration));
-
-        // 计时 - 开始
-        auto start = std::chrono::steady_clock::now();
-
-        bool result = false;
-        if (xhlanguage_type_ == 0) {
-            result = repl.startCompiler(script_info_->clear_buffer, personal_data, card_reader_);
-        } else if (xhlanguage_type_ == 1) {
-            result = repl.startInterpreter(script_info_->clear_buffer, personal_data, card_reader_);
-        }
-
-        if (result == false) {
-            emit failure(CLEAR, QString::fromStdString(""));
-            card_reader_->disconnect();
-            return;
-        }
-
-        // 计时 - 结束
-        auto end = std::chrono::steady_clock::now();
-        duration = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
-
-        // 完成
-        emit success(FINISH, QString::fromStdString(duration));
-        card_reader_->disconnect();
-    }
 
   signals:
     // 信号函数，用于向外界发射信号
     void failure(ClearCard::Type type, const QString &err_msg);
+    void success(ClearCard::Type type, const QString &duration, const QString &apdu_response);
 
-    void success(ClearCard::Type type, const QString &duration);
+  protected:
+    void run() override {
+
+        json_data_["has_ds"] = script_info_->has_ds;
+        auto personal_data   = json_data_.str();
+
+        setCallback(&ClearCard::callbackThunk, this);
+
+        // 清卡
+        emit success(START, QString::fromStdString(duration_), "");
+
+        // 计时 - 开始
+        auto start  = std::chrono::steady_clock::now();
+        bool result = false;
+        char err_msg[1024];
+        type_ = CLEAR;
+        if (xhlanguage_type_ == 0) {
+            result = startCompiler(script_info_->clear_buffer.c_str(), personal_data.c_str(), reader_id_, err_msg, sizeof(err_msg));
+        } else if (xhlanguage_type_ == 1) {
+            result = startInterpreter(script_info_->clear_buffer.c_str(), personal_data.c_str(), reader_id_);
+        }
+
+        if (result == false) {
+            emit failure(type_, (const char *) err_msg);
+            return;
+        }
+
+        // 计时 - 结束
+        auto end  = std::chrono::steady_clock::now();
+        duration_ = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
+
+        // 完成
+        emit success(FINISH, QString::fromStdString(duration_), "");
+    }
+
+  private:
+    static void callbackThunk(const char *run_result, int len, void *user) {
+        auto   *self = static_cast<ClearCard *>(user);
+        QString str  = QString::fromUtf8(run_result, len);
+
+        QMetaObject::invokeMethod(
+            self,
+            [self, str]() {
+                self->results_.enqueue(str); // 存队列
+                emit self->success(self->type_, QString::fromStdString(self->duration_), self->results_.dequeue());
+            },
+            Qt::QueuedConnection);
+    }
 
   private:
     std::shared_ptr<ScriptInfo> script_info_;
     zel::json::Json             json_data_;
-    std::shared_ptr<CardReader> card_reader_;
-    std::string                 reader_name_;
+    int                         reader_id_;
     int                         xhlanguage_type_;
+    QQueue<QString>             results_; // 存储回调结果
+    Type                        type_;
+    std::string                 duration_;
 };

@@ -32,16 +32,21 @@ class WriteCardLoading : public QMainWindow {
 
     void startPrePersonal(const QString &duration, const QString &atr);
 
+    void prePersonal(const QString &duration, const QString &apdu_response);
+
     void startPostPersonal(const QString &duration, const QString &atr);
 
+    void postPersonal(const QString &duration, const QString &apdu_response);
+
     void startCheck(const QString &duration, const QString &atr);
+
+    void check(const QString &duration, const QString &apdu_response);
 
     void finish(const QString &duration);
 
   public slots:
     void failure(WriteCard::Type type, const QString &err_msg);
-
-    void success(WriteCard::Type type, const QString &duration, const QString &atr = "");
+    void success(WriteCard::Type type, const QString &duration, const QString &apdu_response = "");
 
   private:
     Ui_WriteCardLoading *ui_;

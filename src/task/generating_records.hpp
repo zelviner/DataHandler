@@ -25,6 +25,11 @@ class GeneratingRecords : public QThread {
         , generate_path_(generate_path) {}
     ~GeneratingRecords() {}
 
+  signals:
+    void success();
+    void failure();
+
+  protected:
     void run() override {
         Tabulation tabulation(finance_db_, telecom_db_, ini_);
         if (telecom_mode_) {
@@ -45,10 +50,6 @@ class GeneratingRecords : public QThread {
 
         emit success();
     }
-
-  signals:
-    void success();
-    void failure();
 
   private:
     bool                                  telecom_mode_;

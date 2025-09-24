@@ -21,7 +21,12 @@ class UploadFile : public QThread {
         , is_temp_(is_temp)
         , path_(path) {}
 
-    // 重写run函数，在这里执行线程的工作
+  signals:
+    // 信号函数，用于向外界发射信号
+    void failure(const QString &err_type, const QString &err_msg);
+    void success();
+
+  protected:
     void run() override {
 
         if (is_temp_) {
@@ -68,11 +73,6 @@ class UploadFile : public QThread {
 
         emit success();
     }
-
-  signals:
-    // 信号函数，用于向外界发射信号
-    void failure(const QString &err_type, const QString &err_msg);
-    void success();
 
   private:
     zel::utility::IniFile ini_;

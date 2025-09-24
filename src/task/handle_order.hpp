@@ -20,9 +20,13 @@ class HandleOrder : public QThread {
     HandleOrder(std::shared_ptr<Path> &path)
         : path_(path) {}
 
-    // 重写run函数，在这里执行线程的工作
-    void run() override {
+  signals:
+    // 信号函数，用于向外界发射信号
+    void failure(const QString &err_msg);
+    void success(std::shared_ptr<OrderInfo> order_info, std::shared_ptr<PersonDataInfo> person_data_info, std::shared_ptr<ScriptInfo> script_info);
 
+  protected:
+    void run() override {
         Order order(path_);
         if (FilePath::isFile(path_->datagram)) {
             // 订单预处理
@@ -55,11 +59,6 @@ class HandleOrder : public QThread {
 
         emit success(order_info, person_data_info, script_info);
     }
-
-  signals:
-    // 信号函数，用于向外界发射信号
-    void failure(const QString &err_msg);
-    void success(std::shared_ptr<OrderInfo> order_info, std::shared_ptr<PersonDataInfo> person_data_info, std::shared_ptr<ScriptInfo> script_info);
 
   private:
     std::shared_ptr<Path> path_;

@@ -41,6 +41,8 @@ void ClearCardLoading::startClear() {
     movie->start();
 }
 
+void ClearCardLoading::clear(const QString &apdu_response) { ui_->clear_duration_label->setText(apdu_response); }
+
 void ClearCardLoading::finish(const QString &duration) {
 
     // 插入图片
@@ -71,12 +73,17 @@ void ClearCardLoading::failure(ClearCard::Type type, const QString &err_msg) {
     }
 }
 
-void ClearCardLoading::success(ClearCard::Type type, const QString &duration) {
+void ClearCardLoading::success(ClearCard::Type type, const QString &duration, const QString &apdu_response) {
 
     switch (type) {
 
-    case ClearCard::CLEAR: {
+    case ClearCard::START: {
         startClear();
+        break;
+    }
+
+    case ClearCard::CLEAR: {
+        clear(apdu_response);
         break;
     }
 
