@@ -248,12 +248,12 @@ std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
     auto infos                  = String::split(order_dir_name, " ");
     order_info_->project_number = infos[0];
 
-    auto project_name_match = String::matches(infos[1], "[A-Z]+[0-9]+");
+    auto project_name_match = String::matches(infos[1], "^[A-Z]+[0-9]+");
     if (project_name_match.size() != 0) {
         order_info_->order_number = infos[0];
         order_info_->project_name = project_name_match[0];
     } else {
-        project_name_match = String::matches(infos[2], "[A-Z]+[0-9]+");
+        project_name_match = String::matches(infos[2], "^[A-Z]+[0-9]+");
         if (project_name_match.size() != 0) {
             order_info_->order_number = infos[1];
             order_info_->project_name = project_name_match[0];
