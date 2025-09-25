@@ -685,7 +685,7 @@
             </spacer>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_71" stretch="2,5">
+            <layout class="QHBoxLayout" name="horizontalLayout_71" stretch="4,5">
              <item>
               <widget class="QLabel" name="label_26">
                <property name="font">
@@ -725,7 +725,7 @@
             </spacer>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_59" stretch="2,5">
+            <layout class="QHBoxLayout" name="horizontalLayout_59" stretch="4,5">
              <item>
               <widget class="QLabel" name="label_20">
                <property name="font">
@@ -767,7 +767,7 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_40" stretch="1,8,1">
+          <layout class="QHBoxLayout" name="horizontalLayout_40" stretch="1,8,0">
            <item>
             <spacer name="horizontalSpacer_44">
              <property name="orientation">
@@ -782,7 +782,7 @@
             </spacer>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_58" stretch="2,5">
+            <layout class="QHBoxLayout" name="horizontalLayout_58" stretch="2,8">
              <item>
               <widget class="QLabel" name="label_19">
                <property name="font">

@@ -13,6 +13,7 @@
 #include "myorm/database.h"
 
 #include <WinSock2.h>
+#include <exception>
 #include <memory>
 #include <qaction.h>
 #include <qdesktopservices.h>
@@ -412,21 +413,21 @@ void MainWindow::cancelOrder() { order_window_->hide(); }
 
 void MainWindow::bareAtr(const QString &bare_atr) {
     QString str = bare_atr;
-    str = str.mid(8, str.size() - 9);
+    str         = str.mid(8, str.size() - 9);
     ui_->bare_card_line->setText(str);
     ui_->bare_card_line->setCursorPosition(0);
 }
 
 void MainWindow::whiteAtr(const QString &white_atr) {
     QString str = white_atr;
-    str = str.mid(8, str.size() - 9);
+    str         = str.mid(8, str.size() - 9);
     ui_->white_card_line->setText(str);
     ui_->white_card_line->setCursorPosition(0);
 }
 
 void MainWindow::finishedAtr(const QString &finished_atr) {
     QString str = finished_atr;
-    str = str.mid(8, str.size() - 9);
+    str         = str.mid(8, str.size() - 9);
     ui_->finished_card_line->setText(str);
     ui_->finished_card_line->setCursorPosition(0);
 }
@@ -509,7 +510,7 @@ void MainWindow::resetCardFailure(const QString &err_msg) { QMessageBox::critica
 
 void MainWindow::resetCardSuccess(const QString &atr) {
     QString str = atr;
-    str = str.mid(8, str.size() - 9);
+    str         = str.mid(8, str.size() - 9);
     ui_->current_card_line->setText(str);
     log_info(atr.toStdString().c_str());
 }
@@ -567,6 +568,14 @@ void MainWindow::initUI() {
     ui_->order_quantity_line->setText(QString::fromStdString(order_quantity));
     ui_->data_line->setText(QString::fromStdString(data));
 
+    // 读卡器类型
+    ui_->reader_type_combo_box->addItem("PCSC");
+    ui_->reader_type_combo_box->addItem("QSC");
+
+    // 脚本运行器
+    ui_->xhlanguage_combo_box->addItem("编译器 (推荐)");
+    ui_->xhlanguage_combo_box->addItem("解释器");
+
     ui_->clear_card_btn->setDisabled(true);
     ui_->write_card_btn->setDisabled(true);
 }
@@ -595,6 +604,7 @@ void MainWindow::initSignalSlot() {
     connect(ui_->open_clear_btn, &QPushButton::clicked, this, &MainWindow::openClearCardBtnClicked);
 
     // 鉴权
+    connect(ui_->reader_type_combo_box, &QComboBox::currentTextChanged, this, &MainWindow::initCardReader);
     connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
     connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
     connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
@@ -651,36 +661,42 @@ void MainWindow::initLogger(const std::string &log_file) {
 }
 
 void MainWindow::initCardReader() {
-    try {
-        // 读卡器类型
-        ui_->reader_type_combo_box->addItem("PCSC");
-        ui_->reader_type_combo_box->addItem("QSC");
+    logger("reader.log", "info");
 
-        // 脚本运行器
-        ui_->xhlanguage_combo_box->addItem("编译器");
-        ui_->xhlanguage_combo_box->addItem("解释器");
+    int reader_type = ui_->reader_type_combo_box->currentIndex();
 
-        logger("reader.log", "info");
+    std::vector<std::string> connect_infos = {
+        "192.168.1.31:10002",
+        "192.168.1.31:10003",
+        "192.168.1.31:10004",
+        "192.168.1.31:10005",
+    };
 
-        // char *reader_list[10] = {0};
-        // initReaders(ui_->reader_type_combo_box->currentIndex(), reader_list, 10);
-
-        char  reader_list[10][256] = {0};
-        char *ptrs[10];
-        for (int i = 0; i < 10; i++)
-            ptrs[i] = reader_list[i];
-
-        initReaders(ui_->reader_type_combo_box->currentIndex(), ptrs, 10);
-        for (auto reader : ptrs) {
-            if (reader[0] != '\0') {
-                ui_->reader_combo_box->addItem(reader);
-            }
+    char  reader_list[10][256] = {0};
+    char *ptrs[10];
+    for (size_t i = 0; i < 10; i++) {
+        if (reader_type == 1 && i < connect_infos.size()) {
+            strncpy(reader_list[i], connect_infos[i].c_str(), sizeof(reader_list[i]) - 1);
+            reader_list[i][sizeof(reader_list[i]) - 1] = '\0'; // 保证安全
         }
 
-    } catch (std::exception &e) {
+        ptrs[i] = reader_list[i];
+    }
+
+    ui_->reader_combo_box->clear();
+    if (!initReaders(reader_type, ptrs, 10)) {
         QMessageBox::critical(this, "警告", "未找到读卡器，请检查读卡器是否连接");
         ui_->reset_card_btn->setDisabled(true);
+        return;
     }
+
+    for (auto reader : ptrs) {
+        if (reader[0] != '\0') {
+            ui_->reader_combo_box->addItem(reader);
+        }
+    }
+
+    ui_->reset_card_btn->setDisabled(false);
 }
 
 void MainWindow::initDatabase() {
