@@ -1,7 +1,6 @@
 #include "person_data.h"
 
 #include <memory>
-#include <iostream>
 
 using namespace zel::json;
 using namespace zel::filesystem;
@@ -23,7 +22,7 @@ std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
 
     auto person_data_file_path_pgp = person_data_files->at(0).path();
     if (person_data_file_path_pgp.find(".gpg") != std::string::npos || person_data_file_path_pgp.find(".pgp") != std::string::npos) {
-        int pos = person_data_file_path_pgp.find_last_of(".");
+        size_t pos = person_data_file_path_pgp.find_last_of(".");
         if (pos == std::string::npos) return nullptr;
         auto person_data_file_path = person_data_file_path_pgp.substr(0, pos);
 
@@ -64,7 +63,7 @@ zel::json::Json PersonData::jsonData() {
 
     auto headers = String::split(person_data_info_->header, "/");
     auto datas   = String::split(person_data_info_->data, " ");
-    for (int i = 0; i < headers.size(); i++) {
+    for (size_t i = 0; i < headers.size(); i++) {
         json[headers[i]] = datas[i];
     }
 

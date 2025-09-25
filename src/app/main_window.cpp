@@ -70,14 +70,7 @@ MainWindow::MainWindow(QMainWindow *parent)
     initDatabase();
 }
 
-MainWindow::~MainWindow() {
-    delete ui_;
-
-    // if (card_reader_ != nullptr) {
-    //     card_reader_->disconnect();
-    //     card_reader_ = nullptr;
-    // }
-}
+MainWindow::~MainWindow() { delete ui_; }
 
 void MainWindow::chineseLanguageAction() { switchLanguage("zh_CN"); }
 
@@ -173,8 +166,9 @@ void MainWindow::openClearCardBtnClicked() {
 }
 
 void MainWindow::resetCardBtnClicked() {
-    int reader_id = ui_->reader_combo_box->currentIndex() + 1;
+    ui_->current_card_line->setText(tr("正在复位..."));
 
+    int  reader_id  = ui_->reader_combo_box->currentIndex() + 1;
     auto reset_card = new ResetCard(reader_id, this);
 
     connect(reset_card, &ResetCard::resetSuccess, this, &MainWindow::resetCardSuccess);
@@ -189,11 +183,8 @@ void MainWindow::writeCardBtnClicked() {
     write_card_loading->show();
 
     // 创建工作线程
-    auto write_card = new WriteCard();
-    write_card->scriptInfo(script_info_);
-    write_card->jsonData(person_data_info_->json_data);
-    write_card->readerId(ui_->reader_combo_box->currentIndex() + 1);
-    write_card->xhlanguageType(ui_->xhlanguage_combo_box->currentIndex());
+    auto write_card =
+        new WriteCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1, ui_->xhlanguage_combo_box->currentIndex());
 
     // 连接信号槽
     connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
@@ -212,12 +203,8 @@ void MainWindow::clearCardBtnClicked() {
     clear_card_loading->show();
 
     // 创建工作线程
-    auto clear_card = new ClearCard();
-    clear_card->scriptInfo(script_info_);
-    clear_card->jsonData(person_data_info_->json_data);
-    clear_card->readerId(ui_->reader_combo_box->currentIndex() + 1);
-    clear_card->xhlanguageType(ui_->xhlanguage_combo_box->currentIndex());
-
+    auto clear_card =
+        new ClearCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1, ui_->xhlanguage_combo_box->currentIndex());
     // 连接信号槽
     connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
     connect(clear_card, &ClearCard::success, clear_card_loading, &ClearCardLoading::success);
@@ -248,16 +235,6 @@ void MainWindow::uploadPrdBtnClicked() {
 }
 
 void MainWindow::uploadTempBtnClicked() {
-    // 获取截图文件数量
-    Directory dir(path_->screenshot);
-    int       file_count = dir.count();
-    if (file_count < 5) {
-        QMessageBox::StandardButton box;
-        box =
-            QMessageBox::question(this, "提示", "截图文件夹数量为 " + QString::number(file_count) + " 个, 是否继续上传？", QMessageBox::Yes | QMessageBox::No);
-        if (box == QMessageBox::No) return;
-    }
-
     loading_->setWindowTitle("正在上传临时文件...");
     loading_->show();
 
@@ -300,9 +277,6 @@ void MainWindow::selectTelecomGeneratePathBtnClicked() {
 }
 
 void MainWindow::generatingFinanceRecordBtnClicked() {
-    loading_->setWindowTitle("金融数据分配表生成中...");
-    loading_->show();
-
     // 校验配置
     if (ui_->finance_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
         ui_->data_line->text().isEmpty()) {
@@ -329,6 +303,9 @@ void MainWindow::generatingFinanceRecordBtnClicked() {
         return;
     }
 
+    loading_->setWindowTitle("金融数据分配表生成中...");
+    loading_->show();
+
     auto template_path      = ui_->finance_path_line->text().toStdString();
     auto generating_records = new GeneratingRecords(false, finance_db_, telecom_db_, ini_, order_number, data_field, template_path, generate_path);
 
@@ -341,9 +318,6 @@ void MainWindow::generatingFinanceRecordBtnClicked() {
 }
 
 void MainWindow::generatingTelecomRecordBtnClicked() {
-    loading_->setWindowTitle("电信数据分配表生成中...");
-    loading_->show();
-
     // 校验配置
     if (ui_->telecom_path_line->text().isEmpty() || ui_->order_no_line->text().isEmpty() || ui_->order_quantity_line->text().isEmpty() ||
         ui_->data_line->text().isEmpty()) {
@@ -363,6 +337,9 @@ void MainWindow::generatingTelecomRecordBtnClicked() {
         QMessageBox::critical(this, "错误", "请选择数据分配表路径");
         return;
     }
+
+    loading_->setWindowTitle("电信数据分配表生成中...");
+    loading_->show();
 
     auto template_path      = ui_->telecom_path_line->text().toStdString();
     auto generating_records = new GeneratingRecords(true, finance_db_, telecom_db_, ini_, order_number, "Iccid", template_path, generate_path);
@@ -397,8 +374,7 @@ void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
     loading_->setWindowTitle("订单处理中...");
     loading_->show();
 
-    path_->order = FilePath::join(path_->directory, confirm_datagram_dir_name);
-
+    path_->order     = FilePath::join(path_->directory, confirm_datagram_dir_name);
     auto handleOrder = new HandleOrder(path_);
 
     // 连接信号槽
@@ -517,7 +493,7 @@ void MainWindow::resetCardSuccess(const QString &atr) {
 
 void MainWindow::initWindow() {
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.0.4");
+    setWindowTitle("智能卡生产预处理软件 v3.1.0");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
@@ -677,7 +653,7 @@ void MainWindow::initCardReader() {
     for (size_t i = 0; i < 10; i++) {
         if (reader_type == 1 && i < connect_infos.size()) {
             strncpy(reader_list[i], connect_infos[i].c_str(), sizeof(reader_list[i]) - 1);
-            reader_list[i][sizeof(reader_list[i]) - 1] = '\0'; // 保证安全
+            reader_list[i][sizeof(reader_list[i]) - 1] = '\0';
         }
 
         ptrs[i] = reader_list[i];
@@ -701,43 +677,40 @@ void MainWindow::initCardReader() {
 
 void MainWindow::initDatabase() {
     finance_db_ = std::make_shared<zel::myorm::Database>();
-    if (!finance_db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"],
-                              ini_["mysql"]["finance_database"])) {
+    if (finance_db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"],
+                             ini_["mysql"]["finance_database"])) {
+        Tabulation tabulation(finance_db_, telecom_db_, ini_);
+        auto       finance_order_list = tabulation.financeOrderList();
+        reverse(finance_order_list.begin(), finance_order_list.end());
+        QStringList finance_items;
+        for (auto order : finance_order_list) {
+            finance_items.append(QString::fromStdString(order));
+        }
+
+        ui_->finance_order_combo_box->addItems(finance_items);
+        ui_->finance_order_combo_box->setCurrentText("");
+    } else {
         log_error("Failed to connect to database");
-        QMessageBox::critical(this, "警告", "连接金融数据库失败，请检查配置");
         ui_->finance_generating_ptn->setDisabled(true);
-        return;
     }
 
     telecom_db_ = std::make_shared<zel::myorm::Database>();
-    if (!telecom_db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"],
-                              ini_["mysql"]["telecom_database"])) {
+    if (telecom_db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"],
+                             ini_["mysql"]["telecom_database"])) {
+        Tabulation tabulation(finance_db_, telecom_db_, ini_);
+        auto       telecom_order_list = tabulation.telecomOrderList();
+        reverse(telecom_order_list.begin(), telecom_order_list.end());
+        QStringList telecom_items;
+        for (auto order : telecom_order_list) {
+            telecom_items.append(QString::fromStdString(order));
+        }
+
+        ui_->telecom_order_combo_box->addItems(telecom_items);
+        ui_->telecom_order_combo_box->setCurrentText("");
+    } else {
         log_error("Failed to connect to database");
-        QMessageBox::critical(this, "警告", "连接电信数据库失败，请检查配置");
-        ui_->finance_generating_ptn->setDisabled(true);
-        return;
+        ui_->telecom_generating_ptn->setDisabled(true);
     }
-
-    Tabulation tabulation(finance_db_, telecom_db_, ini_);
-    auto       finance_order_list = tabulation.financeOrderList();
-    reverse(finance_order_list.begin(), finance_order_list.end());
-    QStringList finance_items;
-    for (auto order : finance_order_list) {
-        finance_items.append(QString::fromStdString(order));
-    }
-
-    auto telecom_order_list = tabulation.telecomOrderList();
-    reverse(telecom_order_list.begin(), telecom_order_list.end());
-    QStringList telecom_items;
-    for (auto order : telecom_order_list) {
-        telecom_items.append(QString::fromStdString(order));
-    }
-
-    ui_->finance_order_combo_box->addItems(finance_items);
-    ui_->finance_order_combo_box->setCurrentText("");
-
-    ui_->telecom_order_combo_box->addItems(telecom_items);
-    ui_->telecom_order_combo_box->setCurrentText("");
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {

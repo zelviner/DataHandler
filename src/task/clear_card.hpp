@@ -2,11 +2,10 @@
 
 #include "order/script.h"
 
-// #include <xhlanguage/xhlanguage.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <zel/zel.h>
+#include <zel/json/json.h>
 #include <xhlanguage/repl/repl_bridge.h>
 #include <qqueue>
 
@@ -17,15 +16,11 @@ class ClearCard : public QThread {
   public:
     enum Type { CONNECT, START, CLEAR, FINISH };
 
-    ClearCard() {}
-
-    void scriptInfo(std::shared_ptr<ScriptInfo> script_info) { script_info_ = script_info; }
-
-    void jsonData(const zel::json::Json &json_data) { json_data_ = json_data; }
-
-    void readerId(int reader_id) { reader_id_ = reader_id; }
-
-    void xhlanguageType(int xhlanguage_type) { xhlanguage_type_ = xhlanguage_type; }
+    ClearCard(const std::shared_ptr<ScriptInfo> &script_info, const zel::json::Json &json_data, int reader_id, int xhlanguage_type)
+        : script_info_(script_info)
+        , json_data_(json_data)
+        , reader_id_(reader_id)
+        , xhlanguage_type_(xhlanguage_type) {}
 
   signals:
     // 信号函数，用于向外界发射信号

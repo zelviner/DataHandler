@@ -7,6 +7,7 @@
 
 #include "app/main_window.h"
 
+#include <qfile>
 #include <qapplication>
 #pragma comment(lib, "user32.lib")
 
@@ -17,6 +18,14 @@ int main(int argc, char *argv[]) {
 
     QApplication a(argc, argv);
     MainWindow   w;
+
+    // // 设置全局样式
+    // QFile file(":/qss/windows.qss");
+    // file.open(QFile::ReadOnly);
+    // QString style = QLatin1String(file.readAll());
+    // a.setStyleSheet(style);
+    // file.close();
+
     w.show();
     return a.exec();
 }

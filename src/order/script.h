@@ -14,12 +14,10 @@ struct ScriptInfo {
     std::string check_buffer;       // 检测脚本
     std::string clear_buffer;       // 清卡脚本
 
-    bool        has_ds; // 是否有ds标识符
-    std::string atr3;
+    bool has_ds; // 是否有ds标识符
 };
 
 class Script {
-
   public:
     Script(const std::string &script_path);
     ~Script();

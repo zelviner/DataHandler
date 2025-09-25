@@ -17,15 +17,12 @@ class WriteCard : public QThread {
   public:
     enum Type { CONNECT, BARE_ATR, PREPERSONAL, WHITE_ATR, POSTPERSONAL, CHECK, FINISHED_ATR, FINISH };
 
-    WriteCard() {}
-
-    void scriptInfo(std::shared_ptr<ScriptInfo> script_info) { script_info_ = script_info; }
-
-    void jsonData(const zel::json::Json &json_data) { json_data_ = json_data; }
-
-    void readerId(int reader_id) { reader_id_ = reader_id; }
-
-    void xhlanguageType(int xhlanguage_type) { xhlanguage_type_ = xhlanguage_type; }
+    WriteCard(const std::shared_ptr<ScriptInfo> &script_info, const zel::json::Json &json_data, int reader_id, int xhlanguage_type)
+        : script_info_(script_info)
+        , json_data_(json_data)
+        , reader_id_(reader_id)
+        , xhlanguage_type_(xhlanguage_type) {}
+    ~WriteCard() {}
 
   signals:
     // 信号函数，用于向外界发射信号

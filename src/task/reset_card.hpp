@@ -16,8 +16,6 @@ class ResetCard : public QThread {
         : QThread(parent)
         , reader_id_(reader_id) {}
 
-    QString result() const { return atr_; }
-
   signals:
     void resetSuccess(const QString &atr);
     void resetFailure(const QString &err_msg);
@@ -33,12 +31,13 @@ class ResetCard : public QThread {
     }
 
   private:
-    int     reader_id_;
-    QString atr_;
-
     static void callbackThunk(const char *run_result, int len, void *user) {
         auto *self = static_cast<ResetCard *>(user);
         self->atr_ = QString::fromUtf8(run_result, len); // 保存结果
         emit self->resetSuccess(self->atr_);
     }
+
+  private:
+    int     reader_id_;
+    QString atr_;
 };
