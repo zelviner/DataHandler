@@ -189,9 +189,8 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
         exchangeIccid(data.end_iccid);
 
         dr_->datas.push_back(data);
+        dr_->header.order_quantity += data.quantity;
     }
-
-    dr_->header.order_quantity = dr_->datas[0].quantity * dr_->datas.size();
 
     // 删除索引
     sql = fmt::format("DROP INDEX idx_file_id ON `{}`", data_table);
@@ -219,7 +218,6 @@ void Tabulation::generatingFinanceRecords(const std::string &template_file, cons
         return;
     }
 
-    // 注意：output_file 中的数据还没写入，所以要重新 load
     loadTemplate(output_file);
     fillTemplateWithData(output_file);
 }
