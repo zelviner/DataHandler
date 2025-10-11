@@ -1344,7 +1344,7 @@
               </layout>
              </item>
              <item>
-              <widget class="QPushButton" name="finance_select_generate_file_ptn">
+              <widget class="QPushButton" name="finance_select_generate_file_btn">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
@@ -1374,7 +1374,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="finance_generating_ptn">
+              <widget class="QPushButton" name="finance_generating_btn">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
@@ -1423,36 +1423,53 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_64" stretch="10">
+            <layout class="QHBoxLayout" name="horizontalLayout_73">
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_65" stretch="1,6">
+              <layout class="QHBoxLayout" name="horizontalLayout_64" stretch="10">
                <item>
-                <widget class="QLabel" name="label_23">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>订单号</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="telecom_order_combo_box">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout_65" stretch="1,5">
+                 <item>
+                  <widget class="QLabel" name="label_23">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>12</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>订单号</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="telecom_order_combo_box">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>12</pointsize>
+                    </font>
+                   </property>
+                   <property name="editable">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
+             </item>
+             <item>
+              <widget class="QPushButton" name="telecom_delete_order_btn">
+               <property name="font">
+                <font>
+                 <family>微软雅黑</family>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>删除</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -1486,7 +1503,7 @@
               </layout>
              </item>
              <item>
-              <widget class="QPushButton" name="telecom_select_generate_file_ptn">
+              <widget class="QPushButton" name="telecom_select_generate_file_btn">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
@@ -1516,7 +1533,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="telecom_generating_ptn">
+              <widget class="QPushButton" name="telecom_generating_btn">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
@@ -2001,7 +2018,7 @@
               </layout>
              </item>
              <item>
-              <widget class="QPushButton" name="select_finance_template_file_ptn">
+              <widget class="QPushButton" name="select_finance_template_file_btn">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
@@ -2045,7 +2062,7 @@
               </layout>
              </item>
              <item>
-              <widget class="QPushButton" name="select_telecom_template_file_ptn">
+              <widget class="QPushButton" name="select_telecom_template_file_btn">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>

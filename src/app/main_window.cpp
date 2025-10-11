@@ -11,9 +11,9 @@
 #include "clear_card_loading.h"
 #include "write_card_loading.h"
 #include "myorm/database.h"
+#include "dms/dms.h"
 
 #include <WinSock2.h>
-#include <exception>
 #include <memory>
 #include <qaction.h>
 #include <qdesktopservices.h>
@@ -261,6 +261,26 @@ void MainWindow::selectFinanceGeneratePathBtnClicked() {
     if (file_path.isEmpty()) return;
 
     ui_->finance_generate_path_line->setText(file_path);
+}
+
+void MainWindow::deleteTelecomOrderBtnClicked() {
+    auto order_no = ui_->telecom_order_combo_box->currentText().toStdString();
+
+    if (order_no.empty()) {
+        QMessageBox::critical(this, "错误", "请先选择要删除的订单号");
+        return;
+    }
+
+    // 弹出确认框
+    auto confirm_box = QMessageBox::question(this, "确认删除", "确认删除订单号为" + QString(order_no.c_str()) + "的订单吗?");
+
+    if (confirm_box == QMessageBox::Yes) {
+        Dms dms(telecom_db_, order_no);
+        dms.deleteOrder();
+    }
+
+    // 删除成功弹窗
+    QMessageBox::information(this, "提示", "删除成功");
 }
 
 void MainWindow::selectTelecomGeneratePathBtnClicked() {
@@ -588,14 +608,15 @@ void MainWindow::initSignalSlot() {
     connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
 
     // 制表
-    connect(ui_->finance_select_generate_file_ptn, &QPushButton::clicked, this, &MainWindow::selectFinanceGeneratePathBtnClicked);
-    connect(ui_->finance_generating_ptn, &QPushButton::clicked, this, &MainWindow::generatingFinanceRecordBtnClicked);
-    connect(ui_->telecom_select_generate_file_ptn, &QPushButton::clicked, this, &MainWindow::selectTelecomGeneratePathBtnClicked);
-    connect(ui_->telecom_generating_ptn, &QPushButton::clicked, this, &MainWindow::generatingTelecomRecordBtnClicked);
+    connect(ui_->finance_select_generate_file_btn, &QPushButton::clicked, this, &MainWindow::selectFinanceGeneratePathBtnClicked);
+    connect(ui_->finance_generating_btn, &QPushButton::clicked, this, &MainWindow::generatingFinanceRecordBtnClicked);
+    connect(ui_->telecom_delete_order_btn, &QPushButton::clicked, this, &MainWindow::deleteTelecomOrderBtnClicked);
+    connect(ui_->telecom_select_generate_file_btn, &QPushButton::clicked, this, &MainWindow::selectTelecomGeneratePathBtnClicked);
+    connect(ui_->telecom_generating_btn, &QPushButton::clicked, this, &MainWindow::generatingTelecomRecordBtnClicked);
 
     // 配置
-    connect(ui_->select_finance_template_file_ptn, &QPushButton::clicked, this, &MainWindow::selectFinanceTemplatePathBtnClicked);
-    connect(ui_->select_telecom_template_file_ptn, &QPushButton::clicked, this, &MainWindow::selectTelecomTemplatePathBtnClicked);
+    connect(ui_->select_finance_template_file_btn, &QPushButton::clicked, this, &MainWindow::selectFinanceTemplatePathBtnClicked);
+    connect(ui_->select_telecom_template_file_btn, &QPushButton::clicked, this, &MainWindow::selectTelecomTemplatePathBtnClicked);
     connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
 }
 
@@ -691,7 +712,7 @@ void MainWindow::initDatabase() {
         ui_->finance_order_combo_box->setCurrentText("");
     } else {
         log_error("Failed to connect to database");
-        ui_->finance_generating_ptn->setDisabled(true);
+        ui_->finance_generating_btn->setDisabled(true);
     }
 
     telecom_db_ = std::make_shared<zel::myorm::Database>();
@@ -709,7 +730,7 @@ void MainWindow::initDatabase() {
         ui_->telecom_order_combo_box->setCurrentText("");
     } else {
         log_error("Failed to connect to database");
-        ui_->telecom_generating_ptn->setDisabled(true);
+        ui_->telecom_generating_btn->setDisabled(true);
     }
 }
 

@@ -59,6 +59,9 @@ class MainWindow : public QMainWindow {
     /// @brief 选择金融数据分配表生成路径按钮点击事件
     void selectFinanceGeneratePathBtnClicked();
 
+    /// @brief 删除电信订单按钮点击事件
+    void deleteTelecomOrderBtnClicked();
+
     /// @brief 选择电信数据分配表生成路径按钮点击事件
     void selectTelecomGeneratePathBtnClicked();
 
