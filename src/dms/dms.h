@@ -14,13 +14,11 @@ class Dms {
     bool deleteOrder();
 
   private:
-    bool orderInfo();
+    bool order_info();
 
-    bool deleteRecord();
-
-    bool deleteProductionData();
-
-    bool deleteOrderData();
+    bool delete_record();
+    bool delete_production_data();
+    bool delete_order_data();
 
   private:
     std::shared_ptr<zel::myorm::Database> db_;

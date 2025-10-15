@@ -10,18 +10,18 @@ WriteCardLoading::WriteCardLoading(QMainWindow *parent)
     , ui_(new Ui_WriteCardLoading) {
     ui_->setupUi(this);
 
-    initWindow();
+    init_window();
 
-    initUI();
+    init_ui();
 
-    initSignalSlot();
+    init_signal_slot();
 }
 
 WriteCardLoading::~WriteCardLoading() { delete ui_; }
 
-void WriteCardLoading::initWindow() { qRegisterMetaType<WriteCard::Type>("WriteCard::Type"); }
+void WriteCardLoading::init_window() { qRegisterMetaType<WriteCard::Type>("WriteCard::Type"); }
 
-void WriteCardLoading::initUI() {
+void WriteCardLoading::init_ui() {
 
     // 新增图片
     QPixmap pixmap(":/image/waiting.png");
@@ -31,9 +31,9 @@ void WriteCardLoading::initUI() {
     ui_->check_label->setPixmap(pixmap);
 }
 
-void WriteCardLoading::initSignalSlot() {}
+void WriteCardLoading::init_signal_slot() {}
 
-void WriteCardLoading::startPrePersonal(const QString &duration, const QString &atr) {
+void WriteCardLoading::start_pre_personal(const QString &duration, const QString &atr) {
     // 加载动画
     QMovie *movie = new QMovie(":/image/loading.gif");
     ui_->prepersonal_label->setMovie(movie);
@@ -44,9 +44,9 @@ void WriteCardLoading::startPrePersonal(const QString &duration, const QString &
     emit    bareAtr(str);
 }
 
-void WriteCardLoading::prePersonal(const QString &duration, const QString &apdu_response) { ui_->prepersonal_duration_label->setText(apdu_response); }
+void WriteCardLoading::pre_personal(const QString &duration, const QString &apdu_response) { ui_->prepersonal_duration_label->setText(apdu_response); }
 
-void WriteCardLoading::startPostPersonal(const QString &duration, const QString &atr) {
+void WriteCardLoading::start_post_personal(const QString &duration, const QString &atr) {
 
     // 插入图片
     QPixmap pixmap(":/image/success.png");
@@ -64,9 +64,9 @@ void WriteCardLoading::startPostPersonal(const QString &duration, const QString 
     emit    whiteAtr(str);
 }
 
-void WriteCardLoading::postPersonal(const QString &duration, const QString &apdu_response) { ui_->postpersonal_duration_label->setText(apdu_response); }
+void WriteCardLoading::post_personal(const QString &duration, const QString &apdu_response) { ui_->postpersonal_duration_label->setText(apdu_response); }
 
-void WriteCardLoading::startCheck(const QString &duration, const QString &atr) {
+void WriteCardLoading::start_check(const QString &duration, const QString &atr) {
 
     // 插入图片
     QPixmap pixmap(":/image/success.png");
@@ -133,27 +133,27 @@ void WriteCardLoading::success(WriteCard::Type type, const QString &duration, co
     switch (type) {
 
     case WriteCard::BARE_ATR: {
-        startPrePersonal(duration, apdu_response);
+        start_pre_personal(duration, apdu_response);
         break;
     }
 
     case WriteCard::PREPERSONAL: {
-        prePersonal(duration, apdu_response);
+        pre_personal(duration, apdu_response);
         break;
     }
 
     case WriteCard::WHITE_ATR: {
-        startPostPersonal(duration, apdu_response);
+        start_post_personal(duration, apdu_response);
         break;
     }
 
     case WriteCard::POSTPERSONAL: {
-        postPersonal(duration, apdu_response);
+        post_personal(duration, apdu_response);
         break;
     }
 
     case WriteCard::FINISHED_ATR: {
-        startCheck(duration, apdu_response);
+        start_check(duration, apdu_response);
         break;
     }
 

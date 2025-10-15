@@ -37,13 +37,13 @@ class Utils {
     /// @param new_str 新字符串
     static void replaceStringInXlsx(const std::string &filename, const std::string &old_str, const std::string &new_str);
 
-    static bool ftpUploadDir(const std::string &local_dir,std::string &remote_path, const std::string &userpwd);
+    static bool ftpUploadDir(const std::string &local_dir, std::string &remote_path, const std::string &userpwd);
     static bool ftpUploadFile(const std::string &local_file, const std::string &ftp_url, const std::string &userpwd);
 
   private:
-    static QFileInfoList ergodicCompressionFile(QZipWriter *writer, const QString &rootPath, QString dirPath);
+    static QFileInfoList ergodic_compression_file(QZipWriter *writer, const QString &rootPath, QString dirPath);
 
     /// @brief 删除文件或文件夹
     /// @param strPath 要删除的文件夹或文件的路径
-    static bool deleteFileOrFolder(const std::string &str_path);
+    static bool delete_file_or_folder(const std::string &str_path);
 };

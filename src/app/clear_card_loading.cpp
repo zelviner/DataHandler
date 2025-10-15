@@ -11,18 +11,18 @@ ClearCardLoading::ClearCardLoading(QMainWindow *parent)
     , ui_(new Ui_ClearCardLoading) {
     ui_->setupUi(this);
 
-    initWindow();
+    init_window();
 
-    initUI();
+    init_ui();
 
-    initSignalSlot();
+    init_signal_slot();
 }
 
 ClearCardLoading::~ClearCardLoading() { delete ui_; }
 
-void ClearCardLoading::initWindow() { qRegisterMetaType<ClearCard::Type>("ClearCard::Type"); }
+void ClearCardLoading::init_window() { qRegisterMetaType<ClearCard::Type>("ClearCard::Type"); }
 
-void ClearCardLoading::initUI() {
+void ClearCardLoading::init_ui() {
 
     // 新增图片
     QPixmap pixmap(":/image/waiting.png");
@@ -30,9 +30,9 @@ void ClearCardLoading::initUI() {
     ui_->clear_label->setPixmap(pixmap);
 }
 
-void ClearCardLoading::initSignalSlot() {}
+void ClearCardLoading::init_signal_slot() {}
 
-void ClearCardLoading::startClear() {
+void ClearCardLoading::start_clear() {
     // 加载动画
     QMovie *movie = new QMovie(":/image/loading.gif");
     ui_->clear_label->setMovie(movie);
@@ -78,7 +78,7 @@ void ClearCardLoading::success(ClearCard::Type type, const QString &duration, co
     switch (type) {
 
     case ClearCard::START: {
-        startClear();
+        start_clear();
         break;
     }
 

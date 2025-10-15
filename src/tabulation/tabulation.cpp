@@ -17,10 +17,10 @@
 #include <zel/utility/logger.h>
 #include <fmt/format.h>
 #include <zel/utility/string.h>
-#include <zel/filesystem/file.h>
+#include <zel/file_system/file.h>
 
 Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &finance_db, const std::shared_ptr<zel::myorm::Database> &telecom_db,
-                       const zel::utility::IniFile &ini)
+                       const zel::utility::Ini &ini)
     : finance_db_(finance_db)
     , telecom_db_(telecom_db)
     , ini_(ini)
@@ -185,8 +185,8 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
         result           = telecom_db_->query(sql);
         data.start_iccid = result[0].find(data_field)->second.asString();
         data.end_iccid   = result[1].find(data_field)->second.asString();
-        exchangeIccid(data.start_iccid);
-        exchangeIccid(data.end_iccid);
+        exchange_iccid(data.start_iccid);
+        exchange_iccid(data.end_iccid);
 
         dr_->datas.push_back(data);
         dr_->header.order_quantity += data.quantity;
@@ -200,41 +200,41 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
 }
 
 void Tabulation::generatingFinanceRecords(const std::string &template_file, const std::string &output_file) {
-    zel::filesystem::File file(template_file);
+    zel::file_system::File file(template_file);
     if (!file.exists()) {
         log_error("template file not exists: %s", template_file.c_str());
         return;
     }
 
-    if (!loadTemplate(template_file)) {
+    if (!load_template(template_file)) {
         log_error("load template failed: %s", template_file.c_str());
         return;
     }
 
-    locateTemplateTags();
+    locate_template_tags();
 
     if (!file.copy(output_file)) {
         log_error("copy file failed: %s -> %s", template_file.c_str(), output_file.c_str());
         return;
     }
 
-    loadTemplate(output_file);
-    fillTemplateWithData(output_file);
+    load_template(output_file);
+    fill_template_with_data(output_file);
 }
 
 void Tabulation::generatingTelecomRecords(const std::string &template_file, const std::string &output_file) {
-    zel::filesystem::File file(template_file);
+    zel::file_system::File file(template_file);
     if (!file.exists()) {
         log_error("template file not exists: %s", template_file.c_str());
         return;
     }
 
-    if (!loadTemplate(template_file)) {
+    if (!load_template(template_file)) {
         log_error("load template failed: %s", template_file.c_str());
         return;
     }
 
-    locateTemplateTags();
+    locate_template_tags();
 
     if (!file.copy(output_file)) {
         log_error("copy file failed: %s -> %s", template_file.c_str(), output_file.c_str());
@@ -242,17 +242,17 @@ void Tabulation::generatingTelecomRecords(const std::string &template_file, cons
     }
 
     // 注意：output_file 中的数据还没写入，所以要重新 load
-    loadTemplate(output_file);
-    fillTemplateWithData(output_file);
+    load_template(output_file);
+    fill_template_with_data(output_file);
 }
 
-bool Tabulation::loadTemplate(const std::string &path) {
+bool Tabulation::load_template(const std::string &path) {
     workbook_.load(path);
     worksheet_ = workbook_.active_sheet();
     return true;
 }
 
-void Tabulation::locateTemplateTags() {
+void Tabulation::locate_template_tags() {
     int rowIndex = 0;
     for (const auto &row : worksheet_.rows()) {
         rowIndex++;
@@ -271,7 +271,7 @@ void Tabulation::locateTemplateTags() {
     }
 }
 
-void Tabulation::fillTemplateWithData(const std::string &output_file) {
+void Tabulation::fill_template_with_data(const std::string &output_file) {
     worksheet_.cell(cell_refs_["order_no"]).value(key_map_["order_no"] + dr_->header.order_no);
     worksheet_.cell(cell_refs_["order_quantity"]).value(key_map_["order_quantity"] + std::to_string(dr_->header.order_quantity));
 
@@ -293,7 +293,7 @@ xlnt::cell_reference Tabulation::offset(const xlnt::cell_reference &ref, int row
     return xlnt::cell_reference(xlnt::column_t(ref.column().index + col_offset), ref.row() + row_offset);
 }
 
-void Tabulation::exchangeIccid(std::string &iccid) {
+void Tabulation::exchange_iccid(std::string &iccid) {
     for (size_t i = 0; i + 1 < iccid.size(); i += 2) {
         std::swap(iccid[i], iccid[i + 1]);
     }

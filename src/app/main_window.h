@@ -1,5 +1,6 @@
 #pragma once
 
+#include "authenticator.h"
 #include "ui_main_window.h"
 #include "order/order.h"
 #include "order/person_data.h"
@@ -80,9 +81,14 @@ class MainWindow : public QMainWindow {
     /// @brief 保存按钮点击事件
     void saveBtnClicked();
 
+    void dragEnterEvent(QDragEnterEvent *event);
+
   public slots:
     void confirmOrder(const std::string &confirm_datagram_dir_name);
     void cancelOrder();
+
+    void confirmDeleteOrder(const std::string &password);
+    void cancelDeleteOrder();
 
     void bareAtr(const QString &bare_atr);
     void whiteAtr(const QString &white_atr);
@@ -102,44 +108,43 @@ class MainWindow : public QMainWindow {
 
   private:
     /// @brief 初始化窗口
-    void initWindow();
+    void init_window();
 
     /// @brief 初始化UI
-    void initUI();
+    void init_ui();
 
     /// @brief 初始化信号槽
-    void initSignalSlot();
+    void init_signal_slot();
 
     /// @brief 初始化配置
-    void initConfig(const std::string &config_file);
+    void init_config(const std::string &config_file);
 
     /// @brief 初始化日志器
-    void initLogger(const std::string &log_file);
+    void init_logger(const std::string &log_file);
 
     /// @brief 初始化读卡器
-    void initCardReader();
+    void init_card_reader();
 
     /// @brief 初始化数据库
-    void initDatabase();
+    void init_database();
 
-    void dragEnterEvent(QDragEnterEvent *event);
+    void button_disabled(bool disabled);
 
-    void buttonDisabled(bool disabled);
+    void show_info();
 
-    void showInfo();
+    void switch_language(const QString &language_file);
 
-    void switchLanguage(const QString &language_file);
-
-    void retranslateUi();
+    void retranslate_ui();
 
   private:
-    Ui_MainWindow *ui_;           // UI界面
-    OrderWindow   *order_window_; // 确认订单窗口
-    Loading       *loading_;      // 加载窗口
-    QTranslator    translator_;   // 翻译器
+    Ui_MainWindow *ui_;            // UI界面
+    OrderWindow   *order_window_;  // 确认订单窗口
+    Loading       *loading_;       // 加载窗口
+    Authenticator *authenticator_; // 身份验证器
+    QTranslator    translator_;    // 翻译器
     QString        current_lang_ = "zh_CN";
 
-    zel::utility::IniFile                 ini_;              // 配置文件
+    zel::utility::Ini                     ini_;              // 配置文件
     std::shared_ptr<Path>                 path_;             // 路径
     std::shared_ptr<OrderInfo>            order_info_;       // 订单信息
     std::shared_ptr<PersonDataInfo>       person_data_info_; // 个人化信息

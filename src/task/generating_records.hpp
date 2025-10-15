@@ -4,7 +4,7 @@
 #include "tabulation/tabulation.h"
 
 #include <qobjectdefs.h>
-#include <zel/utility/ini_file.h>
+#include <zel/utility/ini.h>
 #include <qcoreapplication>
 #include <qthread>
 
@@ -13,7 +13,7 @@ class GeneratingRecords : public QThread {
 
   public:
     GeneratingRecords(bool telecom_mode, const std::shared_ptr<zel::myorm::Database> &finance_db, const std::shared_ptr<zel::myorm::Database> &telecom_db,
-                      const zel::utility::IniFile &ini, const std::string &order_number, const std::string &data_field, const std::string &template_path,
+                      const zel::utility::Ini &ini, const std::string &order_number, const std::string &data_field, const std::string &template_path,
                       const std::string &generate_path)
         : telecom_mode_(telecom_mode)
         , finance_db_(finance_db)
@@ -55,7 +55,7 @@ class GeneratingRecords : public QThread {
     bool                                  telecom_mode_;
     std::shared_ptr<zel::myorm::Database> finance_db_;
     std::shared_ptr<zel::myorm::Database> telecom_db_;
-    zel::utility::IniFile                 ini_;
+    zel::utility::Ini                     ini_;
     std::string                           order_number_;
     std::string                           data_field_;
     std::string                           template_path_;

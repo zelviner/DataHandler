@@ -22,23 +22,23 @@ class WriteCardLoading : public QMainWindow {
 
   private:
     // 初始化窗口
-    void initWindow();
+    void init_window();
 
     // 初始化UI
-    void initUI();
+    void init_ui();
 
     /// @brief 初始化信号槽
-    void initSignalSlot();
+    void init_signal_slot();
 
-    void startPrePersonal(const QString &duration, const QString &atr);
+    void start_pre_personal(const QString &duration, const QString &atr);
 
-    void prePersonal(const QString &duration, const QString &apdu_response);
+    void pre_personal(const QString &duration, const QString &apdu_response);
 
-    void startPostPersonal(const QString &duration, const QString &atr);
+    void start_post_personal(const QString &duration, const QString &atr);
 
-    void postPersonal(const QString &duration, const QString &apdu_response);
+    void post_personal(const QString &duration, const QString &apdu_response);
 
-    void startCheck(const QString &duration, const QString &atr);
+    void start_check(const QString &duration, const QString &atr);
 
     void check(const QString &duration, const QString &apdu_response);
 

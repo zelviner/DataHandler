@@ -3,7 +3,7 @@
 #include <memory>
 #include <zel/zel.h>
 
-using namespace zel::filesystem;
+using namespace zel::file_system;
 
 Script::Script(const std::string &script_path)
     : script_info_(nullptr)

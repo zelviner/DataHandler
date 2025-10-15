@@ -7,7 +7,7 @@
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <xhlanguage/repl/repl_bridge.h>
+#include <if_language/repl/repl_bridge.h>
 #include <qqueue>
 
 // 自定义的工作线程
@@ -17,11 +17,12 @@ class WriteCard : public QThread {
   public:
     enum Type { CONNECT, BARE_ATR, PREPERSONAL, WHITE_ATR, POSTPERSONAL, CHECK, FINISHED_ATR, FINISH };
 
-    WriteCard(const std::shared_ptr<ScriptInfo> &script_info, const zel::json::Json &json_data, int reader_id, int xhlanguage_type)
+    WriteCard(const std::shared_ptr<ScriptInfo> &script_info, const zel::json::Json &json_data, int reader_id, int xhlanguage_type, ApduProtocol protocol)
         : script_info_(script_info)
         , json_data_(json_data)
         , reader_id_(reader_id)
-        , xhlanguage_type_(xhlanguage_type) {}
+        , xhlanguage_type_(xhlanguage_type)
+        , protocol_(protocol) {}
     ~WriteCard() {}
 
   signals:
@@ -35,27 +36,25 @@ class WriteCard : public QThread {
         json_data_["has_ds"] = script_info_->has_ds;
         auto personal_data   = json_data_.str();
 
-        setCallback(&WriteCard::callbackThunk, this);
+        setCallback(&WriteCard::callback_thunk, this);
 
         // 获取裸卡 ATR
-        char error_message[1024];
         type_     = BARE_ATR;
         duration_ = "";
-        startCompiler("RST()", "", reader_id_, error_message, sizeof(error_message));
+        startCompiler("RST()", "", reader_id_, protocol_);
 
         // 预个人化
         auto start       = std::chrono::steady_clock::now();
         bool success_run = false;
         type_            = PREPERSONAL;
-        memset(error_message, 0, sizeof(error_message));
         if (xhlanguage_type_ == 0) {
-            success_run = startCompiler(script_info_->person_buffer.c_str(), personal_data.c_str(), reader_id_, error_message, sizeof(error_message));
+            success_run = startCompiler(script_info_->person_buffer.c_str(), personal_data.c_str(), reader_id_, protocol_);
         } else if (xhlanguage_type_ == 1) {
             success_run = startInterpreter(script_info_->person_buffer.c_str(), personal_data.c_str(), reader_id_);
         }
 
         if (success_run == false) {
-            emit failure(type_, error_message);
+            emit failure(type_, "预个人化脚本执行失败");
             return;
         }
 
@@ -64,22 +63,20 @@ class WriteCard : public QThread {
         duration_ = "用时: " + std::to_string(std::chrono::duration<double>(end - start).count()) + " 秒";
 
         // 获取白卡 ATR
-        memset(error_message, 0, sizeof(error_message));
         type_ = WHITE_ATR;
-        startCompiler("RST()", "", reader_id_, error_message, sizeof(error_message));
+        startCompiler("RST()", "", reader_id_, protocol_);
 
         // 后个人化
         start = std::chrono::steady_clock::now();
-        memset(error_message, 0, sizeof(error_message));
         type_ = POSTPERSONAL;
         if (xhlanguage_type_ == 0) {
-            success_run = startCompiler(script_info_->post_person_buffer.c_str(), personal_data.c_str(), reader_id_, error_message, sizeof(error_message));
+            success_run = startCompiler(script_info_->post_person_buffer.c_str(), personal_data.c_str(), reader_id_, protocol_);
         } else if (xhlanguage_type_ == 1) {
             success_run = startInterpreter(script_info_->post_person_buffer.c_str(), personal_data.c_str(), reader_id_);
         }
 
         if (success_run == false) {
-            emit failure(type_, error_message);
+            emit failure(type_, "后个人化脚本执行失败");
             return;
         }
 
@@ -89,21 +86,19 @@ class WriteCard : public QThread {
 
         // 获取成卡 ATR
         type_ = FINISHED_ATR;
-        memset(error_message, 0, sizeof(error_message));
-        startCompiler("RST()", "", reader_id_, error_message, sizeof(error_message));
+        startCompiler("RST()", "", reader_id_, protocol_);
 
         // 检测
         start = std::chrono::steady_clock::now();
-        memset(error_message, 0, sizeof(error_message));
         type_ = CHECK;
         if (xhlanguage_type_ == 0) {
-            success_run = startCompiler(script_info_->check_buffer.c_str(), personal_data.c_str(), reader_id_, error_message, sizeof(error_message));
+            success_run = startCompiler(script_info_->check_buffer.c_str(), personal_data.c_str(), reader_id_, protocol_);
         } else if (xhlanguage_type_ == 1) {
             success_run = startInterpreter(script_info_->check_buffer.c_str(), personal_data.c_str(), reader_id_);
         }
 
         if (success_run == false) {
-            emit failure(type_, error_message);
+            emit failure(type_, "检测脚本执行失败");
             return;
         }
 
@@ -116,7 +111,7 @@ class WriteCard : public QThread {
     }
 
   private:
-    static void callbackThunk(const char *run_result, int len, void *user) {
+    static void callback_thunk(const char *run_result, int len, void *user) {
         auto   *self = static_cast<WriteCard *>(user);
         QString str  = QString::fromUtf8(run_result, len);
 
@@ -134,6 +129,7 @@ class WriteCard : public QThread {
     zel::json::Json             json_data_;
     int                         reader_id_;
     int                         xhlanguage_type_;
+    ApduProtocol                protocol_;
     QQueue<QString>             results_; // 存储回调结果
     Type                        type_;
     std::string                 duration_;

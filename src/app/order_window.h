@@ -2,7 +2,6 @@
 
 #include "ui_order_window.h"
 
-#include <zel/zel.h>
 #include <memory>
 #include <qmainwindow>
 
@@ -25,13 +24,13 @@ class OrderWindow : public QMainWindow {
 
   private:
     /// @brief 初始化窗口
-    void initWindow();
+    void init_window();
 
     /// @brief 初始化UI
-    void initUI();
+    void init_ui();
 
     /// @brief 初始化信号槽
-    void initSignalSlot();
+    void init_signal_slot();
 
   private:
     std::vector<std::string>        datagram_format_;

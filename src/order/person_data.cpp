@@ -3,7 +3,7 @@
 #include <memory>
 
 using namespace zel::json;
-using namespace zel::filesystem;
+using namespace zel::file_system;
 using namespace zel::crypto;
 using namespace zel::utility;
 
@@ -41,7 +41,7 @@ std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
         if (!person_data_file.readLine(person_data_info_->header)) return nullptr;
         if (!person_data_file.readLine(person_data_info_->data)) return nullptr;
 
-        person_data_info_->json_data = jsonData();
+        person_data_info_->json_data = json_data();
 
         if (!person_data_file.remove()) return nullptr;
     } else {
@@ -51,13 +51,13 @@ std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
         if (!person_data_file.readLine(person_data_info_->header)) return nullptr;
         if (!person_data_file.readLine(person_data_info_->data)) return nullptr;
 
-        person_data_info_->json_data = jsonData();
+        person_data_info_->json_data = json_data();
     }
 
     return person_data_info_;
 }
 
-zel::json::Json PersonData::jsonData() {
+zel::json::Json PersonData::json_data() {
 
     Json json;
 

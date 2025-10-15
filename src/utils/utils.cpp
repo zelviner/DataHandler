@@ -4,8 +4,8 @@
 #include <qdir>
 #include <qfileinfo>
 #include <xlnt/xlnt.hpp>
-#include <zel/filesystem/directory.h>
-#include <zel/filesystem/filepath.h>
+#include <zel/file_system/directory.h>
+#include <zel/file_system/file_path.h>
 #include <curl/curl.h>
 #include <zel/utility/logger.h>
 #include <zel/utility/string.h>
@@ -47,7 +47,7 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
         selectFile.close();
 
         // 删除原文件
-        if (remove) return deleteFileOrFolder(file_path);
+        if (remove) return delete_file_or_folder(file_path);
 
         return true;
     } else {
@@ -58,11 +58,11 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
 
         QZipWriter writer(saveFilePath);
         writer.addDirectory(zipRootFolder);
-        QFileInfoList fileList = ergodicCompressionFile(&writer, selectDirUpDir, qfile_path);
+        QFileInfoList fileList = ergodic_compression_file(&writer, selectDirUpDir, qfile_path);
         writer.close();
 
         // 删除原文件
-        if (remove) return deleteFileOrFolder(file_path);
+        if (remove) return delete_file_or_folder(file_path);
 
         if (0 == fileList.size()) return true;
         return false;
@@ -71,7 +71,7 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
 
 bool Utils::decompressionZipFile(const std::string &file_path, const std::string &save_path, bool remove) {
     // 创建解压缩后文件夹
-    zel::filesystem::Directory save(save_path);
+    zel::file_system::Directory save(save_path);
     save.create();
 
     QString qfile_path = QString(file_path.c_str());
@@ -134,7 +134,7 @@ bool Utils::decompressionZipFile(const std::string &file_path, const std::string
     }
     zipReader.close();
 
-    if (remove) deleteFileOrFolder(file_path);
+    if (remove) delete_file_or_folder(file_path);
     return ret;
 }
 
@@ -171,12 +171,12 @@ void Utils::replaceStringInXlsx(const std::string &filename, const std::string &
 
 bool Utils::ftpUploadDir(const std::string &local_dir, std::string &remote_path, const std::string &userpwd) {
     // 判断local_path是否是目录
-    if (zel::filesystem::FilePath::isDir(local_dir)) {
+    if (zel::file_system::FilePath::isDir(local_dir)) {
         // 如果是目录，执行目录上传逻辑
-        auto walkFunc = [=](std::string relative_path, zel::filesystem::Directory dir, zel::filesystem::File file) -> bool {
+        auto walkFunc = [=](std::string relative_path, zel::file_system::Directory dir, zel::file_system::File file) -> bool {
             if (!dir.exists()) {
                 auto local_file_gbk = zel::utility::String::utf8ToGbk(file.path());
-                auto remote_file    = zel::filesystem::FilePath::join(remote_path, relative_path);
+                auto remote_file    = zel::file_system::FilePath::join(remote_path, relative_path);
                 if (!ftpUploadFile(local_file_gbk, remote_file, userpwd)) {
                     return false;
                 }
@@ -184,7 +184,7 @@ bool Utils::ftpUploadDir(const std::string &local_dir, std::string &remote_path,
             return true;
         };
 
-        return zel::filesystem::FilePath::walk(local_dir, walkFunc, true);
+        return zel::file_system::FilePath::walk(local_dir, walkFunc, true);
     } else {
         // 如果是文件，执行文件上传逻辑
         auto local_file_gbk = zel::utility::String::utf8ToGbk(local_dir);
@@ -230,7 +230,7 @@ bool Utils::ftpUploadFile(const std::string &local_file, const std::string &ftp_
     return true;
 }
 
-QFileInfoList Utils::ergodicCompressionFile(QZipWriter *writer, const QString &rootPath, QString dirPath) {
+QFileInfoList Utils::ergodic_compression_file(QZipWriter *writer, const QString &rootPath, QString dirPath) {
     QDir crrDir(dirPath);
     /// 解压失败的文件
     QFileInfoList errFileList;
@@ -259,14 +259,14 @@ QFileInfoList Utils::ergodicCompressionFile(QZipWriter *writer, const QString &r
         QString zipWithinDirPath = subDirPath.mid(rootPath.size() + 1);
 
         writer->addDirectory(zipWithinDirPath);
-        QFileInfoList child_file_list = ergodicCompressionFile(writer, rootPath, subDirPath);
+        QFileInfoList child_file_list = ergodic_compression_file(writer, rootPath, subDirPath);
         errFileList.append(child_file_list);
     }
 
     return errFileList;
 }
 
-bool Utils::deleteFileOrFolder(const std::string &str_path) {
+bool Utils::delete_file_or_folder(const std::string &str_path) {
     QString strPath = QString(str_path.c_str());
     if (strPath.isEmpty() || !QDir().exists(strPath)) // 是否传入了空的路径||路径是否存在
         return false;

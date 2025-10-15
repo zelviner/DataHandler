@@ -16,15 +16,15 @@ class ClearCardLoading : public QMainWindow {
 
   private:
     // 初始化窗口
-    void initWindow();
+    void init_window();
 
     // 初始化UI
-    void initUI();
+    void init_ui();
 
     /// @brief 初始化信号槽
-    void initSignalSlot();
+    void init_signal_slot();
 
-    void startClear();
+    void start_clear();
 
     void clear(const QString &apdu_response);
 

@@ -10,7 +10,7 @@
 #include <qdebug>
 #include <qthread>
 
-using namespace zel::filesystem;
+using namespace zel::file_system;
 
 // 自定义的工作线程类
 class HandleOrder : public QThread {

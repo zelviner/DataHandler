@@ -13,12 +13,12 @@ Loading::Loading(QMainWindow *parent)
 
     ui_->loading_progress->setRange(0, 0);
 
-    initWindow();
+    init_window();
 }
 
 Loading::~Loading() { delete ui_; }
 
-void Loading::initWindow() {
+void Loading::init_window() {
     qRegisterMetaType<std::shared_ptr<OrderInfo>>("std::shared_ptr<OrderInfo>");
     qRegisterMetaType<std::shared_ptr<PersonDataInfo>>("std::shared_ptr<PersonDataInfo>");
     qRegisterMetaType<std::shared_ptr<ScriptInfo>>("std::shared_ptr<ScriptInfo>");

@@ -32,11 +32,11 @@
 #include <qfiledialog>
 #include <qstringlistmodel>
 #include <qcompleter>
-
-#include <xhlanguage/repl/repl_bridge.h>
+#include <if_language/repl/repl_bridge.h>
 #include <zel/utility/logger.h>
+
 using namespace zel::utility;
-using namespace zel::filesystem;
+using namespace zel::file_system;
 
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
@@ -49,32 +49,32 @@ MainWindow::MainWindow(QMainWindow *parent)
     ui_->setupUi(this);
 
     // 初始化窗口
-    initWindow();
+    init_window();
 
     // 初始化配置
-    initConfig("config.ini");
+    init_config("config.ini");
 
     // 初始化UI
-    initUI();
+    init_ui();
 
     // 初始化信号和槽
-    initSignalSlot();
+    init_signal_slot();
 
     // 初始化日志器
-    initLogger("DataHandler.log");
+    init_logger("DataHandler.log");
 
     // 初始化读卡器
-    initCardReader();
+    init_card_reader();
 
     // 初始化数据库
-    initDatabase();
+    init_database();
 }
 
 MainWindow::~MainWindow() { delete ui_; }
 
-void MainWindow::chineseLanguageAction() { switchLanguage("zh_CN"); }
+void MainWindow::chineseLanguageAction() { switch_language("zh_CN"); }
 
-void MainWindow::englishLanguageAction() { switchLanguage("en_US"); }
+void MainWindow::englishLanguageAction() { switch_language("en_US"); }
 
 void MainWindow::dropEvent(QDropEvent *event) {
     QList<QUrl> urls = event->mimeData()->urls();
@@ -145,6 +145,12 @@ void MainWindow::saveBtnClicked() {
     }
 }
 
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+    if (event->mimeData()->hasFormat("text/uri-list")) {
+        event->acceptProposedAction();
+    }
+}
+
 void MainWindow::openPersonalBtnClicked() {
     std::string path = path_->script + "/" + script_info_->person_filename;
     QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
@@ -169,7 +175,7 @@ void MainWindow::resetCardBtnClicked() {
     ui_->current_card_line->setText(tr("正在复位..."));
 
     int  reader_id  = ui_->reader_combo_box->currentIndex() + 1;
-    auto reset_card = new ResetCard(reader_id, this);
+    auto reset_card = new ResetCard(reader_id, ApduProtocol::ISO, this);
 
     connect(reset_card, &ResetCard::resetSuccess, this, &MainWindow::resetCardSuccess);
     connect(reset_card, &ResetCard::resetFailure, this, &MainWindow::resetCardFailure);
@@ -183,8 +189,8 @@ void MainWindow::writeCardBtnClicked() {
     write_card_loading->show();
 
     // 创建工作线程
-    auto write_card =
-        new WriteCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1, ui_->xhlanguage_combo_box->currentIndex());
+    auto write_card = new WriteCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1,
+                                    ui_->xhlanguage_combo_box->currentIndex(), ApduProtocol::ISO);
 
     // 连接信号槽
     connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
@@ -203,8 +209,8 @@ void MainWindow::clearCardBtnClicked() {
     clear_card_loading->show();
 
     // 创建工作线程
-    auto clear_card =
-        new ClearCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1, ui_->xhlanguage_combo_box->currentIndex());
+    auto clear_card = new ClearCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1,
+                                    ui_->xhlanguage_combo_box->currentIndex(), ApduProtocol::ISO);
     // 连接信号槽
     connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
     connect(clear_card, &ClearCard::success, clear_card_loading, &ClearCardLoading::success);
@@ -271,16 +277,11 @@ void MainWindow::deleteTelecomOrderBtnClicked() {
         return;
     }
 
-    // 弹出确认框
-    auto confirm_box = QMessageBox::question(this, "确认删除", "确认删除订单号为" + QString(order_no.c_str()) + "的订单吗?");
+    authenticator_ = new Authenticator(this);
+    authenticator_->show();
 
-    if (confirm_box == QMessageBox::Yes) {
-        Dms dms(telecom_db_, order_no);
-        dms.deleteOrder();
-    }
-
-    // 删除成功弹窗
-    QMessageBox::information(this, "提示", "删除成功");
+    connect(authenticator_, &Authenticator::confirmDeleteOrder, this, &MainWindow::confirmDeleteOrder);
+    connect(authenticator_, &Authenticator::cancelDeleteOrder, this, &MainWindow::cancelDeleteOrder);
 }
 
 void MainWindow::selectTelecomGeneratePathBtnClicked() {
@@ -407,6 +408,28 @@ void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
 
 void MainWindow::cancelOrder() { order_window_->hide(); }
 
+void MainWindow::confirmDeleteOrder(const std::string &password) {
+    authenticator_->hide();
+
+    if (password != "iflogic2025") {
+        QMessageBox::critical(this, "错误", "密码错误");
+        return;
+    }
+
+    // 弹出确认框
+    auto order_no    = ui_->telecom_order_combo_box->currentText().toStdString();
+    auto confirm_box = QMessageBox::question(this, "确认删除", "确认删除订单号为" + QString(order_no.c_str()) + "的订单吗?");
+
+    if (confirm_box == QMessageBox::Yes) {
+        Dms dms(telecom_db_, order_no);
+        dms.deleteOrder();
+        // 删除成功弹窗
+        QMessageBox::information(this, "提示", "删除成功");
+    }
+}
+
+void MainWindow::cancelDeleteOrder() { authenticator_->hide(); }
+
 void MainWindow::bareAtr(const QString &bare_atr) {
     QString str = bare_atr;
     str         = str.mid(8, str.size() - 9);
@@ -456,13 +479,13 @@ void MainWindow::handleOrderSuccess(std::shared_ptr<OrderInfo> order_info, std::
     script_info_      = script_info;
 
     // 显示订单信息
-    showInfo();
+    show_info();
 
     // // 显示路径
     // order_->showPath();
 
     // 打开复制按钮
-    buttonDisabled(false);
+    button_disabled(false);
 
     // 弹窗提示
     QMessageBox success_box(this);
@@ -511,9 +534,9 @@ void MainWindow::resetCardSuccess(const QString &atr) {
     log_info(atr.toStdString().c_str());
 }
 
-void MainWindow::initWindow() {
+void MainWindow::init_window() {
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.1.0");
+    setWindowTitle("智能卡生产预处理软件 v3.1.1");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
@@ -521,11 +544,11 @@ void MainWindow::initWindow() {
     loading_ = new Loading(this);
 }
 
-void MainWindow::initUI() {
+void MainWindow::init_ui() {
     // 使窗口始终在其他窗口之上
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 
-    buttonDisabled(true);
+    button_disabled(true);
     std::string mysql_host             = ini_["mysql"]["host"];
     int         mysql_port             = ini_["mysql"]["port"];
     std::string mysql_username         = ini_["mysql"]["username"];
@@ -576,7 +599,7 @@ void MainWindow::initUI() {
     ui_->write_card_btn->setDisabled(true);
 }
 
-void MainWindow::initSignalSlot() {
+void MainWindow::init_signal_slot() {
     QClipboard *clip = QApplication::clipboard();
 
     connect(ui_->chinese_action, &QAction::triggered, this, &MainWindow::chineseLanguageAction);
@@ -600,7 +623,7 @@ void MainWindow::initSignalSlot() {
     connect(ui_->open_clear_btn, &QPushButton::clicked, this, &MainWindow::openClearCardBtnClicked);
 
     // 鉴权
-    connect(ui_->reader_type_combo_box, &QComboBox::currentTextChanged, this, &MainWindow::initCardReader);
+    connect(ui_->reader_type_combo_box, &QComboBox::currentTextChanged, this, &MainWindow::init_card_reader);
     connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
     connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
     connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
@@ -620,7 +643,7 @@ void MainWindow::initSignalSlot() {
     connect(ui_->save_btn, &QPushButton::clicked, this, &MainWindow::saveBtnClicked);
 }
 
-void MainWindow::initConfig(const std::string &config_file) {
+void MainWindow::init_config(const std::string &config_file) {
     if (!ini_.exists(config_file)) {
         ini_.set("log", "level", 0);
         ini_.set("mysql", "host", "127.0.0.1");
@@ -648,7 +671,7 @@ void MainWindow::initConfig(const std::string &config_file) {
     }
 }
 
-void MainWindow::initLogger(const std::string &log_file) {
+void MainWindow::init_logger(const std::string &log_file) {
     if (!Logger::instance().isOpen()) {
         Logger::instance().open(log_file);
         Logger::instance().setFormat(false);
@@ -657,7 +680,7 @@ void MainWindow::initLogger(const std::string &log_file) {
     }
 }
 
-void MainWindow::initCardReader() {
+void MainWindow::init_card_reader() {
     logger("reader.log", "info");
 
     int reader_type = ui_->reader_type_combo_box->currentIndex();
@@ -681,7 +704,7 @@ void MainWindow::initCardReader() {
     }
 
     ui_->reader_combo_box->clear();
-    if (!initReaders(reader_type, ptrs, 10)) {
+    if (!initReaders((CardReaderType) reader_type, ptrs, 10)) {
         QMessageBox::critical(this, "警告", "未找到读卡器，请检查读卡器是否连接");
         ui_->reset_card_btn->setDisabled(true);
         return;
@@ -696,7 +719,7 @@ void MainWindow::initCardReader() {
     ui_->reset_card_btn->setDisabled(false);
 }
 
-void MainWindow::initDatabase() {
+void MainWindow::init_database() {
     finance_db_ = std::make_shared<zel::myorm::Database>();
     if (finance_db_->connect(ini_["mysql"]["host"], ini_["mysql"]["port"], ini_["mysql"]["username"], ini_["mysql"]["password"],
                              ini_["mysql"]["finance_database"])) {
@@ -734,13 +757,7 @@ void MainWindow::initDatabase() {
     }
 }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
-    if (event->mimeData()->hasFormat("text/uri-list")) {
-        event->acceptProposedAction();
-    }
-}
-
-void MainWindow::buttonDisabled(bool disabled) {
+void MainWindow::button_disabled(bool disabled) {
     ui_->project_number_btn->setDisabled(disabled);
     ui_->order_number_btn->setDisabled(disabled);
     ui_->project_name_btn->setDisabled(disabled);
@@ -760,7 +777,7 @@ void MainWindow::buttonDisabled(bool disabled) {
     ui_->upload_temp_btn->setDisabled(disabled);
 }
 
-void MainWindow::showInfo() {
+void MainWindow::show_info() {
     ui_->project_number_line->setText(QString(order_info_->project_number.c_str()));
     ui_->project_number_line->setCursorPosition(0);
     ui_->order_number_line->setText(QString(order_info_->order_number.c_str()));
@@ -786,16 +803,16 @@ void MainWindow::showInfo() {
     ui_->ds_check_box->setChecked(script_info_->has_ds);
 }
 
-void MainWindow::switchLanguage(const QString &language_file) {
+void MainWindow::switch_language(const QString &language_file) {
     qApp->removeTranslator(&translator_);
 
     if (translator_.load(":/translation/" + language_file + ".qm")) {
         qApp->installTranslator(&translator_);
         current_lang_ = language_file;
-        retranslateUi();
+        retranslate_ui();
     } else {
         qDebug() << "加载语言失败：" << language_file;
     }
 }
 
-void MainWindow::retranslateUi() { ui_->retranslateUi(this); }
+void MainWindow::retranslate_ui() { ui_->retranslateUi(this); }

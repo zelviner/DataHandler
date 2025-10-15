@@ -4,17 +4,17 @@
 #include "order/order.h"
 #include "order/path.h"
 
-#include <zel/zel.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
+#include <zel/utility/ini_file.h>
 
 // 自定义的工作线程类
 class UploadFile : public QThread {
     Q_OBJECT
 
   public:
-    UploadFile(const zel::utility::IniFile &ini, const std::string &local_path, const std::string &remote_path, bool is_temp, std::shared_ptr<Path> path)
+    UploadFile(const zel::utility::Ini &ini, const std::string &local_path, const std::string &remote_path, bool is_temp, std::shared_ptr<Path> path)
         : ini_(ini)
         , local_path_(local_path)
         , remote_path_(remote_path)
@@ -54,7 +54,7 @@ class UploadFile : public QThread {
         int         port     = ini_["ftp"]["port"];
         std::string username = ini_["ftp"]["username"];
         std::string password = ini_["ftp"]["password"];
-        std::string remote = "ftp://" + host + remote_path_;
+        std::string remote   = "ftp://" + host + remote_path_;
         if (!Utils::ftpUploadDir(local_path_, remote, username + ":" + password)) {
             emit failure("上传失败", "请检查远程路径是否正确");
             return;
@@ -64,7 +64,7 @@ class UploadFile : public QThread {
     }
 
   private:
-    zel::utility::IniFile ini_;
+    zel::utility::Ini     ini_;
     std::string           local_path_;
     std::string           remote_path_;
     bool                  is_temp_;

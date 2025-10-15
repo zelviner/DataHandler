@@ -15,7 +15,7 @@ class Loading : public QMainWindow {
     ~Loading();
 
   private:
-    void initWindow();
+    void init_window();
 
   private:
     Ui_Loading *ui_;

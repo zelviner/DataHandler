@@ -48,16 +48,16 @@ class Order {
 
   private:
     /// @brief 截图文件夹
-    bool screenshotDir();
+    bool screenshot_dir();
 
     /// @brief 打印文件夹
-    bool printDir();
+    bool print_dir();
 
     /// @brief 标签数据文件夹
-    bool tagDataDir();
+    bool tag_data_dir();
 
-    std::shared_ptr<OrderInfo> orderInfo(const std::string &order_dir_name);
-    std::shared_ptr<OrderInfo> orderInfoOutgoing(const std::string &order_dir_name);
+    std::shared_ptr<OrderInfo> order_info(const std::string &order_dir_name);
+    std::shared_ptr<OrderInfo> order_info_outgoing(const std::string &order_dir_name);
 
   private:
     std::shared_ptr<Path>           path_;

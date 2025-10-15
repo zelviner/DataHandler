@@ -2,13 +2,13 @@
 #include "utils/utils.h"
 
 #include <vector>
-#include <zel/filesystem/filepath.h>
+#include <zel/file_system/file_path.h>
 #include <zel/utility/logger.h>
 #include <zel/zel.h>
 #include <memory>
 
 using namespace zel::utility;
-using namespace zel::filesystem;
+using namespace zel::file_system;
 using namespace zel::crypto;
 
 Order::Order(std::shared_ptr<Path> path)
@@ -104,11 +104,10 @@ bool Order::modify() {
 bool Order::processing() {
 
     // 获取订单信息
-    std::shared_ptr<OrderInfo> order_info;
     if (outgoing_)
-        order_info_ = orderInfoOutgoing(FilePath::base(path_->order));
+        order_info_ = order_info_outgoing(FilePath::base(path_->order));
     else
-        order_info_ = orderInfo(FilePath::base(path_->order));
+        order_info_ = order_info(FilePath::base(path_->order));
 
     if (order_info_ == nullptr) {
         log_error("Failed to get order infomation.");
@@ -125,20 +124,20 @@ bool Order::processing() {
 
     if (outgoing_) {
         // 生成截图文件夹
-        if (!screenshotDir()) {
+        if (!screenshot_dir()) {
             log_error("Failed to generate screenshot dir.");
             return false;
         }
 
         // 生成打印文件夹
-        if (!printDir()) {
+        if (!print_dir()) {
             log_error("Failed to generate print dir.");
             return false;
         }
 
         // 生成标签数据文件夹
         if (!path_->tag_data.empty()) {
-            if (!tagDataDir()) {
+            if (!tag_data_dir()) {
                 log_error("Failed to generate tag data dir.");
                 return false;
             }
@@ -193,7 +192,7 @@ std::shared_ptr<PersonDataInfo> Order::personDataInfo() { return person_data_inf
 
 std::shared_ptr<ScriptInfo> Order::scriptInfo() { return script_info_; }
 
-bool Order::screenshotDir() {
+bool Order::screenshot_dir() {
 
     // 创建截图文件夹
     Directory screenshot_dir(path_->screenshot);
@@ -204,7 +203,7 @@ bool Order::screenshotDir() {
     return true;
 };
 
-bool Order::printDir() {
+bool Order::print_dir() {
 
     // 创建打印文件夹
     Directory print_dir(path_->print);
@@ -227,7 +226,7 @@ bool Order::printDir() {
     return FilePath::walk(path_->order, walkFunc);
 }
 
-bool Order::tagDataDir() {
+bool Order::tag_data_dir() {
 
     // 压缩文件
     if (!Utils::compressionZipFile(path_->tag_data)) return false;
@@ -241,7 +240,7 @@ bool Order::tagDataDir() {
     return true;
 }
 
-std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
+std::shared_ptr<OrderInfo> Order::order_info(const std::string &order_dir_name) {
     order_info_                 = std::make_shared<OrderInfo>();
     order_info_->order_dir_name = order_dir_name;
 
@@ -282,7 +281,7 @@ std::shared_ptr<OrderInfo> Order::orderInfo(const std::string &order_dir_name) {
     return order_info_;
 }
 
-std::shared_ptr<OrderInfo> Order::orderInfoOutgoing(const std::string &order_dir_name) {
+std::shared_ptr<OrderInfo> Order::order_info_outgoing(const std::string &order_dir_name) {
     order_info_                 = std::make_shared<OrderInfo>();
     order_info_->order_dir_name = order_dir_name;
 

@@ -10,12 +10,12 @@ enable_testing()
 # 定义添加测试执行文件的函数
 function(add_test_executable name)
     file(GLOB_RECURSE files ${name}/*.cpp)
-    add_executable(${name}-test ${files})
-    target_include_directories(${name}-test 
+    add_executable(${name}_test ${files})
+    target_include_directories(${name}_test
         PUBLIC
            
     )
-    target_link_libraries(${name}-test
+    target_link_libraries(${name}_test
         PUBLIC
             GTest::gtest_main
             ${ARGN}

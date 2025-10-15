@@ -24,7 +24,7 @@ class PersonData {
     std::shared_ptr<PersonDataInfo> personDataInfo();
 
   private:
-    zel::json::Json jsonData();
+    zel::json::Json json_data();
 
   private:
     std::string                     data_path_;

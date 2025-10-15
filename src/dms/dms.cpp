@@ -21,31 +21,31 @@
 Dms::Dms(const std::shared_ptr<zel::myorm::Database> &db, const std::string &order_no)
     : db_(db) {
     order_info_.order_no = order_no;
-    orderInfo();
+    order_info();
 }
 
 Dms::~Dms() {}
 
 bool Dms::deleteOrder() {
     // delete about record table and records
-    if (!deleteRecord()) {
+    if (!delete_record()) {
         return false;
     }
 
     // delete about production table and records
-    if (!deleteProductionData()) {
+    if (!delete_production_data()) {
         return false;
     }
 
     // delete about order data table and records
-    if (!deleteOrderData()) {
+    if (!delete_order_data()) {
         return false;
     }
 
     return true;
 }
 
-bool Dms::orderInfo() {
+bool Dms::order_info() {
     DmsProductOrders dms_product_orders(*db_);
     dms_product_orders.where("Code", order_info_.order_no);
     auto dpo_all = dms_product_orders.all();
@@ -88,7 +88,7 @@ bool Dms::orderInfo() {
     return true;
 }
 
-bool Dms::deleteRecord() {
+bool Dms::delete_record() {
     std::string order_no = order_info_.order_no;
     String::toLower(order_no);
 
@@ -117,7 +117,7 @@ bool Dms::deleteRecord() {
     return true;
 }
 
-bool Dms::deleteProductionData() {
+bool Dms::delete_production_data() {
     std::string order_no = order_info_.order_no;
     String::toLower(order_no);
 
@@ -135,7 +135,7 @@ bool Dms::deleteProductionData() {
     return true;
 }
 
-bool Dms::deleteOrderData() {
+bool Dms::delete_order_data() {
     std::string data_table_name = order_info_.perso_data_table_name;
     String::toLower(data_table_name);
 

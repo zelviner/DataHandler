@@ -18,7 +18,7 @@ find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 find_package(Qt5LinguistTools REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(zel CONFIG REQUIRED)
-find_package(xhlanguage CONFIG REQUIRED)
+find_package(if_language CONFIG REQUIRED)
 find_package(xlnt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 
@@ -34,8 +34,8 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 file(GLOB RESOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/res/rc/*)
 
 # [7] 添加可执行文件 ---------------------------------------------------
-add_executable(${APP_NAME} ${SOURCES} ${RESOURCES}) #debug
-# add_executable(${APP_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
+# add_executable(${APP_NAME} ${SOURCES} ${RESOURCES}) #debug
+add_executable(${APP_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
 
 # [8] 包含 Qt 的私有头（如果有需要，比如自定义窗口样式）--------------
 include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
@@ -54,7 +54,7 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt5::Widgets
     fmt::fmt
     zel::zel
-    xhlanguage::xhlanguage
+    if_language::if_language
     xlnt::xlnt
     mysql/libmysql
     openssl/VC/libcrypto32MD
