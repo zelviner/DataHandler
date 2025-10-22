@@ -3,14 +3,15 @@
 
 #include <qdir>
 #include <qfileinfo>
+#include <curl/curl.h>
 #include <xlnt/xlnt.hpp>
 #include <zel/file_system/directory.h>
 #include <zel/file_system/file_path.h>
-#include <curl/curl.h>
 #include <zel/utility/logger.h>
 #include <zel/utility/string.h>
 
 Utils::Utils() {}
+
 Utils::~Utils() {}
 
 bool Utils::compressionZipFile(const std::string &file_path, bool remove) {

@@ -7,7 +7,7 @@
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <zel/utility/ini_file.h>
+#include <zel/utility/ini.h>
 
 // 自定义的工作线程类
 class UploadFile : public QThread {
@@ -51,7 +51,6 @@ class UploadFile : public QThread {
         }
 
         std::string host     = ini_["ftp"]["host"];
-        int         port     = ini_["ftp"]["port"];
         std::string username = ini_["ftp"]["username"];
         std::string password = ini_["ftp"]["password"];
         std::string remote   = "ftp://" + host + remote_path_;

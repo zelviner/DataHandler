@@ -1,5 +1,7 @@
 #pragma once
+
 #include "QtGui/private/qzipwriter_p.h"
+
 #include <qfileinfolist>
 #include <qstring>
 #include <qstringlist>
@@ -10,7 +12,6 @@ class Utils {
 
   public:
     Utils();
-
     ~Utils();
 
     /// @brief 压缩 zip 文件到当前路径

@@ -2,7 +2,6 @@
 
 #include "order/script.h"
 
-#include <cstring>
 #include <zel/zel.h>
 #include <memory>
 #include <qcoreapplication>

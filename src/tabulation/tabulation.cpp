@@ -13,7 +13,7 @@
 #include <vector>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
-#include <zel/utility/ini_file.h>
+#include <zel/utility/ini.h>
 #include <zel/utility/logger.h>
 #include <fmt/format.h>
 #include <zel/utility/string.h>
@@ -58,7 +58,9 @@ std::vector<std::string> Tabulation::telecomOrderList() {
 }
 
 bool Tabulation::financeRecords(const std::string &order_number, const std::string &data_field) {
-    dr_->header.order_no = order_number;
+    dr_->header.order_no       = order_number;
+    std::string min_data_field = fmt::format("MIN({})", data_field);
+    std::string max_data_field = fmt::format("MAX({})", data_field);
 
     XhOrderList xh_order_list(*finance_db_);
     xh_order_list.where("xh_order_number", order_number);
@@ -85,25 +87,24 @@ bool Tabulation::financeRecords(const std::string &order_number, const std::stri
             data.filename = data.filename.substr(0, data.filename.length() - 4);
         }
 
-        // 查询文件数量
         String::toLower(data.filename);
-        std::string sql    = fmt::format("SELECT COUNT(*), MIN(ID), MAX(ID) FROM `{}`", data.filename);
+        std::string sql    = fmt::format("SELECT COUNT(*), {}, {} FROM `{}`", min_data_field, max_data_field, data.filename);
         auto        result = finance_db_->query(sql);
         data.quantity      = result[0].find("COUNT(*)")->second.asInt();
-        std::string min_id = result[0].find("MIN(ID)")->second.asString();
-        std::string max_id = result[0].find("MAX(ID)")->second.asString();
+        data.start_iccid   = result[0].find(min_data_field)->second.asString();
+        data.end_iccid     = result[0].find(max_data_field)->second.asString();
 
-        sql    = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, min_id);
-        result = finance_db_->query(sql);
-        if (result.empty()) {
-            log_error("query failed, sql: %s", sql.c_str());
-            break;
-        }
-        data.start_iccid = result[0].find(data_field)->second.asString();
+        // sql    = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, min_id);
+        // result = finance_db_->query(sql);
+        // if (result.empty()) {
+        //     log_error("query failed, sql: %s", sql.c_str());
+        //     break;
+        // }
+        // data.start_iccid = result[0].find(data_field)->second.asString();
 
-        sql            = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, max_id);
-        result         = finance_db_->query(sql);
-        data.end_iccid = result[0].find(data_field)->second.asString();
+        // sql            = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, max_id);
+        // result         = finance_db_->query(sql);
+        // data.end_iccid = result[0].find(data_field)->second.asString();
 
         dr_->datas.push_back(data);
     }
