@@ -15,7 +15,7 @@ Utils::Utils() {}
 Utils::~Utils() {}
 
 bool Utils::compressionZipFile(const std::string &file_path, bool remove) {
-    int pos = file_path.find_last_of("/");
+    size_t pos = file_path.find_last_of("/");
     if (pos == std::string::npos) return false;
     std::string save_path = file_path.substr(0, pos);
     return compressionZipFile(file_path, save_path, remove);

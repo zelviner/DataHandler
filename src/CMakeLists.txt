@@ -24,6 +24,7 @@ find_package(zel CONFIG REQUIRED)
 find_package(if_language CONFIG REQUIRED)
 find_package(xlnt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(unofficial-libmariadb CONFIG REQUIRED)
 
 # [5] UI 搜索路径 -----------------------------------------------------
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/res/ui)
@@ -59,7 +60,7 @@ target_link_libraries(${APP_NAME} PRIVATE
     zel::zel
     if_language::if_language
     xlnt::xlnt
-    mariadb/libmariadb
+    unofficial::libmariadb
     openssl/VC/libcrypto32MD
     openssl/VC/libssl32MD
     CURL::libcurl

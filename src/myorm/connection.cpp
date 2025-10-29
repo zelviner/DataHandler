@@ -78,7 +78,7 @@ std::string Connection::escape(const std::string &str) {
     int         len = mysql_real_escape_string(&mysql_, buf, str.c_str(), str.size());
     std::string ret = std::string(buf, len);
     delete[] buf;
-    return std::move(ret);
+    return ret;
 }
 
 std::string Connection::quote(const std::string &str) const {

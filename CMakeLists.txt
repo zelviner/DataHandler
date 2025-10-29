@@ -33,7 +33,7 @@ message(STATUS "[2] Install prefix: ${CMAKE_INSTALL_PREFIX}")
 if(MSVC)
   add_compile_options(/utf-8 /W4 /WX-)
 else()
-  add_compile_options(-Wall -Wextra)
+  add_compile_options(-Wall -Wextra -Wno-unused-parameter)
 endif()
 
 # [5] 链接库配置路径 -------------------------------------------------

@@ -692,7 +692,7 @@ void MainWindow::init_card_reader() {
         "192.168.1.31:10005",
     };
 
-    char  reader_list[10][256] = {0};
+    char  reader_list[10][256] = {};
     char *ptrs[10];
     for (size_t i = 0; i < 10; i++) {
         if (reader_type == 1 && i < connect_infos.size()) {
