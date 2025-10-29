@@ -21,67 +21,40 @@ class MainWindow : public QMainWindow {
     MainWindow(QMainWindow *parent = nullptr);
     ~MainWindow();
 
-    /// @brief 中文语言切换
-    void chineseLanguageAction();
-
-    /// @brief 英文语言切换
-    void englishLanguageAction();
+    /// @brief 工具栏操作
+    void chineseLanguageAction(); // 中文语言切换
+    void englishLanguageAction(); // 英文语言切换
 
     /// @brief 拖拽释放事件
     void dropEvent(QDropEvent *event);
-
-    /// @brief 打开预个人化脚本按钮点击事件
-    void openPersonalBtnClicked();
-
-    /// @brief 打开后个人化脚本按钮点击事件
-    void openPostPersonalBtnClicked();
-
-    /// @brief 打开检测脚本按钮点击事件
-    void openCheckBtnClicked();
-
-    /// @brief 打开清卡脚本按钮点击事件
-    void openClearCardBtnClicked();
-
-    /// @brief 卡片复位按钮点击事件
-    void resetCardBtnClicked();
-
-    /// @brief 写卡按钮点击事件
-    void writeCardBtnClicked();
-
-    /// @brief 清卡按钮点击事件
-    void clearCardBtnClicked();
-
-    /// @brief 上传个人化数据按钮点击事件
-    void uploadPrdBtnClicked();
-
-    /// @brief 上传临时存放按钮点击事件
-    void uploadTempBtnClicked();
-
-    /// @brief 选择金融数据分配表生成路径按钮点击事件
-    void selectFinanceGeneratePathBtnClicked();
-
-    /// @brief 删除电信订单按钮点击事件
-    void deleteTelecomOrderBtnClicked();
-
-    /// @brief 选择电信数据分配表生成路径按钮点击事件
-    void selectTelecomGeneratePathBtnClicked();
-
-    /// @brief 生成金融数据分配表点击事件
-    void generatingFinanceRecordBtnClicked();
-
-    /// @brief 生成电信数据分配表点击事件
-    void generatingTelecomRecordBtnClicked();
-
-    /// @brief 选择金融模板文件径按钮点击事件
-    void selectFinanceTemplatePathBtnClicked();
-
-    /// @brief 选择电信模板文件径按钮点击事件
-    void selectTelecomTemplatePathBtnClicked();
-
-    /// @brief 保存按钮点击事件
-    void saveBtnClicked();
-
     void dragEnterEvent(QDragEnterEvent *event);
+
+    /// @brief 信息 Tab
+    void openPersonalBtnClicked();     // 打开预个人化脚本按钮点击事件
+    void openPostPersonalBtnClicked(); // 打开后个人化脚本按钮点击事件
+    void openCheckBtnClicked();        // 打开检测脚本按钮点击事件
+    void openClearCardBtnClicked();    // 打开清卡脚本按钮点击事件
+
+    /// @brief 鉴权 Tab
+    void resetCardBtnClicked(); // 卡片复位按钮点击事件
+    void writeCardBtnClicked(); // 写卡按钮点击事件
+    void clearCardBtnClicked(); // 清卡按钮点击事件
+
+    /// @brief 上传 Tab
+    void uploadPrdBtnClicked();  // 上传个人化数据按钮点击事件
+    void uploadTempBtnClicked(); // 上传临时存放按钮点击事件
+
+    /// @brief 制表 Tab
+    void selectFinanceGeneratePathBtnClicked(); // 选择金融数据分配表生成路径按钮点击事件
+    void generatingFinanceRecordBtnClicked();   // 生成金融数据分配表点击事件
+    void deleteTelecomOrderBtnClicked();        // 删除电信订单按钮点击事件
+    void selectTelecomGeneratePathBtnClicked(); // 选择电信数据分配表生成路径按钮点击事件
+    void generatingTelecomRecordBtnClicked();   // 生成电信数据分配表点击事件
+
+    /// @brief 配置 Tab
+    void selectFinanceTemplatePathBtnClicked(); // 选择金融模板文件径按钮点击事件
+    void selectTelecomTemplatePathBtnClicked(); // 选择电信模板文件径按钮点击事件
+    void saveBtnClicked();                      // 保存按钮点击事件
 
   public slots:
     void confirmOrder(const std::string &confirm_datagram_dir_name);

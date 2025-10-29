@@ -4,7 +4,6 @@
 #include <qmessagebox>
 #include <qmovie>
 #include <qthread>
-#include <chrono>
 
 ClearCardLoading::ClearCardLoading(QMainWindow *parent)
     : QMainWindow(parent)
