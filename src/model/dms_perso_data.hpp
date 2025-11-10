@@ -1,7 +1,6 @@
 #pragma once
 
-#include "myorm/model.hpp"
-#include "myorm/database.h"
+#include <zel/myorm.h>
 
 class DmsPersoData : public zel::myorm::Model<DmsPersoData> {
   public:

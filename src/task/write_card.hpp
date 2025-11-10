@@ -2,12 +2,12 @@
 
 #include "order/script.h"
 
-#include <zel/zel.h>
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
 #include <if_language/repl/repl_bridge.h>
 #include <qqueue>
+#include <zel/core.h>
 
 // 自定义的工作线程
 class WriteCard : public QThread {

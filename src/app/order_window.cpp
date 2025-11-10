@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <qmessagebox>
-#include <zel/zel.h>
+#include <zel/core.h>
 
 using namespace zel::utility;
 using namespace zel::file_system;

@@ -1,7 +1,7 @@
 #include "script.h"
 
 #include <memory>
-#include <zel/zel.h>
+#include <zel/core.h>
 
 using namespace zel::file_system;
 

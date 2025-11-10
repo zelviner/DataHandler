@@ -4,7 +4,6 @@
 #include "order/order.h"
 #include "order/person_data.h"
 
-#include <WinSock2.h>
 #include <memory>
 #include <qprogressbar>
 #include <qpushbutton.h>

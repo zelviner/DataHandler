@@ -7,7 +7,7 @@
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <zel/utility/ini.h>
+#include <zel/core.h>
 
 // 自定义的工作线程类
 class UploadFile : public QThread {

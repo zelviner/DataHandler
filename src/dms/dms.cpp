@@ -16,7 +16,7 @@
 #include "model/dms_order_conf.hpp"
 #include "model/dms_product_orders.hpp"
 
-#include <zel/utility/string.h>
+#include <zel/core.h>
 
 Dms::Dms(const std::shared_ptr<zel::myorm::Database> &db, const std::string &order_no)
     : db_(db) {

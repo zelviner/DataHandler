@@ -5,10 +5,7 @@
 #include <qfileinfo>
 #include <curl/curl.h>
 #include <xlnt/xlnt.hpp>
-#include <zel/file_system/directory.h>
-#include <zel/file_system/file_path.h>
-#include <zel/utility/logger.h>
-#include <zel/utility/string.h>
+#include <zel/core.h>
 
 Utils::Utils() {}
 

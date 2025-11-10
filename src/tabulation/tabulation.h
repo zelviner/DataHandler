@@ -1,6 +1,5 @@
 #pragma once
 
-#include "myorm/database.h"
 #include "distribution_record.h"
 
 #include <memory>
@@ -9,7 +8,8 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/xlnt.hpp>
-#include <zel/utility/ini.h>
+#include <zel/core.h>
+#include <zel/myorm.h>
 
 class Tabulation {
   public:

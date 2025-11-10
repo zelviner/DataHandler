@@ -5,7 +5,7 @@
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
-#include <zel/json/json.h>
+#include <zel/core.h>
 #include <if_language/repl/repl_bridge.h>
 #include <qqueue>
 

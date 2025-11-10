@@ -1,6 +1,7 @@
 #include "person_data.h"
 
 #include <memory>
+#include <zel/crypto.h>
 
 using namespace zel::json;
 using namespace zel::file_system;

@@ -7,9 +7,9 @@
 #include "order/script.h"
 #include "order_window.h"
 #include "loading.h"
-#include "myorm/database.h"
 
-#include <zel/zel.h>
+#include <zel/core.h>
+#include <zel/myorm.h>
 #include <memory>
 #include <qmainwindow>
 #include <qtranslator>

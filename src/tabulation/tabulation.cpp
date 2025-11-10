@@ -11,13 +11,10 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <fmt/format.h>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
-#include <zel/utility/ini.h>
-#include <zel/utility/logger.h>
-#include <fmt/format.h>
-#include <zel/utility/string.h>
-#include <zel/file_system/file.h>
+#include <zel/core.h>
 
 Tabulation::Tabulation(const std::shared_ptr<zel::myorm::Database> &finance_db, const std::shared_ptr<zel::myorm::Database> &telecom_db,
                        const zel::utility::Ini &ini)
@@ -176,7 +173,6 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
         // 查询文件数量
         data.quantity = one("Quantity").asInt();
 
-        String::toLower(data.filename);
         std::string sql      = fmt::format("SELECT MIN(ID), MAX(ID) FROM `{}` WHERE File = {}", data_table, one("ID").asInt());
         auto        result   = telecom_db_->query(sql);
         int         start_id = result[0].find("MIN(ID)")->second.asInt();

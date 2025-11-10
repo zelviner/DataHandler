@@ -2,10 +2,9 @@
 #include "utils/utils.h"
 
 #include <vector>
-#include <zel/file_system/file_path.h>
-#include <zel/utility/logger.h>
-#include <zel/zel.h>
 #include <memory>
+#include <zel/core.h>
+#include <zel/crypto.h>
 
 using namespace zel::utility;
 using namespace zel::file_system;

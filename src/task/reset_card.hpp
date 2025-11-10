@@ -6,7 +6,7 @@
 #include <if_language/repl/repl_bridge.h>
 #include <qmetaobject>
 #include <qqueue>
-#include <zel/utility/logger.h>
+#include <zel/core.h>
 
 class ResetCard : public QThread {
     Q_OBJECT

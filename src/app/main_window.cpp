@@ -10,10 +10,8 @@
 #include "task/generating_records.hpp"
 #include "clear_card_loading.h"
 #include "write_card_loading.h"
-#include "myorm/database.h"
 #include "dms/dms.h"
 
-#include <WinSock2.h>
 #include <memory>
 #include <qaction.h>
 #include <qdesktopservices.h>
@@ -33,7 +31,8 @@
 #include <qstringlistmodel>
 #include <qcompleter>
 #include <if_language/repl/repl_bridge.h>
-#include <zel/utility/logger.h>
+#include <zel/core.h>
+#include <zel/myorm.h>
 
 using namespace zel::utility;
 using namespace zel::file_system;
@@ -545,8 +544,8 @@ void MainWindow::init_window() {
 }
 
 void MainWindow::init_ui() {
-    // 使窗口始终在其他窗口之上
-    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    // // 使窗口始终在其他窗口之上
+    // setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 
     button_disabled(true);
     std::string mysql_host             = ini_["mysql"]["host"];

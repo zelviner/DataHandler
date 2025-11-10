@@ -1,12 +1,12 @@
 #pragma once
 
-#include "myorm/database.h"
 #include "tabulation/tabulation.h"
 
 #include <qobjectdefs.h>
-#include <zel/utility/ini.h>
 #include <qcoreapplication>
 #include <qthread>
+#include <zel/core.h>
+#include <zel/myorm.h>
 
 class GeneratingRecords : public QThread {
     Q_OBJECT

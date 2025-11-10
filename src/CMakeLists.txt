@@ -20,10 +20,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 find_package(Qt5LinguistTools REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(zel CONFIG REQUIRED)
-find_package(if_language CONFIG REQUIRED)
 find_package(xlnt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(if_language CONFIG REQUIRED)
+find_package(zel COMPONENTS myorm crypto REQUIRED)
+find_package(OpenSSL CONFIG REQUIRED)
 find_package(unofficial-libmariadb CONFIG REQUIRED)
 
 # [5] UI 搜索路径 -----------------------------------------------------
@@ -57,13 +58,11 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt5::Gui
     Qt5::Widgets
     fmt::fmt
-    zel::zel
-    if_language::if_language
     xlnt::xlnt
-    unofficial::libmariadb
-    openssl/VC/libcrypto32MD
-    openssl/VC/libssl32MD
     CURL::libcurl
-    Crypt32
-    Winscard
+    if_language::if_language
+    zel::myorm
+    unofficial::libmariadb
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
