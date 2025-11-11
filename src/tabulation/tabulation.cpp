@@ -143,7 +143,7 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
     }
 
     auto data_table = dbl_all[0]("Uuid").asString();
-    String::toLower(data_table);
+    // String::toLower(data_table);
 
     // 创建索引，加速查询
     std::string sql = fmt::format("CREATE INDEX idx_file_id ON `{}` (File, ID)", data_table);
