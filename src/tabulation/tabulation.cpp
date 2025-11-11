@@ -165,7 +165,7 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
         }
 
         // 去掉文件名后缀
-        size_t index = data.filename.find(".");
+        size_t index = data.filename.find(".prd");
         if (index != std::string::npos) {
             data.filename = data.filename.substr(0, index);
         }
