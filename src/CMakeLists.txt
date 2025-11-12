@@ -25,7 +25,6 @@ find_package(CURL CONFIG REQUIRED)
 find_package(if_language CONFIG REQUIRED)
 find_package(zel COMPONENTS myorm crypto REQUIRED)
 find_package(OpenSSL CONFIG REQUIRED)
-find_package(unofficial-libmariadb CONFIG REQUIRED)
 
 # [5] UI 搜索路径 -----------------------------------------------------
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/res/ui)
@@ -62,7 +61,6 @@ target_link_libraries(${APP_NAME} PRIVATE
     CURL::libcurl
     if_language::if_language
     zel::myorm
-    unofficial::libmariadb
     OpenSSL::SSL
     OpenSSL::Crypto
 )
