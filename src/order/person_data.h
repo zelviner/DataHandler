@@ -7,6 +7,7 @@
 /// @brief 首条个人化数据结构体
 struct PersonDataInfo {
     std::string     filename; // 个人化文件名
+    std::string     path;     // 个人化文件路径
     std::string     header;   // 头信息
     std::string     data;     // 数据
     std::string     pin1;

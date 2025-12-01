@@ -1,12 +1,13 @@
 #pragma once
 
 #include "order/script.h"
+#include "order/person_data.h"
 
 #include <memory>
 #include <qcoreapplication>
 #include <qthread>
 #include <zel/core.h>
-#include <if_language/repl/repl_bridge.h>
+#include <card_device/data_handler/data_handler.h>
 #include <qqueue>
 
 // 自定义的工作线程类
@@ -16,12 +17,12 @@ class ClearCard : public QThread {
   public:
     enum Type { CONNECT, START, CLEAR, FINISH };
 
-    ClearCard(const std::shared_ptr<ScriptInfo> &script_info, const zel::json::Json &json_data, int reader_id, int xhlanguage_type, ApduProtocol protocol)
+    ClearCard(const std::shared_ptr<ScriptInfo> &script_info, const std::shared_ptr<PersonDataInfo> &person_data_info, int reader_id,
+              const std::shared_ptr<card_device::DataHandler> &data_handler)
         : script_info_(script_info)
-        , json_data_(json_data)
+        , person_data_info_(person_data_info)
         , reader_id_(reader_id)
-        , xhlanguage_type_(xhlanguage_type)
-        , protocol_(protocol) {}
+        , data_handler_(data_handler) {}
 
   signals:
     // 信号函数，用于向外界发射信号
@@ -30,26 +31,22 @@ class ClearCard : public QThread {
 
   protected:
     void run() override {
-        json_data_["has_ds"] = script_info_->has_ds;
-        auto personal_data   = json_data_.str();
+        data_handler_->selectCardReader(reader_id_);
+        data_handler_->cardCallback(&ClearCard::callback_thunk, this);
 
-        setCallback(&ClearCard::callback_thunk, this);
+        data_handler_->persoData(person_data_info_->path, script_info_->has_ds);
 
         // 清卡
         emit success(START, QString::fromStdString(duration_), "");
 
         // 计时 - 开始
-        auto start  = std::chrono::steady_clock::now();
-        bool result = false;
-        type_       = CLEAR;
-        if (xhlanguage_type_ == 0) {
-            result = startCompiler(script_info_->clear_buffer.c_str(), personal_data.c_str(), reader_id_, protocol_);
-        } else if (xhlanguage_type_ == 1) {
-            result = startInterpreter(script_info_->clear_buffer.c_str(), personal_data.c_str(), reader_id_);
-        }
+        auto start = std::chrono::steady_clock::now();
+        type_      = CLEAR;
 
-        if (result == false) {
+        // 执行清卡脚本
+        if (!data_handler_->run(script_info_->clear_path)) {
             emit failure(type_, "清卡脚本执行失败");
+            log_error(data_handler_->error().c_str());
             return;
         }
 
@@ -63,25 +60,42 @@ class ClearCard : public QThread {
 
   private:
     static void callback_thunk(const char *run_result, int len, void *user) {
-        auto   *self = static_cast<ClearCard *>(user);
-        QString str  = QString::fromUtf8(run_result, len);
+        auto       *self = static_cast<ClearCard *>(user);
+        std::string str(run_result, len);
+
+        auto pos  = str.find("->");
+        auto apdu = str.substr(0, pos - 1);
+        auto rsp  = str.substr(pos + 3, str.size() - pos - 4);
+
+        if (apdu.size() > 70) {
+            // 取前20个字节
+            apdu = apdu.substr(0, 30) + "...";
+        }
+
+        if (rsp.size() > 70) {
+            // 取前20个字节
+            rsp = rsp.substr(0, 20) + "...";
+        }
+
+        QString result = QString::fromStdString(apdu) + " -> " + QString::fromStdString(rsp);
+
+        log_info(run_result);
 
         QMetaObject::invokeMethod(
             self,
-            [self, str]() {
-                self->results_.enqueue(str); // 存队列
+            [self, result]() {
+                self->results_.enqueue(result); // 存队列
                 emit self->success(self->type_, QString::fromStdString(self->duration_), self->results_.dequeue());
             },
             Qt::QueuedConnection);
     }
 
   private:
-    std::shared_ptr<ScriptInfo> script_info_;
-    zel::json::Json             json_data_;
-    int                         reader_id_;
-    int                         xhlanguage_type_;
-    ApduProtocol                protocol_;
-    QQueue<QString>             results_; // 存储回调结果
-    Type                        type_;
-    std::string                 duration_;
+    std::shared_ptr<ScriptInfo>               script_info_;
+    std::shared_ptr<PersonDataInfo>           person_data_info_;
+    int                                       reader_id_;
+    std::shared_ptr<card_device::DataHandler> data_handler_;
+    QQueue<QString>                           results_; // 存储回调结果
+    Type                                      type_;
+    std::string                               duration_;
 };

@@ -49,6 +49,7 @@ std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
         File person_data_file(person_data_file_path_pgp);
 
         person_data_info_->filename = person_data_file.name();
+        person_data_info_->path     = person_data_file.path();
         if (!person_data_file.readLine(person_data_info_->header)) return nullptr;
         if (!person_data_file.readLine(person_data_info_->data)) return nullptr;
 

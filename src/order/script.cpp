@@ -27,6 +27,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
             if (file.exists()) {
                 script_info_->clear_buffer   = file.read();
                 script_info_->clear_filename = file.name();
+                script_info_->clear_path     = file.path();
             } else {
                 return nullptr;
             }
@@ -35,6 +36,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
             if (file.exists()) {
                 script_info_->check_buffer   = file.read();
                 script_info_->check_filename = file.name();
+                script_info_->check_path     = file.path();
             } else {
                 return nullptr;
             }
@@ -43,6 +45,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
             if (file.exists()) {
                 script_info_->post_person_buffer   = file.read();
                 script_info_->post_person_filename = file.name();
+                script_info_->post_person_path     = file.path();
                 script_info_->has_ds               = script_info_->post_person_buffer.find("ds.") == std::string::npos ? false : true;
             } else {
                 return nullptr;
@@ -52,6 +55,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
             if (file.exists()) {
                 script_info_->person_buffer   = file.read();
                 script_info_->person_filename = file.name();
+                script_info_->person_path     = file.path();
             } else {
                 return nullptr;
             }

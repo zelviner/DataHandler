@@ -3,18 +3,18 @@
 #include <qchar.h>
 #include <qobjectdefs.h>
 #include <qthread.h>
-#include <if_language/repl/repl_bridge.h>
 #include <qmetaobject>
 #include <qqueue>
 #include <zel/core.h>
+#include <card_device/data_handler/data_handler.h>
 
 class ResetCard : public QThread {
     Q_OBJECT
   public:
-    explicit ResetCard(int reader_id, ApduProtocol protocol, QObject *parent = nullptr)
+    explicit ResetCard(int reader_id, const std::shared_ptr<card_device::DataHandler> &data_handler, QObject *parent = nullptr)
         : QThread(parent)
         , reader_id_(reader_id)
-        , protocol_(protocol) {}
+        , data_handler_(data_handler) {}
 
   signals:
     void resetSuccess(const QString &atr);
@@ -22,9 +22,12 @@ class ResetCard : public QThread {
 
   protected:
     void run() override {
-        setCallback(&ResetCard::callback_thunk, this);
+        try {
+            data_handler_->selectCardReader(reader_id_);
 
-        if (!startCompiler("RST()", "", reader_id_, protocol_)) {
+            auto atr = data_handler_->resetCardReader(true);
+            emit resetSuccess(QString::fromStdString(atr));
+        } catch (const std::exception &e) {
             emit resetFailure("复位卡片失败，请检查读卡器是否连接正确。");
         }
     }
@@ -37,7 +40,7 @@ class ResetCard : public QThread {
     }
 
   private:
-    int          reader_id_;
-    ApduProtocol protocol_;
-    QString      atr_;
+    int                                       reader_id_;
+    std::shared_ptr<card_device::DataHandler> data_handler_;
+    QString                                   atr_;
 };

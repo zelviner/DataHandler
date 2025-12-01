@@ -14,6 +14,11 @@ struct ScriptInfo {
     std::string check_buffer;       // 检测脚本
     std::string clear_buffer;       // 清卡脚本
 
+    std::string person_path;      // 预个人化脚本路径
+    std::string post_person_path; // 后个人化脚本路径
+    std::string check_path;       // 检测脚本路径
+    std::string clear_path;       // 清卡脚本路径
+
     bool has_ds; // 是否有ds标识符
 };
 

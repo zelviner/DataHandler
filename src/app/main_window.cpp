@@ -30,7 +30,6 @@
 #include <qfiledialog>
 #include <qstringlistmodel>
 #include <qcompleter>
-#include <if_language/repl/repl_bridge.h>
 #include <zel/core.h>
 #include <zel/myorm.h>
 
@@ -44,7 +43,8 @@ MainWindow::MainWindow(QMainWindow *parent)
     , path_(nullptr)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
-    , script_info_(nullptr) {
+    , script_info_(nullptr)
+    , data_handler_(nullptr) {
     ui_->setupUi(this);
 
     // 初始化窗口
@@ -127,8 +127,7 @@ void MainWindow::openClearCardBtnClicked() {
 void MainWindow::resetCardBtnClicked() {
     ui_->current_card_line->setText(tr("正在复位..."));
 
-    int  reader_id  = ui_->reader_combo_box->currentIndex() + 1;
-    auto reset_card = new ResetCard(reader_id, ApduProtocol::ISO, this);
+    auto reset_card = new ResetCard(ui_->reader_combo_box->currentIndex(), data_handler_);
 
     connect(reset_card, &ResetCard::resetSuccess, this, &MainWindow::resetCardSuccess);
     connect(reset_card, &ResetCard::resetFailure, this, &MainWindow::resetCardFailure);
@@ -142,8 +141,7 @@ void MainWindow::writeCardBtnClicked() {
     write_card_loading->show();
 
     // 创建工作线程
-    auto write_card = new WriteCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1,
-                                    ui_->xhlanguage_combo_box->currentIndex(), ApduProtocol::ISO);
+    auto write_card = new WriteCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_);
 
     // 连接信号槽
     connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
@@ -162,8 +160,7 @@ void MainWindow::clearCardBtnClicked() {
     clear_card_loading->show();
 
     // 创建工作线程
-    auto clear_card = new ClearCard(script_info_, person_data_info_->json_data, ui_->reader_combo_box->currentIndex() + 1,
-                                    ui_->xhlanguage_combo_box->currentIndex(), ApduProtocol::ISO);
+    auto clear_card = new ClearCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_);
     // 连接信号槽
     connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
     connect(clear_card, &ClearCard::success, clear_card_loading, &ClearCardLoading::success);
@@ -430,23 +427,17 @@ void MainWindow::confirmDeleteOrder(const std::string &password) {
 void MainWindow::cancelDeleteOrder() { authenticator_->hide(); }
 
 void MainWindow::bareAtr(const QString &bare_atr) {
-    QString str = bare_atr;
-    str         = str.mid(8, str.size() - 9);
-    ui_->bare_card_line->setText(str);
+    ui_->bare_card_line->setText(bare_atr);
     ui_->bare_card_line->setCursorPosition(0);
 }
 
 void MainWindow::whiteAtr(const QString &white_atr) {
-    QString str = white_atr;
-    str         = str.mid(8, str.size() - 9);
-    ui_->white_card_line->setText(str);
+    ui_->white_card_line->setText(white_atr);
     ui_->white_card_line->setCursorPosition(0);
 }
 
 void MainWindow::finishedAtr(const QString &finished_atr) {
-    QString str = finished_atr;
-    str         = str.mid(8, str.size() - 9);
-    ui_->finished_card_line->setText(str);
+    ui_->finished_card_line->setText(finished_atr);
     ui_->finished_card_line->setCursorPosition(0);
 }
 
@@ -527,9 +518,7 @@ void MainWindow::generatingRecordSuccess() {
 void MainWindow::resetCardFailure(const QString &err_msg) { QMessageBox::critical(this, "复位失败", err_msg); }
 
 void MainWindow::resetCardSuccess(const QString &atr) {
-    QString str = atr;
-    str         = str.mid(8, str.size() - 9);
-    ui_->current_card_line->setText(str);
+    ui_->current_card_line->setText(atr);
     log_info(atr.toStdString().c_str());
 }
 
@@ -645,24 +634,41 @@ void MainWindow::init_signal_slot() {
 void MainWindow::init_config(const std::string &config_file) {
     if (!ini_.exists(config_file)) {
         ini_.set("log", "level", 0);
+
         ini_.set("mysql", "host", "127.0.0.1");
         ini_.set("mysql", "port", "3306");
         ini_.set("mysql", "username", "");
         ini_.set("mysql", "password", "");
         ini_.set("mysql", "telecom_database", "");
         ini_.set("mysql", "finance_database", "");
+
         ini_.set("ftp", "host", "127.0.0.1");
         ini_.set("ftp", "port", "21");
         ini_.set("ftp", "username", "");
         ini_.set("ftp", "password", "");
+
         ini_.set("path", "remote_prd_path", "");
         ini_.set("path", "remote_temp_path", "");
         ini_.set("path", "local_backup_path", "");
+
         ini_.set("template", "finance_path", "");
         ini_.set("template", "telecom_path", "");
         ini_.set("template", "order_no", "");
         ini_.set("template", "order_quantity", "");
         ini_.set("template", "data", "");
+
+        ini_.set("card_reader", "type", 0);
+        ini_.set("card_reader", "protocol", 0);
+        ini_.set("qsc_card_reader", "count", 4);
+        ini_.set("qsc_card_reader", "card_reader_1", "192.168.1.31:10002");
+        ini_.set("qsc_card_reader", "card_reader_2", "192.168.1.31:10003");
+        ini_.set("qsc_card_reader", "card_reader_3", "192.168.1.31:10004");
+        ini_.set("qsc_card_reader", "card_reader_4", "192.168.1.31:10005");
+        ini_.set("scsc_card_reader", "count", 4);
+        ini_.set("scsc_card_reader", "card_reader_1", "192.168.1.31:10002");
+        ini_.set("scsc_card_reader", "card_reader_2", "192.168.1.31:10003");
+        ini_.set("scsc_card_reader", "card_reader_3", "192.168.1.31:10004");
+        ini_.set("scsc_card_reader", "card_reader_4", "192.168.1.31:10005");
 
         ini_.save(config_file);
     } else {
@@ -680,42 +686,51 @@ void MainWindow::init_logger(const std::string &log_file) {
 }
 
 void MainWindow::init_card_reader() {
-    logger("reader.log", "info");
+    data_handler_ = std::make_shared<card_device::DataHandler>();
 
-    int reader_type = ui_->reader_type_combo_box->currentIndex();
+    int                      reader_type = ui_->reader_type_combo_box->currentIndex();
+    std::vector<std::string> connect_infos;
+    switch (reader_type) {
 
-    std::vector<std::string> connect_infos = {
-        "192.168.1.31:10002",
-        "192.168.1.31:10003",
-        "192.168.1.31:10004",
-        "192.168.1.31:10005",
-    };
-
-    char  reader_list[10][256] = {};
-    char *ptrs[10];
-    for (size_t i = 0; i < 10; i++) {
-        if (reader_type == 1 && i < connect_infos.size()) {
-            strncpy(reader_list[i], connect_infos[i].c_str(), sizeof(reader_list[i]) - 1);
-            reader_list[i][sizeof(reader_list[i]) - 1] = '\0';
+    case 1: {
+        int count = ini_["qsc_card_reader"]["count"];
+        for (int i = 1; i <= count; i++) {
+            std::string ip_port = ini_["qsc_card_reader"]["card_reader_" + std::to_string(i)];
+            connect_infos.push_back(ip_port);
         }
-
-        ptrs[i] = reader_list[i];
+        break;
     }
 
-    ui_->reader_combo_box->clear();
-    if (!initReaders((CardReaderType) reader_type, ptrs, 10)) {
-        QMessageBox::critical(this, "警告", "未找到读卡器，请检查读卡器是否连接");
+    case 2: {
+        int count = ini_["scsc_card_reader"]["count"];
+        for (int i = 1; i <= count; i++) {
+            std::string ip_port = ini_["scsc_card_reader"]["card_reader_" + std::to_string(i)];
+            connect_infos.push_back(ip_port);
+        }
+        break;
+    }
+
+    default:
+        break;
+    }
+
+    int protocol = ini_["card_reader"]["protocol"];
+
+    try {
+        auto reader_names = data_handler_->initialize(reader_type, connect_infos);
+        data_handler_->cardProtocol(protocol);
+
+        ui_->reader_combo_box->clear();
+        for (auto reader_name : reader_names) {
+            ui_->reader_combo_box->addItem(reader_name.c_str());
+        }
+
+        ui_->reset_card_btn->setDisabled(false);
+    } catch (std::exception &e) {
+        QMessageBox::critical(this, "警告", "读卡器初始化，请检查读卡器是否连接");
         ui_->reset_card_btn->setDisabled(true);
         return;
     }
-
-    for (auto reader : ptrs) {
-        if (reader[0] != '\0') {
-            ui_->reader_combo_box->addItem(reader);
-        }
-    }
-
-    ui_->reset_card_btn->setDisabled(false);
 }
 
 void MainWindow::init_database() {
