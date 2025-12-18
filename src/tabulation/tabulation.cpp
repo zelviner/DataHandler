@@ -193,6 +193,16 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
     sql = fmt::format("DROP INDEX idx_file_id ON `{}`", data_table);
     telecom_db_->execute(sql);
 
+    // 根据文件名排序
+    std::sort(dr_->datas.begin(), dr_->datas.end(), [](const DistributionRecordData &a, const DistributionRecordData &b) {
+        int na = extract_last_number(a.filename);
+        int nb = extract_last_number(b.filename);
+
+        if (na != nb) return na < nb;
+
+        return a.filename < b.filename; 
+    });
+
     return true;
 }
 
@@ -294,4 +304,18 @@ void Tabulation::exchange_iccid(std::string &iccid) {
     for (size_t i = 0; i + 1 < iccid.size(); i += 2) {
         std::swap(iccid[i], iccid[i + 1]);
     }
+}
+
+int Tabulation::extract_last_number(const std::string &s) {
+    int num = -1;
+    for (int i = s.size() - 1; i >= 0; --i) {
+        if (isdigit(s[i])) {
+            int end = i;
+            while (i >= 0 && isdigit(s[i]))
+                i--;
+            num = std::stoi(s.substr(i + 1, end - i));
+            break;
+        }
+    }
+    return num;
 }

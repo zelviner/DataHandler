@@ -22,11 +22,11 @@ find_package(Qt5LinguistTools REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(xlnt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(OpenSSL CONFIG REQUIRED)
 find_package(card_device CONFIG REQUIRED)
 find_package(card_script CONFIG REQUIRED)
 find_package(card_reader CONFIG REQUIRED)
 find_package(zel COMPONENTS core myorm crypto REQUIRED)
-find_package(OpenSSL CONFIG REQUIRED)
 
 # [5] UI 搜索路径 -----------------------------------------------------
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/res/ui)
@@ -40,8 +40,8 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 file(GLOB RESOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/res/rc/*)
 
 # [7] 添加可执行文件 ---------------------------------------------------
-add_executable(${APP_NAME} ${SOURCES} ${RESOURCES}) #debug
-# add_executable(${APP_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
+# add_executable(${APP_NAME} ${SOURCES} ${RESOURCES}) #debug
+add_executable(${APP_NAME} WIN32 ${SOURCES} ${RESOURCES}  ${MY_VERSIONINFO_RC}) # release
 
 # [8] 包含 Qt 的私有头（如果有需要，比如自定义窗口样式）--------------
 include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
@@ -61,9 +61,9 @@ target_link_libraries(${APP_NAME} PRIVATE
     fmt::fmt
     xlnt::xlnt
     CURL::libcurl
+    OpenSSL::SSL
+    OpenSSL::Crypto
     card_device::card_device
     zel::myorm
     zel::crypto
-    OpenSSL::SSL
-    OpenSSL::Crypto
 )

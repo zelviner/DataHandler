@@ -40,6 +40,8 @@ class Tabulation {
     /// @brief 两两交换 iccid
     void exchange_iccid(std::string &iccid);
 
+    static int extract_last_number(const std::string &s);
+
   private:
     std::shared_ptr<zel::myorm::Database>                 finance_db_;
     std::shared_ptr<zel::myorm::Database>                 telecom_db_;

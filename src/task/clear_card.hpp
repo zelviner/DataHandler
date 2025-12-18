@@ -18,11 +18,12 @@ class ClearCard : public QThread {
     enum Type { CONNECT, START, CLEAR, FINISH };
 
     ClearCard(const std::shared_ptr<ScriptInfo> &script_info, const std::shared_ptr<PersonDataInfo> &person_data_info, int reader_id,
-              const std::shared_ptr<card_device::DataHandler> &data_handler)
+              const std::shared_ptr<card_device::DataHandler> &data_handler, bool convert = true)
         : script_info_(script_info)
         , person_data_info_(person_data_info)
         , reader_id_(reader_id)
-        , data_handler_(data_handler) {}
+        , data_handler_(data_handler)
+        , convert_(convert) {}
 
   signals:
     // 信号函数，用于向外界发射信号
@@ -44,7 +45,7 @@ class ClearCard : public QThread {
         type_      = CLEAR;
 
         // 执行清卡脚本
-        if (!data_handler_->run(script_info_->clear_path)) {
+        if (!data_handler_->run(script_info_->clear_path, convert_)) {
             emit failure(type_, "清卡脚本执行失败");
             log_error(data_handler_->error().c_str());
             return;
@@ -98,4 +99,5 @@ class ClearCard : public QThread {
     QQueue<QString>                           results_; // 存储回调结果
     Type                                      type_;
     std::string                               duration_;
+    bool                                      convert_; // 转换为新脚本格式
 };

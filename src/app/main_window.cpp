@@ -159,8 +159,10 @@ void MainWindow::clearCardBtnClicked() {
     ClearCardLoading *clear_card_loading = new ClearCardLoading(this);
     clear_card_loading->show();
 
+    bool script_convert = ui_->script_convert_check_box->isChecked();
+
     // 创建工作线程
-    auto clear_card = new ClearCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_);
+    auto clear_card = new ClearCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_, script_convert);
     // 连接信号槽
     connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
     connect(clear_card, &ClearCard::success, clear_card_loading, &ClearCardLoading::success);
@@ -280,7 +282,7 @@ void MainWindow::selectTelecomGeneratePathBtnClicked() {
 
     // 获取桌面路径
     QString desktop_path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    QString default_path = desktop_path + "/数据分配表" + order_no + ".xlsx";
+    QString default_path = desktop_path + "/" + order_no + "-数据分配表" + ".xlsx";
     QString file_path    = QFileDialog::getSaveFileName(this, "选择数据分配表路径", default_path, "Excel 文件 (*.xlsx)");
 
     if (file_path.isEmpty()) return;
@@ -580,8 +582,8 @@ void MainWindow::init_ui() {
     ui_->reader_type_combo_box->addItem("QSC");
 
     // 脚本运行器
-    ui_->xhlanguage_combo_box->addItem("编译器 (推荐)");
-    ui_->xhlanguage_combo_box->addItem("解释器");
+    ui_->card_protocol_combo_box->addItem("ISO7816 (电信)");
+    ui_->card_protocol_combo_box->addItem("GP (金融)");
 
     ui_->clear_card_btn->setDisabled(true);
     ui_->write_card_btn->setDisabled(true);
@@ -657,8 +659,6 @@ void MainWindow::init_config(const std::string &config_file) {
         ini_.set("template", "order_quantity", "");
         ini_.set("template", "data", "");
 
-        ini_.set("card_reader", "type", 0);
-        ini_.set("card_reader", "protocol", 0);
         ini_.set("qsc_card_reader", "count", 4);
         ini_.set("qsc_card_reader", "card_reader_1", "192.168.1.31:10002");
         ini_.set("qsc_card_reader", "card_reader_2", "192.168.1.31:10003");
@@ -714,7 +714,7 @@ void MainWindow::init_card_reader() {
         break;
     }
 
-    int protocol = ini_["card_reader"]["protocol"];
+    int protocol = ui_->card_protocol_combo_box->currentIndex();
 
     try {
         auto reader_names = data_handler_->initialize(reader_type, connect_infos);
