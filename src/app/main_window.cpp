@@ -67,6 +67,9 @@ MainWindow::MainWindow(QMainWindow *parent)
 
     // 初始化数据库
     init_database();
+
+    // 初始化鉴权脚本
+    init_auth_script("./auth.script");
 }
 
 MainWindow::~MainWindow() { delete ui_; }
@@ -174,6 +177,8 @@ void MainWindow::clearCardBtnClicked() {
     ui_->white_card_line->setText("");
     ui_->finished_card_line->setText("");
 }
+
+void MainWindow::openAuthScriptBtnClicked() { QDesktopServices::openUrl(QUrl::fromLocalFile(QString("./auth.script"))); }
 
 void MainWindow::uploadPrdBtnClicked() {
     loading_->setWindowTitle("正在上传个人化数据...");
@@ -602,9 +607,6 @@ void MainWindow::init_signal_slot() {
     connect(ui_->chip_model_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->chip_model.c_str())); });
     connect(ui_->rf_code_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->rf_code.c_str())); });
     connect(ui_->script_package_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->script_package.c_str())); });
-    connect(ui_->pin1_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->pin1.c_str())); });
-    connect(ui_->op_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->op.c_str())); });
-    connect(ui_->ki_btn, &QPushButton::clicked, [=]() { clip->setText(QString(person_data_info_->ki.c_str())); });
 
     // 信息 - 脚本包信息
     connect(ui_->open_personal_btn, &QPushButton::clicked, this, &MainWindow::openPersonalBtnClicked);
@@ -619,6 +621,7 @@ void MainWindow::init_signal_slot() {
     connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
     connect(ui_->upload_prd_btn, &QPushButton::clicked, this, &MainWindow::uploadPrdBtnClicked);
     connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
+    connect(ui_->open_auth_btn, &QPushButton::clicked, this, &MainWindow::openAuthScriptBtnClicked);
 
     // 制表
     connect(ui_->finance_select_generate_file_btn, &QPushButton::clicked, this, &MainWindow::selectFinanceGeneratePathBtnClicked);
@@ -771,6 +774,208 @@ void MainWindow::init_database() {
     }
 }
 
+void MainWindow::init_auth_script(const std::string &auth_script_path) {
+    std::string auth_script = R"(
+// run_gp_apdu 对APDU返回值进行特殊处理
+run_gp_apdu = func (apdu) {
+    resp = apdu -> null // 运行APDU命令, 返回 hash = {"data": "xxxx", "sw1": "90", "sw2": "00", "sw": "9000"}
+
+    if resp.sw1 == "61" {
+        gr = "00C00000" + resp.sw2 -> "*9000" 
+        return gr       
+    }
+
+    if resp.sw == "9000" {
+        return resp
+    }
+
+   return panic("Unknown response:" + resp)
+}
+
+// xor 异或运算 a: 字节数组, b: 字节数组
+xor = func (a, b) {
+    for i = 0; i < a.len(); i++ {
+        a[i] ^= b[i]
+    }
+    return a
+}
+
+// hex_to_bytes 将十六进制字符串转换为字节数组
+hex_to_bytes = func (hex) {
+    bytes = []
+
+    // 初始化字节数组
+    for i = 0; i < hex.len(); i += 2 {
+        bytes.append(0)
+    }
+
+    for i = 0; i < hex.len(); i += 2 {
+        index = i / 2
+        bytes[index] = int(hex.mid(i, 2), 16)
+    }
+    return bytes
+}
+
+// bytes_to_hex 将字节数组转换为十六进制字符串
+bytes_to_hex = func (bytes) {
+    hex = ""
+    for b in bytes {
+        hex += b.toHexString()
+    }
+    return hex
+}
+
+// authentication 鉴权过程
+authentication = func (SQN) {
+    atr = RST -> null
+
+    // 1. 选择 MF
+    run_gp_apdu("00A40004023F00") 
+
+    // 2. 选择 EF.DIR
+    run_gp_apdu("00A40004022F00")
+
+    // 3. 获取 USIM AID
+    /* tlv.parse(tlv_data) 解析TLV数据, 返回列表 
+    tlvs = [
+        {"value": "4F10A0000000871002FF49FFFF89040B00FF50045553494D", "length": 24, "tag": "61"}, 
+        {"value": "A0000000871002FF49FFFF89040B00FF", "length": 16, "tag": "4F"}, 
+        {"value": "5553494D", "length": 4, "tag": "50"}
+    ] 
+    */
+    tlvs = tlv.parse(("00B2010426" -> "*9000").data)
+    
+    AID = {}
+    for i = 0; i < tlvs.len(); i++ {
+        if tlvs[i].tag == "4F" {
+            AID = tlvs[i]
+            break
+        }
+    }
+
+    // 4. 选择 USIM AID
+    run_gp_apdu("00A40404" + AID.length.toHexString() + AID.value)
+
+    // 5. AKA 鉴权
+    RAND = crypto.randomHex(32)
+    AMF = "0000"
+
+    /* crypto.milenage(KI, OPC, RAND, SQN, AMF) 计算 Milenage 值, 返回 hash
+    output = {
+        "MacA": "6F619D641724807F", 
+        "AK": "3341F0BAD810", 
+        "MacS": "6040C2CD484C027C", 
+        "IK": "7A41C1B0719D3B6F81FEB6DF74877B84", 
+        "RES": "82AF78C2D3E4C090", 
+        "CK": "86A565BEFDE46FB2A4F38A0DAE51585C", 
+        "AKStar": "7E9AC6C597FA"
+    }*/
+    output = crypto.milenage(ds.KI, ds.OPC, RAND, SQN, AMF)
+
+    // 6. 构建鉴权命令
+    sqn_bytes = hex_to_bytes(SQN)
+    amf_bytes = hex_to_bytes(AMF)
+    ak_bytes = hex_to_bytes(output.AK)
+    mac_a_bytes = hex_to_bytes(output.MacA)
+
+    auth_bytes = xor(sqn_bytes, ak_bytes)
+    auth_bytes.append(amf_bytes[0])
+    auth_bytes.append(amf_bytes[1])
+    auth_bytes.extend(mac_a_bytes)
+    AUTH = bytes_to_hex(auth_bytes)
+
+    // 7. 发送鉴权命令
+    resp = run_gp_apdu("0088008122" + (RAND.len() / 2).toHexString() + RAND + (AUTH.len() / 2).toHexString() + AUTH + "00").data
+    return {
+        "resp": resp,
+        "AKStar": output.AKStar
+    }
+}
+
+// caculate_sqn 计算 SQN
+caculate_sqn = func (AUTS, AKStar) {
+    auts_bytes = hex_to_bytes(AUTS.mid(0, 12))
+    akstar_bytes = hex_to_bytes(AKStar)
+
+    // SQN_MS = SQNxorAKs XOR AKStar
+    /* sqn_ms_bytes = []
+     for i = 0; i < 6; i++ {
+        sqn_ms_bytes.append(auts_bytes[i] ^ akstar_bytes[i])
+    }*/
+    sqn_ms_bytes = xor(auts_bytes, akstar_bytes)
+
+    // SQN = SQN_MS + 1
+    sqn_bytes = sqn_ms_bytes
+    for i = 5; i >= 0; i-- {
+        if sqn_bytes[i] == 255 {
+            sqn_bytes[i] = 0
+        } else {
+            sqn_bytes[i]++
+            break
+        }
+    }
+
+    return bytes_to_hex(sqn_ms_bytes)
+}
+
+// 验证 PIN
+verify_pin = func () {
+     resp = "0020000108" + ds.PIN1 + "00" -> null
+     print(resp)
+     return (resp.sw == "9000" || resp.sw == "6984")
+}
+
+// 激活 PIN 
+activate_pin = func () {
+    resp = "0028000108" + ds.PIN1 -> null
+    print(resp)
+    return (resp.sw == "9000")
+}
+
+// ------------------------------------------ 脚本开始 ------------------------------
+// activate_pin()
+
+/*if !verify_pin() {
+    panic("PIN verification failed")
+} else {
+    print("PIN verification successful")
+}*/
+
+// 首次鉴权
+SQN = "000000000020"
+result = authentication(SQN)
+switch result.resp.mid(0,2) {
+    case "DB": {
+        print("Authentication successful")
+        break
+    }
+
+    case "DC": {
+        // 计算 SQN
+        SQN = caculate_sqn(result.resp.mid(4, result.resp.len() - 4), result.AKStar)
+
+        // 重试鉴权
+        if authentication(SQN).resp.mid(0,2) != "DB" {
+            panic("Authentication failed")
+        } else {
+            print("Authentication successful")
+        }
+        break
+    }
+
+    default: {
+        panic("Unknown error")
+        break
+    }
+}
+    )";
+
+    // 写入文件
+    std::ofstream ofs(auth_script_path, std::ios::out);
+    ofs << auth_script;
+    ofs.close();
+}
+
 void MainWindow::button_disabled(bool disabled) {
     ui_->project_number_btn->setDisabled(disabled);
     ui_->order_number_btn->setDisabled(disabled);
@@ -778,9 +983,7 @@ void MainWindow::button_disabled(bool disabled) {
     ui_->chip_model_btn->setDisabled(disabled);
     ui_->rf_code_btn->setDisabled(disabled);
     ui_->script_package_btn->setDisabled(disabled);
-    ui_->pin1_btn->setDisabled(disabled);
-    ui_->op_btn->setDisabled(disabled);
-    ui_->ki_btn->setDisabled(disabled);
+    ui_->open_auth_btn->setDisabled(disabled);
     ui_->upload_prd_btn->setDisabled(disabled);
     ui_->open_personal_btn->setDisabled(disabled);
     ui_->open_postpersonal_btn->setDisabled(disabled);
@@ -810,9 +1013,19 @@ void MainWindow::show_info() {
     ui_->clear_script_line->setText(QString(script_info_->clear_filename.c_str()));
     ui_->clear_script_line->setCursorPosition(0);
 
-    ui_->ki_line->setText(QString(person_data_info_->ki.c_str()));
-    ui_->op_line->setText(QString(person_data_info_->op.c_str()));
-    ui_->pin1_line->setText(QString(person_data_info_->pin1.c_str()));
+    ui_->auth_script_line->setText(QString("./auth.script"));
+
+    ui_->c1_line->setText("0");
+    ui_->c2_line->setText("1");
+    ui_->c3_line->setText("2");
+    ui_->c4_line->setText("4");
+    ui_->c5_line->setText("8");
+
+    ui_->r1_line->setText("64");
+    ui_->r2_line->setText("0");
+    ui_->r3_line->setText("32");
+    ui_->r4_line->setText("64");
+    ui_->r5_line->setText("96");
 
     ui_->ds_check_box->setChecked(script_info_->has_ds);
 }

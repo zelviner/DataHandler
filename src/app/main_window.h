@@ -40,6 +40,7 @@ class MainWindow : public QMainWindow {
     void resetCardBtnClicked(); // 卡片复位按钮点击事件
     void writeCardBtnClicked(); // 写卡按钮点击事件
     void clearCardBtnClicked(); // 清卡按钮点击事件
+    void openAuthScriptBtnClicked();    // 打开清卡脚本按钮点击事件
 
     /// @brief 上传 Tab
     void uploadPrdBtnClicked();  // 上传个人化数据按钮点击事件
@@ -101,6 +102,9 @@ class MainWindow : public QMainWindow {
 
     /// @brief 初始化数据库
     void init_database();
+
+    /// @brief 初始化鉴权脚本
+    void init_auth_script(const std::string &auth_script_path);
 
     void button_disabled(bool disabled);
 
