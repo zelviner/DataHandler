@@ -37,10 +37,11 @@ class MainWindow : public QMainWindow {
     void openClearCardBtnClicked();    // 打开清卡脚本按钮点击事件
 
     /// @brief 鉴权 Tab
-    void resetCardBtnClicked(); // 卡片复位按钮点击事件
-    void writeCardBtnClicked(); // 写卡按钮点击事件
-    void clearCardBtnClicked(); // 清卡按钮点击事件
-    void openAuthScriptBtnClicked();    // 打开清卡脚本按钮点击事件
+    void resetCardBtnClicked();      // 卡片复位按钮点击事件
+    void writeCardBtnClicked();      // 写卡按钮点击事件
+    void clearCardBtnClicked();      // 清卡按钮点击事件
+    void openAuthScriptBtnClicked(); // 打开鉴权脚本按钮点击事件
+    void akaAuthBtnClicked();        // 鉴权按钮点击事件
 
     /// @brief 上传 Tab
     void uploadPrdBtnClicked();  // 上传个人化数据按钮点击事件

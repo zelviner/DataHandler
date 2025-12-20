@@ -62,5 +62,8 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
         }
     }
 
+    script_info_->aka_auth_filename = "auth.script";
+    script_info_->aka_auth_path     = "./" + script_info_->aka_auth_filename;
+
     return script_info_;
 }

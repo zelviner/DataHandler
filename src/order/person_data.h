@@ -10,9 +10,6 @@ struct PersonDataInfo {
     std::string     path;     // 个人化文件路径
     std::string     header;   // 头信息
     std::string     data;     // 数据
-    std::string     pin1;
-    std::string     ki;
-    std::string     op;
     zel::json::Json json_data;
 };
 

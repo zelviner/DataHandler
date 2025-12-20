@@ -69,10 +69,5 @@ zel::json::Json PersonData::json_data() {
         json[headers[i]] = datas[i];
     }
 
-    person_data_info_->pin1 = json["PIN1"].asString();
-    person_data_info_->ki   = json["KI"].asString();
-    std::string op          = json["OP"].empty() ? json["OPC"] : json["OP"];
-    person_data_info_->op   = op;
-
     return json;
 }

@@ -7,9 +7,11 @@
 #include "task/reset_card.hpp"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
+#include "task/aka_auth.hpp"
 #include "task/generating_records.hpp"
 #include "clear_card_loading.h"
 #include "write_card_loading.h"
+#include "aka_auth_loading.h"
 #include "dms/dms.h"
 
 #include <memory>
@@ -69,7 +71,7 @@ MainWindow::MainWindow(QMainWindow *parent)
     init_database();
 
     // 初始化鉴权脚本
-    init_auth_script("./auth.script");
+    init_auth_script("auth.script");
 }
 
 MainWindow::~MainWindow() { delete ui_; }
@@ -179,6 +181,21 @@ void MainWindow::clearCardBtnClicked() {
 }
 
 void MainWindow::openAuthScriptBtnClicked() { QDesktopServices::openUrl(QUrl::fromLocalFile(QString("./auth.script"))); }
+
+void MainWindow::akaAuthBtnClicked() {
+    // 弹出清卡加载窗口, 并停留
+    AkaAuthLoading *aka_auth_loading = new AkaAuthLoading(this);
+    aka_auth_loading->show();
+
+    // 创建工作线程
+    auto aka_auth = new AkaAuth(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_, false);
+    // 连接信号槽
+    connect(aka_auth, &AkaAuth::failure, aka_auth_loading, &AkaAuthLoading::failure);
+    connect(aka_auth, &AkaAuth::success, aka_auth_loading, &AkaAuthLoading::success);
+
+    // 启动工作线程
+    aka_auth->start();
+}
 
 void MainWindow::uploadPrdBtnClicked() {
     loading_->setWindowTitle("正在上传个人化数据...");
@@ -592,6 +609,7 @@ void MainWindow::init_ui() {
 
     ui_->clear_card_btn->setDisabled(true);
     ui_->write_card_btn->setDisabled(true);
+    ui_->start_auth_btn->setDisabled(true);
 }
 
 void MainWindow::init_signal_slot() {
@@ -619,9 +637,12 @@ void MainWindow::init_signal_slot() {
     connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
     connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
     connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
+    connect(ui_->open_auth_btn, &QPushButton::clicked, this, &MainWindow::openAuthScriptBtnClicked);
+    connect(ui_->start_auth_btn, &QPushButton::clicked, this, &MainWindow::akaAuthBtnClicked);
+
+    // 上传
     connect(ui_->upload_prd_btn, &QPushButton::clicked, this, &MainWindow::uploadPrdBtnClicked);
     connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
-    connect(ui_->open_auth_btn, &QPushButton::clicked, this, &MainWindow::openAuthScriptBtnClicked);
 
     // 制表
     connect(ui_->finance_select_generate_file_btn, &QPushButton::clicked, this, &MainWindow::selectFinanceGeneratePathBtnClicked);
@@ -673,9 +694,13 @@ void MainWindow::init_config(const std::string &config_file) {
         ini_.set("scsc_card_reader", "card_reader_3", "192.168.1.31:10004");
         ini_.set("scsc_card_reader", "card_reader_4", "192.168.1.31:10005");
 
-        ini_.save(config_file);
+        if (!ini_.save(config_file)) {
+            QMessageBox::critical(this, "错误", "配置文件保存失败");
+        }
     } else {
-        ini_.load(config_file);
+        if (!ini_.load(config_file)) {
+            QMessageBox::critical(this, "错误", "配置文件加载失败");
+        }
     }
 }
 
@@ -784,6 +809,11 @@ run_gp_apdu = func (apdu) {
         gr = "00C00000" + resp.sw2 -> "*9000" 
         return gr       
     }
+	
+	if resp.sw1 == "67" {
+		gr = apdu.mid(0, apdu.len() - 2) + resp.sw2 -> "*9000"
+		return gr
+	}
 
     if resp.sw == "9000" {
         return resp
@@ -843,7 +873,8 @@ authentication = func (SQN) {
         {"value": "5553494D", "length": 4, "tag": "50"}
     ] 
     */
-    tlvs = tlv.parse(("00B2010426" -> "*9000").data)
+	resp = run_gp_apdu("00B2010426")
+    tlvs = tlv.parse(resp.data)
     
     AID = {}
     for i = 0; i < tlvs.len(); i++ {
@@ -933,6 +964,10 @@ activate_pin = func () {
 }
 
 // ------------------------------------------ 脚本开始 ------------------------------
+atr = RST -> null
+if atr.mid(atr.len() - 4, 4) == "9000" {
+	panic("card is not personlize")
+}
 // activate_pin()
 
 /*if !verify_pin() {
@@ -1028,6 +1063,7 @@ void MainWindow::show_info() {
     ui_->r5_line->setText("96");
 
     ui_->ds_check_box->setChecked(script_info_->has_ds);
+    ui_->start_auth_btn->setDisabled(false);
 }
 
 void MainWindow::switch_language(const QString &language_file) {
