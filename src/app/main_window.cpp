@@ -809,11 +809,6 @@ run_gp_apdu = func (apdu) {
         gr = "00C00000" + resp.sw2 -> "*9000" 
         return gr       
     }
-	
-	if resp.sw1 == "67" {
-		gr = apdu.mid(0, apdu.len() - 2) + resp.sw2 -> "*9000"
-		return gr
-	}
 
     if resp.sw == "9000" {
         return resp
@@ -855,6 +850,16 @@ bytes_to_hex = func (bytes) {
     return hex
 }
 
+// tlv_find_tag 在TLV数据中查找指定标签的TLV项
+tlv_find_tag = func (tlvs, tag) {
+    for t in tlvs {
+        if t.tag == tag {
+            return t 
+        }
+    }
+    return null
+}
+
 // authentication 鉴权过程
 authentication = func (SQN) {
     atr = RST -> null
@@ -863,28 +868,25 @@ authentication = func (SQN) {
     run_gp_apdu("00A40004023F00") 
 
     // 2. 选择 EF.DIR
-    run_gp_apdu("00A40004022F00")
+    resp = run_gp_apdu("00A40004022F00")
 
+    // 2.1 读取 EF.DIR
+    tlvs = tlv.parse(resp.data)
+    file_descriptor = tlv_find_tag(tlvs, "82").value
+    record_length = file_descriptor.mid(6,2)
+    resp = "00B20104" + record_length -> "*9000"
+
+    
     // 3. 获取 USIM AID
     /* tlv.parse(tlv_data) 解析TLV数据, 返回列表 
-    tlvs = [
-        {"value": "4F10A0000000871002FF49FFFF89040B00FF50045553494D", "length": 24, "tag": "61"}, 
-        {"value": "A0000000871002FF49FFFF89040B00FF", "length": 16, "tag": "4F"}, 
-        {"value": "5553494D", "length": 4, "tag": "50"}
-    ] 
+        tlvs = [
+            {"value": "4F10A0000000871002FF49FFFF89040B00FF50045553494D", "length": 24, "tag": "61"}, 
+            {"value": "A0000000871002FF49FFFF89040B00FF", "length": 16, "tag": "4F"}, 
+            {"value": "5553494D", "length": 4, "tag": "50"}
+        ] 
     */
-	resp = run_gp_apdu("00B2010426")
     tlvs = tlv.parse(resp.data)
-    
-    AID = {}
-    for i = 0; i < tlvs.len(); i++ {
-        if tlvs[i].tag == "4F" {
-            AID = tlvs[i]
-            break
-        }
-    }
-
-    // 4. 选择 USIM AID
+    AID = tlv_find_tag(tlvs, "4F")
     run_gp_apdu("00A40404" + AID.length.toHexString() + AID.value)
 
     // 5. AKA 鉴权
@@ -965,16 +967,13 @@ activate_pin = func () {
 
 // ------------------------------------------ 脚本开始 ------------------------------
 atr = RST -> null
-if atr.mid(atr.len() - 4, 4) == "9000" {
-	panic("card is not personlize")
+if atr.mid(atr.len() -4, 4) == "9000" {
+    panic("The cards are not personalized")
 }
-// activate_pin()
 
-/*if !verify_pin() {
+if !verify_pin() {
     panic("PIN verification failed")
-} else {
-    print("PIN verification successful")
-}*/
+} 
 
 // 首次鉴权
 SQN = "000000000020"
