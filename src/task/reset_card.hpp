@@ -6,12 +6,12 @@
 #include <qmetaobject>
 #include <qqueue>
 #include <zel/core.h>
-#include <card_device/data_handler/data_handler.h>
+#include <card_device/card_device.h>
 
 class ResetCard : public QThread {
     Q_OBJECT
   public:
-    explicit ResetCard(int reader_id, const std::shared_ptr<card_device::DataHandler> &data_handler, QObject *parent = nullptr)
+    explicit ResetCard(int reader_id, const DATA_HANDLER &data_handler, QObject *parent = nullptr)
         : QThread(parent)
         , reader_id_(reader_id)
         , data_handler_(data_handler) {}
@@ -23,10 +23,10 @@ class ResetCard : public QThread {
   protected:
     void run() override {
         try {
-            data_handler_->selectCardReader(reader_id_);
-
-            auto atr = data_handler_->resetCardReader(true);
-            emit resetSuccess(QString::fromStdString(atr));
+            DH_CardReader(data_handler_, reader_id_);
+            char atr[1024];
+            DH_ResetCardReader(data_handler_, true, atr, sizeof(atr));
+            emit resetSuccess(atr);
         } catch (const std::exception &e) {
             emit resetFailure("复位卡片失败，请检查读卡器是否连接正确。");
         }
@@ -40,7 +40,7 @@ class ResetCard : public QThread {
     }
 
   private:
-    int                                       reader_id_;
-    std::shared_ptr<card_device::DataHandler> data_handler_;
-    QString                                   atr_;
+    int          reader_id_;
+    DATA_HANDLER data_handler_;
+    QString      atr_;
 };

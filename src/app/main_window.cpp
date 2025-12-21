@@ -714,7 +714,7 @@ void MainWindow::init_logger(const std::string &log_file) {
 }
 
 void MainWindow::init_card_reader() {
-    data_handler_ = std::make_shared<card_device::DataHandler>();
+    data_handler_ = DH_Create();
 
     int                      reader_type = ui_->reader_type_combo_box->currentIndex();
     std::vector<std::string> connect_infos;
@@ -745,12 +745,25 @@ void MainWindow::init_card_reader() {
     int protocol = ui_->card_protocol_combo_box->currentIndex();
 
     try {
-        auto reader_names = data_handler_->initialize(reader_type, connect_infos);
-        data_handler_->cardProtocol(protocol);
+        const char *readers[16]  = {};
+        int         reader_count = connect_infos.size();
+        for (int i = 0; i < reader_count; i++) {
+            readers[i] = connect_infos[i].c_str();
+        }
+
+        bool ret = DH_Initialize(data_handler_, reader_type, readers, &reader_count);
+        if (!ret) {
+            throw std::exception();
+        }
+
+        ret = DH_CardProtocol(data_handler_, protocol);
+        if (!ret) {
+            throw std::exception();
+        }
 
         ui_->reader_combo_box->clear();
-        for (auto reader_name : reader_names) {
-            ui_->reader_combo_box->addItem(reader_name.c_str());
+        for (int i = 0; i < reader_count; i++) {
+            ui_->reader_combo_box->addItem(readers[i]);
         }
 
         ui_->reset_card_btn->setDisabled(false);

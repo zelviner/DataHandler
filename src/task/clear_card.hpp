@@ -7,7 +7,7 @@
 #include <qcoreapplication>
 #include <qthread>
 #include <zel/core.h>
-#include <card_device/data_handler/data_handler.h>
+#include <card_device/card_device.h>
 #include <qqueue>
 
 // 自定义的工作线程类
@@ -18,7 +18,7 @@ class ClearCard : public QThread {
     enum Type { CONNECT, START, CLEAR, FINISH };
 
     ClearCard(const std::shared_ptr<ScriptInfo> &script_info, const std::shared_ptr<PersonDataInfo> &person_data_info, int reader_id,
-              const std::shared_ptr<card_device::DataHandler> &data_handler, bool convert = true)
+              const DATA_HANDLER &data_handler, bool convert = true)
         : script_info_(script_info)
         , person_data_info_(person_data_info)
         , reader_id_(reader_id)
@@ -32,10 +32,9 @@ class ClearCard : public QThread {
 
   protected:
     void run() override {
-        data_handler_->selectCardReader(reader_id_);
-        data_handler_->cardCallback(&ClearCard::callback_thunk, this);
-
-        data_handler_->persoData(person_data_info_->path, script_info_->has_ds);
+        DH_CardReader(data_handler_, reader_id_);
+        DH_CardCallback(data_handler_, &ClearCard::callback_thunk, this);
+        DH_PersoData(data_handler_, person_data_info_->path.c_str(), script_info_->has_ds);
 
         // 清卡
         emit success(START, QString::fromStdString(duration_), "");
@@ -45,9 +44,11 @@ class ClearCard : public QThread {
         type_      = CLEAR;
 
         // 执行清卡脚本
-        if (!data_handler_->run(script_info_->clear_path, convert_)) {
+        if (!DH_Run(data_handler_, script_info_->clear_path.c_str(), convert_)) {
             emit failure(type_, "清卡脚本执行失败");
-            log_error(data_handler_->error().c_str());
+            char error[1024];
+            DH_GetLastError(data_handler_, error, sizeof(error));
+            log_error(error);
             return;
         }
 
@@ -92,12 +93,12 @@ class ClearCard : public QThread {
     }
 
   private:
-    std::shared_ptr<ScriptInfo>               script_info_;
-    std::shared_ptr<PersonDataInfo>           person_data_info_;
-    int                                       reader_id_;
-    std::shared_ptr<card_device::DataHandler> data_handler_;
-    QQueue<QString>                           results_; // 存储回调结果
-    Type                                      type_;
-    std::string                               duration_;
-    bool                                      convert_; // 转换为新脚本格式
+    std::shared_ptr<ScriptInfo>     script_info_;
+    std::shared_ptr<PersonDataInfo> person_data_info_;
+    int                             reader_id_;
+    DATA_HANDLER                    data_handler_;
+    QQueue<QString>                 results_; // 存储回调结果
+    Type                            type_;
+    std::string                     duration_;
+    bool                            convert_; // 转换为新脚本格式
 };

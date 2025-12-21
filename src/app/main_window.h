@@ -13,7 +13,7 @@
 #include <qtranslator>
 #include <zel/core.h>
 #include <zel/myorm.h>
-#include <card_device/data_handler/data_handler.h>
+#include <card_device/card_device.h>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -123,12 +123,12 @@ class MainWindow : public QMainWindow {
     QTranslator    translator_;    // 翻译器
     QString        current_lang_ = "zh_CN";
 
-    zel::utility::Ini                         ini_;              // 配置文件
-    std::shared_ptr<Path>                     path_;             // 路径
-    std::shared_ptr<OrderInfo>                order_info_;       // 订单信息
-    std::shared_ptr<PersonDataInfo>           person_data_info_; // 个人化信息
-    std::shared_ptr<ScriptInfo>               script_info_;      // 脚本信息
-    std::shared_ptr<zel::myorm::Database>     finance_db_;       // 金融数据库
-    std::shared_ptr<zel::myorm::Database>     telecom_db_;       // 电信数据库
-    std::shared_ptr<card_device::DataHandler> data_handler_;     // 读卡器数据处理器
+    zel::utility::Ini                     ini_;              // 配置文件
+    std::shared_ptr<Path>                 path_;             // 路径
+    std::shared_ptr<OrderInfo>            order_info_;       // 订单信息
+    std::shared_ptr<PersonDataInfo>       person_data_info_; // 个人化信息
+    std::shared_ptr<ScriptInfo>           script_info_;      // 脚本信息
+    std::shared_ptr<zel::myorm::Database> finance_db_;       // 金融数据库
+    std::shared_ptr<zel::myorm::Database> telecom_db_;       // 电信数据库
+    DATA_HANDLER                          data_handler_;     // 读卡器数据处理器
 };
