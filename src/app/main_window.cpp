@@ -74,7 +74,10 @@ MainWindow::MainWindow(QMainWindow *parent)
     init_auth_script("auth.script");
 }
 
-MainWindow::~MainWindow() { delete ui_; }
+MainWindow::~MainWindow() {
+    DH_Destroy(data_handler_);
+    delete ui_;
+}
 
 void MainWindow::chineseLanguageAction() { switch_language("zh_CN"); }
 
@@ -659,7 +662,7 @@ void MainWindow::init_signal_slot() {
 
 void MainWindow::init_config(const std::string &config_file) {
     if (!ini_.exists(config_file)) {
-        ini_.set("log", "level", 0);
+        ini_.set("log", "level", 3);
 
         ini_.set("mysql", "host", "127.0.0.1");
         ini_.set("mysql", "port", "3306");
