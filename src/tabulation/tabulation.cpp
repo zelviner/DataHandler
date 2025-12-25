@@ -91,22 +91,9 @@ bool Tabulation::financeRecords(const std::string &order_number, const std::stri
         data.start_iccid   = result[0].find(min_data_field)->second.asString();
         data.end_iccid     = result[0].find(max_data_field)->second.asString();
 
-        // sql    = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, min_id);
-        // result = finance_db_->query(sql);
-        // if (result.empty()) {
-        //     log_error("query failed, sql: %s", sql.c_str());
-        //     break;
-        // }
-        // data.start_iccid = result[0].find(data_field)->second.asString();
-
-        // sql            = fmt::format("SELECT {} FROM `{}` WHERE ID='{}'", data_field, data.filename, max_id);
-        // result         = finance_db_->query(sql);
-        // data.end_iccid = result[0].find(data_field)->second.asString();
-
+        dr_->header.order_quantity += data.quantity;
         dr_->datas.push_back(data);
     }
-
-    dr_->header.order_quantity = dr_->datas[0].quantity * dr_->datas.size();
 
     return true;
 }

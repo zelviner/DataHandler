@@ -892,7 +892,6 @@ authentication = func (SQN) {
     record_length = file_descriptor.mid(6,2)
     resp = "00B20104" + record_length -> "*9000"
 
-    
     // 3. 获取 USIM AID
     /* tlv.parse(tlv_data) 解析TLV数据, 返回列表 
         tlvs = [
@@ -934,7 +933,7 @@ authentication = func (SQN) {
     AUTH = bytes_to_hex(auth_bytes)
 
     // 7. 发送鉴权命令
-    resp = run_gp_apdu("0088008122" + (RAND.len() / 2).toHexString() + RAND + (AUTH.len() / 2).toHexString() + AUTH + "00").data
+    resp = run_gp_apdu("0088008122" + (RAND.len() / 2).toHexString() + RAND + (AUTH.len() / 2).toHexString() + AUTH).data
     return {
         "resp": resp,
         "AKStar": output.AKStar
@@ -969,7 +968,7 @@ caculate_sqn = func (AUTS, AKStar) {
 
 // 验证 PIN
 verify_pin = func () {
-     resp = "0020000108" + ds.PIN1 + "00" -> null
+     resp = "0020000108" + ds.PIN1 -> null
      print(resp)
      return (resp.sw == "9000" || resp.sw == "6984")
 }
