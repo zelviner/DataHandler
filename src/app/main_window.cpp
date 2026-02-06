@@ -551,7 +551,7 @@ void MainWindow::resetCardSuccess(const QString &atr) {
 
 void MainWindow::init_window() {
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件");
+    setWindowTitle("智能卡生产预处理软件 v3.3.1");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);

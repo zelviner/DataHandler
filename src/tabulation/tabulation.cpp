@@ -181,14 +181,8 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
     telecom_db_->execute(sql);
 
     // 根据文件名排序
-    std::sort(dr_->datas.begin(), dr_->datas.end(), [](const DistributionRecordData &a, const DistributionRecordData &b) {
-        int na = extract_last_number(a.filename);
-        int nb = extract_last_number(b.filename);
-
-        if (na != nb) return na < nb;
-
-        return a.filename < b.filename; 
-    });
+    std::sort(dr_->datas.begin(), dr_->datas.end(),
+              [](const DistributionRecordData &a, const DistributionRecordData &b) { return windows_filename_less(a.filename, b.filename); });
 
     return true;
 }
@@ -269,7 +263,8 @@ void Tabulation::fill_template_with_data(const std::string &output_file) {
     worksheet_.cell(cell_refs_["order_no"]).value(key_map_["order_no"] + dr_->header.order_no);
     worksheet_.cell(cell_refs_["order_quantity"]).value(key_map_["order_quantity"] + std::to_string(dr_->header.order_quantity));
 
-    auto data_ref = cell_refs_["data"];
+    auto data_ref  = cell_refs_["data"];
+    int  start_row = data_ref.row();
     for (size_t i = 0; i < dr_->datas.size(); ++i) {
         const auto &data       = dr_->datas[i];
         int         row_offset = static_cast<int>(i) + 1;
@@ -278,6 +273,14 @@ void Tabulation::fill_template_with_data(const std::string &output_file) {
         worksheet_.cell(offset(data_ref, row_offset, 1)).value(data.quantity);
         worksheet_.cell(offset(data_ref, row_offset, 2)).value(data.start_iccid);
         worksheet_.cell(offset(data_ref, row_offset, 3)).value(data.end_iccid);
+    }
+
+    // 删除多余模板行
+    int last_data_row = start_row + static_cast<int>(dr_->datas.size());
+    int max_row       = worksheet_.highest_row();
+
+    for (int row = max_row; row > last_data_row; --row) {
+        worksheet_.delete_rows(row, 1);
     }
 
     workbook_.save(output_file);
@@ -293,16 +296,53 @@ void Tabulation::exchange_iccid(std::string &iccid) {
     }
 }
 
-int Tabulation::extract_last_number(const std::string &s) {
-    int num = -1;
-    for (int i = s.size() - 1; i >= 0; --i) {
-        if (isdigit(s[i])) {
-            int end = i;
-            while (i >= 0 && isdigit(s[i]))
-                i--;
-            num = std::stoi(s.substr(i + 1, end - i));
-            break;
+bool Tabulation::windows_filename_less(const std::string &a, const std::string &b) {
+    size_t ia = 0, ib = 0;
+    size_t na = a.size(), nb = b.size();
+
+    while (ia < na && ib < nb) {
+        // 两边都是数字 → 取完整数字段
+        if (std::isdigit(a[ia]) && std::isdigit(b[ib])) {
+            size_t ja = ia;
+            size_t jb = ib;
+
+            // 跳过前导 0（Windows 也是这么干的）
+            while (ja < na && a[ja] == '0')
+                ja++;
+            while (jb < nb && b[jb] == '0')
+                jb++;
+
+            size_t ea = ja;
+            size_t eb = jb;
+
+            while (ea < na && std::isdigit(a[ea]))
+                ea++;
+            while (eb < nb && std::isdigit(b[eb]))
+                eb++;
+
+            size_t lenA = ea - ja;
+            size_t lenB = eb - jb;
+
+            // 位数不同，位数少的更小
+            if (lenA != lenB) return lenA < lenB;
+
+            // 位数相同，逐字符比
+            for (size_t i = 0; i < lenA; ++i) {
+                if (a[ja + i] != b[jb + i]) return a[ja + i] < b[jb + i];
+            }
+
+            // 数值完全相等（如 001 和 1）
+            ia = ea;
+            ib = eb;
+        } else {
+            // 非数字，直接字符比较（Windows 是大小写不敏感，这里保留原始）
+            if (a[ia] != b[ib]) return a[ia] < b[ib];
+
+            ++ia;
+            ++ib;
         }
     }
-    return num;
+
+    // 有一个先结束，短的在前
+    return na < nb;
 }
