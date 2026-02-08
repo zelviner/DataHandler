@@ -32,9 +32,9 @@ class ClearCard : public QThread {
 
   protected:
     void run() override {
-        DH_CardReader(data_handler_, reader_id_);
-        DH_CardCallback(data_handler_, &ClearCard::callback_thunk, this);
-        DH_PersoData(data_handler_, person_data_info_->path.c_str(), script_info_->has_ds);
+        APP_CardReader(data_handler_, reader_id_);
+        APP_CardCallback(data_handler_, &ClearCard::callback_thunk, this);
+        APP_PersoData(data_handler_, person_data_info_->path.c_str(), script_info_->has_ds);
 
         // 清卡
         emit success(START, QString::fromStdString(duration_), "");
@@ -44,10 +44,10 @@ class ClearCard : public QThread {
         type_      = CLEAR;
 
         // 执行清卡脚本
-        if (!DH_Run(data_handler_, script_info_->clear_path.c_str(), convert_)) {
+        if (!APP_Run(data_handler_, script_info_->clear_path.c_str(), convert_)) {
             emit failure(type_, "清卡脚本执行失败");
             char error[1024];
-            DH_GetLastError(data_handler_, error, sizeof(error));
+            APP_GetLastError(data_handler_, error, sizeof(error));
             log_error(error);
             return;
         }

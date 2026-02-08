@@ -32,9 +32,9 @@ class AkaAuth : public QThread {
 
   protected:
     void run() override {
-        DH_CardReader(data_handler_, reader_id_);
-        DH_CardCallback(data_handler_, &AkaAuth::callback_thunk, this);
-        DH_PersoData(data_handler_, person_data_info_->path.c_str(), script_info_->has_ds);
+        APP_CardReader(data_handler_, reader_id_);
+        APP_CardCallback(data_handler_, &AkaAuth::callback_thunk, this);
+        APP_PersoData(data_handler_, person_data_info_->path.c_str(), script_info_->has_ds);
 
         // 鉴权
         emit success(START, QString::fromStdString(duration_), "");
@@ -44,10 +44,10 @@ class AkaAuth : public QThread {
         type_      = AUTH;
 
         // 执行清卡脚本
-        if (!DH_Run(data_handler_, script_info_->aka_auth_path.c_str(), convert_)) {
+        if (!APP_Run(data_handler_, script_info_->aka_auth_path.c_str(), convert_)) {
             emit failure(type_, "鉴权失败, 请检查卡片是否完成个人化操作");
             char err_msg[1024];
-            DH_GetLastError(data_handler_, err_msg, sizeof(err_msg));
+            APP_GetLastError(data_handler_, err_msg, sizeof(err_msg));
             log_error(err_msg);
             return;
         }

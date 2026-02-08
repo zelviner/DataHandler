@@ -75,7 +75,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 }
 
 MainWindow::~MainWindow() {
-    DH_Destroy(data_handler_);
+    APP_Destroy(data_handler_);
     delete ui_;
 }
 
@@ -717,7 +717,7 @@ void MainWindow::init_logger(const std::string &log_file) {
 }
 
 void MainWindow::init_card_reader() {
-    data_handler_ = DH_Create();
+    data_handler_ = APP_Create();
 
     int                      reader_type = ui_->reader_type_combo_box->currentIndex();
     std::vector<std::string> connect_infos;
@@ -754,12 +754,12 @@ void MainWindow::init_card_reader() {
             readers[i] = connect_infos[i].c_str();
         }
 
-        bool ret = DH_Initialize(data_handler_, reader_type, readers, &reader_count);
+        bool ret = APP_Initialize(data_handler_, reader_type, readers, &reader_count);
         if (!ret) {
             throw std::exception();
         }
 
-        ret = DH_CardProtocol(data_handler_, protocol);
+        ret = APP_CardProtocol(data_handler_, protocol);
         if (!ret) {
             throw std::exception();
         }
