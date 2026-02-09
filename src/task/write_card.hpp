@@ -18,11 +18,11 @@ class WriteCard : public QThread {
     enum Type { CONNECT, BARE_ATR, PREPERSONAL, WHITE_ATR, POSTPERSONAL, CHECK, FINISHED_ATR, FINISH };
 
     WriteCard(const std::shared_ptr<ScriptInfo> &script_info, const std::shared_ptr<PersonDataInfo> &person_data_info, int reader_id,
-              const DATA_HANDLER &data_handler)
+              const CARD_DEVICE &card_device)
         : script_info_(script_info)
         , person_data_info_(person_data_info)
         , reader_id_(reader_id)
-        , data_handler_(data_handler) {}
+        , card_device_(card_device) {}
     ~WriteCard() {}
 
   signals:
@@ -32,23 +32,23 @@ class WriteCard : public QThread {
 
   protected:
     void run() override {
-        APP_CardReader(data_handler_, reader_id_);
-        APP_CardCallback(data_handler_, &WriteCard::callback_thunk, this);
-        APP_PersoData(data_handler_, person_data_info_->path.c_str(), script_info_->has_ds);
+        APP_CardReader(card_device_, reader_id_);
+        APP_CardCallback(card_device_, &WriteCard::callback_thunk, this);
+        APP_PersoData(card_device_, person_data_info_->path.c_str(), script_info_->has_ds);
 
         // 获取裸卡 ATR
         type_ = BARE_ATR;
         char atr[1024];
-        APP_ResetCardReader(data_handler_, true, atr, sizeof(atr));
+        APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
         emit success(type_, "", atr);
 
         // 预个人化
         auto start = std::chrono::steady_clock::now();
         type_      = PREPERSONAL;
-        if (!APP_Run(data_handler_, script_info_->person_path.c_str(), true)) {
+        if (!APP_Run(card_device_, script_info_->person_path.c_str(), true)) {
             emit failure(type_, "预个人化脚本执行失败");
             char err_msg[1024];
-            APP_GetLastError(data_handler_, err_msg, sizeof(err_msg));
+            APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
             log_error(err_msg);
             return;
         }
@@ -61,16 +61,16 @@ class WriteCard : public QThread {
         // 获取白卡 ATR
         type_ = WHITE_ATR;
         memset(atr, 0, sizeof(atr));
-        APP_ResetCardReader(data_handler_, true, atr, sizeof(atr));
+        APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
         emit success(type_, QString::fromStdString(duration_), QString::fromStdString(atr));
 
         // 后个人化
         start = std::chrono::steady_clock::now();
         type_ = POSTPERSONAL;
-        if (!APP_Run(data_handler_, script_info_->post_person_path.c_str(), true)) {
+        if (!APP_Run(card_device_, script_info_->post_person_path.c_str(), true)) {
             emit failure(type_, "后个人化脚本执行失败");
             char err_msg[1024];
-            APP_GetLastError(data_handler_, err_msg, sizeof(err_msg));
+            APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
             log_error(err_msg);
             return;
         }
@@ -83,16 +83,16 @@ class WriteCard : public QThread {
         // 获取成卡 ATR
         type_ = FINISHED_ATR;
         memset(atr, 0, sizeof(atr));
-        APP_ResetCardReader(data_handler_, true, atr, sizeof(atr));
+        APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
         emit success(type_, QString::fromStdString(duration_), QString::fromStdString(atr));
 
         // 检测
         start = std::chrono::steady_clock::now();
         type_ = CHECK;
-        if (!APP_Run(data_handler_, script_info_->check_path.c_str(), true)) {
+        if (!APP_Run(card_device_, script_info_->check_path.c_str(), true)) {
             emit failure(type_, "检测脚本执行失败");
             char err_msg[1024];
-            APP_GetLastError(data_handler_, err_msg, sizeof(err_msg));
+            APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
             log_error(err_msg);
             return;
         }
@@ -140,7 +140,7 @@ class WriteCard : public QThread {
     std::shared_ptr<ScriptInfo>     script_info_;
     std::shared_ptr<PersonDataInfo> person_data_info_;
     int                             reader_id_;
-    DATA_HANDLER                    data_handler_;
+    CARD_DEVICE                     card_device_;
     QQueue<QString>                 results_; // 存储回调结果
     Type                            type_;
     std::string                     duration_;

@@ -18,11 +18,11 @@ class ClearCard : public QThread {
     enum Type { CONNECT, START, CLEAR, FINISH };
 
     ClearCard(const std::shared_ptr<ScriptInfo> &script_info, const std::shared_ptr<PersonDataInfo> &person_data_info, int reader_id,
-              const DATA_HANDLER &data_handler, bool convert = true)
+              const CARD_DEVICE &card_device, bool convert = true)
         : script_info_(script_info)
         , person_data_info_(person_data_info)
         , reader_id_(reader_id)
-        , data_handler_(data_handler)
+        , card_device_(card_device)
         , convert_(convert) {}
 
   signals:
@@ -32,9 +32,9 @@ class ClearCard : public QThread {
 
   protected:
     void run() override {
-        APP_CardReader(data_handler_, reader_id_);
-        APP_CardCallback(data_handler_, &ClearCard::callback_thunk, this);
-        APP_PersoData(data_handler_, person_data_info_->path.c_str(), script_info_->has_ds);
+        APP_CardReader(card_device_, reader_id_);
+        APP_CardCallback(card_device_, &ClearCard::callback_thunk, this);
+        APP_PersoData(card_device_, person_data_info_->path.c_str(), script_info_->has_ds);
 
         // 清卡
         emit success(START, QString::fromStdString(duration_), "");
@@ -44,10 +44,10 @@ class ClearCard : public QThread {
         type_      = CLEAR;
 
         // 执行清卡脚本
-        if (!APP_Run(data_handler_, script_info_->clear_path.c_str(), convert_)) {
+        if (!APP_Run(card_device_, script_info_->clear_path.c_str(), convert_)) {
             emit failure(type_, "清卡脚本执行失败");
             char error[1024];
-            APP_GetLastError(data_handler_, error, sizeof(error));
+            APP_GetLastError(card_device_, error, sizeof(error));
             log_error(error);
             return;
         }
@@ -96,7 +96,7 @@ class ClearCard : public QThread {
     std::shared_ptr<ScriptInfo>     script_info_;
     std::shared_ptr<PersonDataInfo> person_data_info_;
     int                             reader_id_;
-    DATA_HANDLER                    data_handler_;
+    CARD_DEVICE                     card_device_;
     QQueue<QString>                 results_; // 存储回调结果
     Type                            type_;
     std::string                     duration_;

@@ -11,10 +11,10 @@
 class ResetCard : public QThread {
     Q_OBJECT
   public:
-    explicit ResetCard(int reader_id, const DATA_HANDLER &data_handler, QObject *parent = nullptr)
+    explicit ResetCard(int reader_id, const CARD_DEVICE &card_device, QObject *parent = nullptr)
         : QThread(parent)
         , reader_id_(reader_id)
-        , data_handler_(data_handler) {}
+        , card_device_(card_device) {}
 
   signals:
     void resetSuccess(const QString &atr);
@@ -23,9 +23,9 @@ class ResetCard : public QThread {
   protected:
     void run() override {
         try {
-            APP_CardReader(data_handler_, reader_id_);
+            APP_CardReader(card_device_, reader_id_);
             char atr[1024];
-            APP_ResetCardReader(data_handler_, true, atr, sizeof(atr));
+            APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
             emit resetSuccess(atr);
         } catch (const std::exception &e) {
             emit resetFailure("复位卡片失败，请检查读卡器是否连接正确。");
@@ -40,7 +40,7 @@ class ResetCard : public QThread {
     }
 
   private:
-    int          reader_id_;
-    DATA_HANDLER data_handler_;
-    QString      atr_;
+    int         reader_id_;
+    CARD_DEVICE card_device_;
+    QString     atr_;
 };

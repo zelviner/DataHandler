@@ -130,5 +130,5 @@ class MainWindow : public QMainWindow {
     std::shared_ptr<ScriptInfo>           script_info_;      // 脚本信息
     std::shared_ptr<zel::myorm::Database> finance_db_;       // 金融数据库
     std::shared_ptr<zel::myorm::Database> telecom_db_;       // 电信数据库
-    DATA_HANDLER                          data_handler_;     // 读卡器数据处理器
+    CARD_DEVICE                           card_device_;      // 读卡器数据处理器
 };

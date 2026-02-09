@@ -46,7 +46,7 @@ MainWindow::MainWindow(QMainWindow *parent)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
     , script_info_(nullptr)
-    , data_handler_(nullptr) {
+    , card_device_(nullptr) {
     ui_->setupUi(this);
 
     // 初始化窗口
@@ -75,7 +75,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 }
 
 MainWindow::~MainWindow() {
-    APP_Destroy(data_handler_);
+    APP_Destroy(card_device_);
     delete ui_;
 }
 
@@ -135,7 +135,7 @@ void MainWindow::openClearCardBtnClicked() {
 void MainWindow::resetCardBtnClicked() {
     ui_->current_card_line->setText(tr("正在复位..."));
 
-    auto reset_card = new ResetCard(ui_->reader_combo_box->currentIndex(), data_handler_);
+    auto reset_card = new ResetCard(ui_->reader_combo_box->currentIndex(), card_device_);
 
     connect(reset_card, &ResetCard::resetSuccess, this, &MainWindow::resetCardSuccess);
     connect(reset_card, &ResetCard::resetFailure, this, &MainWindow::resetCardFailure);
@@ -149,7 +149,7 @@ void MainWindow::writeCardBtnClicked() {
     write_card_loading->show();
 
     // 创建工作线程
-    auto write_card = new WriteCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_);
+    auto write_card = new WriteCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), card_device_);
 
     // 连接信号槽
     connect(write_card, &WriteCard::failure, write_card_loading, &WriteCardLoading::failure);
@@ -170,7 +170,7 @@ void MainWindow::clearCardBtnClicked() {
     bool script_convert = ui_->script_convert_check_box->isChecked();
 
     // 创建工作线程
-    auto clear_card = new ClearCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_, script_convert);
+    auto clear_card = new ClearCard(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), card_device_, script_convert);
     // 连接信号槽
     connect(clear_card, &ClearCard::failure, clear_card_loading, &ClearCardLoading::failure);
     connect(clear_card, &ClearCard::success, clear_card_loading, &ClearCardLoading::success);
@@ -191,7 +191,7 @@ void MainWindow::akaAuthBtnClicked() {
     aka_auth_loading->show();
 
     // 创建工作线程
-    auto aka_auth = new AkaAuth(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), data_handler_, false);
+    auto aka_auth = new AkaAuth(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), card_device_, false);
     // 连接信号槽
     connect(aka_auth, &AkaAuth::failure, aka_auth_loading, &AkaAuthLoading::failure);
     connect(aka_auth, &AkaAuth::success, aka_auth_loading, &AkaAuthLoading::success);
@@ -717,7 +717,7 @@ void MainWindow::init_logger(const std::string &log_file) {
 }
 
 void MainWindow::init_card_reader() {
-    data_handler_ = APP_Create();
+    card_device_ = APP_Create();
 
     int                      reader_type = ui_->reader_type_combo_box->currentIndex();
     std::vector<std::string> connect_infos;
@@ -754,12 +754,12 @@ void MainWindow::init_card_reader() {
             readers[i] = connect_infos[i].c_str();
         }
 
-        bool ret = APP_Initialize(data_handler_, reader_type, readers, &reader_count);
+        bool ret = APP_Initialize(card_device_, reader_type, readers, &reader_count);
         if (!ret) {
             throw std::exception();
         }
 
-        ret = APP_CardProtocol(data_handler_, protocol);
+        ret = APP_CardProtocol(card_device_, protocol);
         if (!ret) {
             throw std::exception();
         }
