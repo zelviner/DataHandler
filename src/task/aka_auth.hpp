@@ -44,7 +44,7 @@ class AkaAuth : public QThread {
         type_      = AUTH;
 
         // 执行清卡脚本
-        if (!APP_Run(card_device_, script_info_->aka_auth_path.c_str(), convert_)) {
+        if (!APP_RunFile(card_device_, script_info_->aka_auth_path.c_str(), convert_)) {
             emit failure(type_, "鉴权失败, 请检查卡片是否完成个人化操作");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));

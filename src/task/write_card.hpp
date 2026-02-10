@@ -45,7 +45,7 @@ class WriteCard : public QThread {
         // 预个人化
         auto start = std::chrono::steady_clock::now();
         type_      = PREPERSONAL;
-        if (!APP_Run(card_device_, script_info_->person_path.c_str(), true)) {
+        if (!APP_RunFile(card_device_, script_info_->person_path.c_str(), true)) {
             emit failure(type_, "预个人化脚本执行失败");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
@@ -67,7 +67,7 @@ class WriteCard : public QThread {
         // 后个人化
         start = std::chrono::steady_clock::now();
         type_ = POSTPERSONAL;
-        if (!APP_Run(card_device_, script_info_->post_person_path.c_str(), true)) {
+        if (!APP_RunFile(card_device_, script_info_->post_person_path.c_str(), true)) {
             emit failure(type_, "后个人化脚本执行失败");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
@@ -89,7 +89,7 @@ class WriteCard : public QThread {
         // 检测
         start = std::chrono::steady_clock::now();
         type_ = CHECK;
-        if (!APP_Run(card_device_, script_info_->check_path.c_str(), true)) {
+        if (!APP_RunFile(card_device_, script_info_->check_path.c_str(), true)) {
             emit failure(type_, "检测脚本执行失败");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));

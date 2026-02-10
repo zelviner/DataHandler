@@ -44,7 +44,7 @@ class ClearCard : public QThread {
         type_      = CLEAR;
 
         // 执行清卡脚本
-        if (!APP_Run(card_device_, script_info_->clear_path.c_str(), convert_)) {
+        if (!APP_RunFile(card_device_, script_info_->clear_path.c_str(), convert_)) {
             emit failure(type_, "清卡脚本执行失败");
             char error[1024];
             APP_GetLastError(card_device_, error, sizeof(error));
