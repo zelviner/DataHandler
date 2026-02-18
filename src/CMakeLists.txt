@@ -22,11 +22,7 @@ find_package(Qt5LinguistTools REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(xlnt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
-find_package(OpenSSL CONFIG REQUIRED)
 find_package(card_device CONFIG REQUIRED)
-find_package(card_script CONFIG REQUIRED)
-find_package(card_reader CONFIG REQUIRED)
-find_package(zel COMPONENTS core myorm crypto REQUIRED)
 
 # [5] UI 搜索路径 -----------------------------------------------------
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/res/ui)
@@ -61,9 +57,5 @@ target_link_libraries(${APP_NAME} PRIVATE
     fmt::fmt
     xlnt::xlnt
     CURL::libcurl
-    OpenSSL::SSL
-    OpenSSL::Crypto
     card_device::card_device
-    zel::myorm
-    zel::crypto
 )
