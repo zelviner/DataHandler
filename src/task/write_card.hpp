@@ -39,7 +39,7 @@ class WriteCard : public QThread {
         // 获取裸卡 ATR
         type_ = BARE_ATR;
         char atr[1024];
-        APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
+        APP_CardReset(card_device_, true, atr, sizeof(atr));
         emit success(type_, "", atr);
 
         // 预个人化
@@ -61,7 +61,7 @@ class WriteCard : public QThread {
         // 获取白卡 ATR
         type_ = WHITE_ATR;
         memset(atr, 0, sizeof(atr));
-        APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
+        APP_CardReset(card_device_, true, atr, sizeof(atr));
         emit success(type_, QString::fromStdString(duration_), QString::fromStdString(atr));
 
         // 后个人化
@@ -83,7 +83,7 @@ class WriteCard : public QThread {
         // 获取成卡 ATR
         type_ = FINISHED_ATR;
         memset(atr, 0, sizeof(atr));
-        APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
+        APP_CardReset(card_device_, true, atr, sizeof(atr));
         emit success(type_, QString::fromStdString(duration_), QString::fromStdString(atr));
 
         // 检测

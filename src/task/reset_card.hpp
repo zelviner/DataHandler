@@ -25,7 +25,7 @@ class ResetCard : public QThread {
         try {
             APP_CardReader(card_device_, reader_id_);
             char atr[1024];
-            APP_ResetCardReader(card_device_, true, atr, sizeof(atr));
+            APP_CardReset(card_device_, true, atr, sizeof(atr));
             emit resetSuccess(atr);
         } catch (const std::exception &e) {
             emit resetFailure("复位卡片失败，请检查读卡器是否连接正确。");
