@@ -866,16 +866,6 @@ bytes_to_hex = func (bytes) {
     return hex
 }
 
-// tlv_find_tag 在TLV数据中查找指定标签的TLV项
-tlv_find_tag = func (tlvs, tag) {
-    for t in tlvs {
-        if t.tag == tag {
-            return t 
-        }
-    }
-    return null
-}
-
 // authentication 鉴权过程
 authentication = func (SQN) {
     atr = RST -> null
@@ -888,7 +878,7 @@ authentication = func (SQN) {
 
     // 2.1 读取 EF.DIR
     tlvs = tlv.parse(resp.data)
-    file_descriptor = tlv_find_tag(tlvs, "82").value
+    file_descriptor = tlv.find(tlvs, "82").value
     record_length = file_descriptor.mid(6,2)
     resp = "00B20104" + record_length -> "*9000"
 
@@ -901,7 +891,7 @@ authentication = func (SQN) {
         ] 
     */
     tlvs = tlv.parse(resp.data)
-    AID = tlv_find_tag(tlvs, "4F")
+    AID = tlv.find(tlvs, "4F")
     run_gp_apdu("00A40404" + AID.length.toHexString() + AID.value)
 
     // 5. AKA 鉴权
