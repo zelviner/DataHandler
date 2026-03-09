@@ -1,22 +1,12 @@
 #pragma once
 
 #include "path.h"
+#include "order_parser.h"
 #include "person_data.h"
 #include "script.h"
 
 #include <memory>
 #include <qstring>
-
-/// @brief 订单信息结构体
-struct OrderInfo {
-    std::string order_dir_name; // 订单文件夹名称
-    std::string project_number; // 工程单号
-    std::string order_number;   // 订单号
-    std::string project_name;   // 项目名称
-    std::string chip_model;     // 卡片型号
-    std::string rf_code;        // 需求编码
-    std::string script_package; // 脚本包
-};
 
 class Order {
 
@@ -27,15 +17,8 @@ class Order {
     /// @brief 预处理
     bool preProcessing();
 
-    /// @brief 修改
-    bool modify();
-
     /// @brief 处理
     bool processing();
-
-    /// @brief 备份
-    /// @param backup_path 备份路径
-    bool backup(const std::string &backup_path);
 
     /// @brief 显示路径
     void showPath();
@@ -47,21 +30,7 @@ class Order {
     std::shared_ptr<ScriptInfo> scriptInfo();
 
   private:
-    /// @brief 截图文件夹
-    bool screenshot_dir();
-
-    /// @brief 打印文件夹
-    bool print_dir();
-
-    /// @brief 标签数据文件夹
-    bool tag_data_dir();
-
-    std::shared_ptr<OrderInfo> order_info(const std::string &order_dir_name);
-    std::shared_ptr<OrderInfo> order_info_outgoing(const std::string &order_dir_name);
-
-  private:
     std::shared_ptr<Path>           path_;
-    bool                            outgoing_; // 是否是外发数据
     std::shared_ptr<OrderInfo>      order_info_;
     std::shared_ptr<PersonDataInfo> person_data_info_;
     std::shared_ptr<ScriptInfo>     script_info_;

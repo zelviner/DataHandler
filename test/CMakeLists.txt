@@ -24,4 +24,3 @@ endfunction(add_integration_test name)
 add_integration_test(time)
 add_integration_test(mariadb)
 add_integration_test(auth)
-

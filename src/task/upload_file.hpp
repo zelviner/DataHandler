@@ -41,13 +41,6 @@ class UploadFile : public QThread {
                 failure("上传失败", "压缩临时文件夹失败");
                 return;
             }
-
-            // 备份订单
-            Order order(path_);
-            if (!order.backup(ini_["path"]["local_backup_path"])) {
-                failure("上传失败", "备份文件夹失败");
-                return;
-            }
         }
 
         std::string host     = ini_["ftp"]["host"];

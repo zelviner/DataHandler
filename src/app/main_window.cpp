@@ -1,6 +1,5 @@
 #include "main_window.h"
 
-#include "order_window.h"
 #include "tabulation/tabulation.h"
 #include "task/upload_file.hpp"
 #include "task/handle_order.hpp"
@@ -41,7 +40,6 @@ using namespace zel::file_system;
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
     , ui_(new Ui_MainWindow)
-    , order_window_(nullptr)
     , path_(nullptr)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
@@ -91,19 +89,18 @@ void MainWindow::dropEvent(QDropEvent *event) {
     path_                     = std::make_shared<Path>(datagram_path);
     path_->directory          = FilePath::dir(datagram_path);
 
-    auto datagram_format = String::split(FilePath::base(datagram_path), " ");
-    if (datagram_format.size() < 4) {
-        QMessageBox::critical(this, "警告", "未知文件，请拖入星汉总部数据包");
-        return;
-    }
+    loading_->setWindowTitle("订单处理中...");
+    loading_->show();
 
-    // 确认订单
-    order_window_ = new OrderWindow(datagram_format, this);
+    path_->order     = datagram_path;
+    auto handleOrder = new HandleOrder(path_);
 
-    connect(order_window_, &OrderWindow::confirmOrder, this, &MainWindow::confirmOrder);
-    connect(order_window_, &OrderWindow::cancelOrder, this, &MainWindow::cancelOrder);
+    // 连接信号槽
+    connect(handleOrder, &HandleOrder::failure, this, &MainWindow::handleOrderFailure);
+    connect(handleOrder, &HandleOrder::success, this, &MainWindow::handleOrderSuccess);
 
-    order_window_->show();
+    // 启动工作线程
+    handleOrder->start();
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
@@ -205,7 +202,7 @@ void MainWindow::uploadPrdBtnClicked() {
     loading_->show();
 
     // 将个人化数据上传到FTP服务器
-    std::string remote_prd_path = ini_["path"]["remote_prd_path"].asString() + "/" + order_info_->project_number;
+    std::string remote_prd_path = ini_["path"]["remote_prd_path"].asString() + "/" + order_info_->project_name;
     std::string local_prd_path  = path_->data;
     auto        upload_file     = new UploadFile(ini_, local_prd_path, remote_prd_path, false, path_);
 
@@ -412,25 +409,6 @@ void MainWindow::saveBtnClicked() {
     }
 }
 
-void MainWindow::confirmOrder(const std::string &confirm_datagram_dir_name) {
-    order_window_->hide();
-
-    loading_->setWindowTitle("订单处理中...");
-    loading_->show();
-
-    path_->order     = FilePath::join(path_->directory, confirm_datagram_dir_name);
-    auto handleOrder = new HandleOrder(path_);
-
-    // 连接信号槽
-    connect(handleOrder, &HandleOrder::failure, this, &MainWindow::handleOrderFailure);
-    connect(handleOrder, &HandleOrder::success, this, &MainWindow::handleOrderSuccess);
-
-    // 启动工作线程
-    handleOrder->start();
-}
-
-void MainWindow::cancelOrder() { order_window_->hide(); }
-
 void MainWindow::confirmDeleteOrder(const std::string &password) {
     authenticator_->hide();
 
@@ -622,7 +600,7 @@ void MainWindow::init_signal_slot() {
     connect(ui_->english_action, &QAction::triggered, this, &MainWindow::englishLanguageAction);
 
     // 信息 - 订单信息
-    connect(ui_->project_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_number.c_str())); });
+    connect(ui_->project_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_name.c_str())); });
     connect(ui_->order_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_number.c_str())); });
     connect(ui_->project_name_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_name.c_str())); });
     connect(ui_->chip_model_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->chip_model.c_str())); });
@@ -1034,14 +1012,14 @@ void MainWindow::button_disabled(bool disabled) {
 }
 
 void MainWindow::show_info() {
-    ui_->project_number_line->setText(QString(order_info_->project_number.c_str()));
-    ui_->project_number_line->setCursorPosition(0);
     ui_->order_number_line->setText(QString(order_info_->order_number.c_str()));
+    ui_->order_number_line->setCursorPosition(0);
     ui_->project_name_line->setText(QString(order_info_->project_name.c_str()));
-    ui_->chip_model_line->setText(QString(order_info_->chip_model.c_str()));
+    ui_->product_type_line->setText(QString(order_info_->product_type.c_str()));
     ui_->rf_code_line->setText(QString(order_info_->rf_code.c_str()));
     ui_->script_package_line->setText(QString(order_info_->script_package.c_str()));
     ui_->script_package_line->setCursorPosition(0);
+    ui_->chip_model_line->setText(QString(order_info_->chip_model.c_str()));
 
     ui_->person_script_line->setText(QString(script_info_->person_filename.c_str()));
     ui_->person_script_line->setCursorPosition(0);

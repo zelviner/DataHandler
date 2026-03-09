@@ -38,14 +38,6 @@ class HandleOrder : public QThread {
             path_->datagram_order = path_->datagram;
         }
 
-        // 判断是否修改订单
-        if (path_->datagram_order != path_->order) {
-            if (!order.modify()) {
-                emit failure("修改工程单号和订单号失败，请查看日志文件 'DataHandler.log' 了解详细信息");
-                return;
-            }
-        }
-
         // 订单处理
         if (!order.processing()) {
             emit failure("订单处理失败，请查看日志文件 'DataHandler.log' 了解详细信息");

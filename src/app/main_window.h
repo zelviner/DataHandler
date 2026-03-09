@@ -5,7 +5,6 @@
 #include "order/order.h"
 #include "order/person_data.h"
 #include "order/script.h"
-#include "order_window.h"
 #include "loading.h"
 
 #include <memory>
@@ -60,9 +59,6 @@ class MainWindow : public QMainWindow {
     void saveBtnClicked();                      // 保存按钮点击事件
 
   public slots:
-    void confirmOrder(const std::string &confirm_datagram_dir_name);
-    void cancelOrder();
-
     void confirmDeleteOrder(const std::string &password);
     void cancelDeleteOrder();
 
@@ -117,7 +113,6 @@ class MainWindow : public QMainWindow {
 
   private:
     Ui_MainWindow *ui_;            // UI界面
-    OrderWindow   *order_window_;  // 确认订单窗口
     Loading       *loading_;       // 加载窗口
     Authenticator *authenticator_; // 身份验证器
     QTranslator    translator_;    // 翻译器

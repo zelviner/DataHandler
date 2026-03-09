@@ -16,7 +16,7 @@ struct PersonDataInfo {
 class PersonData {
 
   public:
-    PersonData(const std::string &data_path);
+    PersonData(const std::string &data_file);
     ~PersonData();
 
     std::shared_ptr<PersonDataInfo> personDataInfo();
@@ -25,6 +25,6 @@ class PersonData {
     zel::json::Json json_data();
 
   private:
-    std::string                     data_path_;
+    std::string                     data_file_;
     std::shared_ptr<PersonDataInfo> person_data_info_;
 };
