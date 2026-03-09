@@ -70,20 +70,15 @@ bool Order::processing() {
                     log_error("Failed to get order infomation.");
                     return false;
                 }
-                printf("订单编号: %s\n", order_info_->order_number.c_str());
-                printf("订单数量: %d\n", order_info_->quantity);
-                printf("项目名称: %s\n", order_info_->project_name.c_str());
-                printf("产品类型: %s\n", order_info_->product_type.c_str());
-                printf("RF Code: %s\n", order_info_->rf_code.c_str());
-                printf("Script: %s\n", order_info_->script_package.c_str());
-                printf("Chip: %s\n", order_info_->chip_model.c_str());
             }
 
             // 解析个人化数据
-            if (person_data_info_ == nullptr) {
-                if (file.name().find("PostPersoData_") == std::string::npos && file.extension() == ".prd") {
+            // if (person_data_info_ == nullptr) {
+            if (file.name().find("PostPersoData_") == std::string::npos && file.extension() == ".prd") {
+                // 跳过分割后的个人化数据文件
+                if (file.path().find("SPLITED_INP") == std::string::npos && file.path().find("INP1") == std::string::npos) {
                     // 获取首条个人化数据
-                    PersonData person_data(file.path());
+                    PersonData person_data(file.path(), path_->datagram_order + "/SPLITED_INP");
                     person_data_info_ = person_data.personDataInfo();
                     if (person_data_info_ == nullptr) {
                         log_error("Failed to get person data infomation.");
@@ -91,6 +86,7 @@ bool Order::processing() {
                     }
                 }
             }
+            // }
         }
 
         if (dir.exists()) {

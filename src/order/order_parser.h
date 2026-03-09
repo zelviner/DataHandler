@@ -3,7 +3,6 @@
 #include <mupdf/fitz.h>
 #include <memory>
 #include <string>
-#include <vector>
 
 /// @brief 订单信息结构体
 struct OrderInfo {
@@ -16,19 +15,10 @@ struct OrderInfo {
     std::string chip_model;     // 芯片型号
 };
 
-struct PdfChar {
-    float       x;
-    float       y;
-    std::string text;
-};
-
 class OrderParser {
   public:
     std::shared_ptr<OrderInfo> parse(const std::string &pdf);
 
   private:
-    std::vector<std::string> extract_lines(fz_stext_page *page);
-    std::vector<std::string> filter_noise(const std::vector<std::string> &lines);
-    size_t                   find_data_start(const std::vector<std::string> &lines);
-    bool                     is_order_number(const std::string &s);
+    std::shared_ptr<OrderInfo> read_form_fields(fz_context *ctx, fz_document *doc);
 };

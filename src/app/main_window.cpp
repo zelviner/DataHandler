@@ -1012,14 +1012,23 @@ void MainWindow::button_disabled(bool disabled) {
 }
 
 void MainWindow::show_info() {
-    ui_->order_number_line->setText(QString(order_info_->order_number.c_str()));
-    ui_->order_number_line->setCursorPosition(0);
-    ui_->project_name_line->setText(QString(order_info_->project_name.c_str()));
-    ui_->product_type_line->setText(QString(order_info_->product_type.c_str()));
-    ui_->rf_code_line->setText(QString(order_info_->rf_code.c_str()));
-    ui_->script_package_line->setText(QString(order_info_->script_package.c_str()));
-    ui_->script_package_line->setCursorPosition(0);
-    ui_->chip_model_line->setText(QString(order_info_->chip_model.c_str()));
+    if (order_info_ != nullptr) {
+        ui_->order_number_line->setText(QString(order_info_->order_number.c_str()));
+        ui_->order_number_line->setCursorPosition(0);
+        ui_->project_name_line->setText(QString(order_info_->project_name.c_str()));
+        ui_->product_type_line->setText(QString(order_info_->product_type.c_str()));
+        ui_->rf_code_line->setText(QString(order_info_->rf_code.c_str()));
+        ui_->script_package_line->setText(QString(order_info_->script_package.c_str()));
+        ui_->script_package_line->setCursorPosition(0);
+        ui_->chip_model_line->setText(QString(order_info_->chip_model.c_str()));
+    } else {
+        ui_->order_number_line->clear();
+        ui_->project_name_line->clear();
+        ui_->product_type_line->clear();
+        ui_->rf_code_line->clear();
+        ui_->script_package_line->clear();
+        ui_->chip_model_line->clear();
+    }
 
     ui_->person_script_line->setText(QString(script_info_->person_filename.c_str()));
     ui_->person_script_line->setCursorPosition(0);
