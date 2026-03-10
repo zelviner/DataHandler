@@ -19,7 +19,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
         return nullptr;
     }
 
-    auto files = script_dir.files();
+    auto files = script_dir.files(true);
 
     for (auto &file : *files) {
         if (file.name().find("ClearCard") != std::string::npos || file.name().find("Restore") != std::string::npos) {
@@ -50,7 +50,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
             } else {
                 return nullptr;
             }
-        } else {
+        } else if (file.name().find("Perso") != std::string::npos) {
             // 预个人化脚本
             if (file.exists()) {
                 script_info_->person_buffer   = file.read();

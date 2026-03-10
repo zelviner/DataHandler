@@ -53,6 +53,8 @@ bool Order::preProcessing() {
         datagram_dir_name = datagram_file.name();
     }
 
+    datagram_ = FilePath::join(datagram_file.dirPath(), datagram_dir_name);
+
     return true;
 }
 
