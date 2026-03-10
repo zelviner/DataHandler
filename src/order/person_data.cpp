@@ -32,7 +32,7 @@ std::shared_ptr<PersonDataInfo> PersonData::personDataInfo() {
     person_data_info_->json_data = json_data();
 
     // 拆分文件
-    split_file_stream(dest_path_);
+    // split_file_stream(dest_path_);
 
     return person_data_info_;
 }
