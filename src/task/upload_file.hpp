@@ -1,10 +1,7 @@
 #pragma once
 
 #include "utils/utils.h"
-#include "order/order.h"
-#include "order/path.h"
 
-#include <memory>
 #include <qcoreapplication>
 #include <qthread>
 #include <zel/core.h>
@@ -14,12 +11,11 @@ class UploadFile : public QThread {
     Q_OBJECT
 
   public:
-    UploadFile(const zel::utility::Ini &ini, const std::string &local_path, const std::string &remote_path, bool is_temp, std::shared_ptr<Path> path)
+    UploadFile(const zel::utility::Ini &ini, const std::string &local_path, const std::string &remote_path, bool is_temp)
         : ini_(ini)
         , local_path_(local_path)
         , remote_path_(remote_path)
-        , is_temp_(is_temp)
-        , path_(path) {}
+        , is_temp_(is_temp) {}
 
   signals:
     // 信号函数，用于向外界发射信号
@@ -28,20 +24,6 @@ class UploadFile : public QThread {
 
   protected:
     void run() override {
-
-        if (is_temp_) {
-            // 压缩截图文件夹
-            if (!Utils::compressionZipFile(path_->screenshot, true)) {
-                failure("上传失败", "压缩截图文件夹失败");
-                return;
-            }
-
-            // 压缩临时文件夹
-            if (!Utils::compressionZipFile(path_->temp, true)) {
-                failure("上传失败", "压缩临时文件夹失败");
-                return;
-            }
-        }
 
         std::string host     = ini_["ftp"]["host"];
         std::string username = ini_["ftp"]["username"];
@@ -56,9 +38,8 @@ class UploadFile : public QThread {
     }
 
   private:
-    zel::utility::Ini     ini_;
-    std::string           local_path_;
-    std::string           remote_path_;
-    bool                  is_temp_;
-    std::shared_ptr<Path> path_;
+    zel::utility::Ini ini_;
+    std::string       local_path_;
+    std::string       remote_path_;
+    bool              is_temp_;
 };

@@ -50,48 +50,6 @@ zel::json::Json PersonData::json_data() {
     return json;
 }
 
-// bool PersonData::split_file_stream(const std::string &dest_path) {
-
-//     const size_t batch = 10000;
-
-//     File person_data_file(data_file_);
-
-//     std::string header;
-//     if (!person_data_file.readLine(header)) return false;
-
-//     std::string prefix = File(data_file_).prefix();
-
-//     std::string line;
-//     size_t      count      = 0;
-//     size_t      file_index = 1;
-
-//     File out_file("");
-
-//     while (person_data_file.readLine(line)) {
-
-//         if (count % batch == 0) {
-
-//             // if (out_file.isOpen()) out_file.close();
-
-//             std::ostringstream oss;
-//             oss << dest_path << "/" << prefix << "_" << std::setw(4) << std::setfill('0') << file_index++ << ".prd";
-//             printf("split file: %s\n", oss.str().c_str());
-//             out_file = File(oss.str());
-
-//             if (!out_file.create()) return false;
-
-//             out_file.write(header);
-//         }
-
-//         out_file.write(line);
-//         out_file.write("\n");
-
-//         count++;
-//     }
-
-//     return true;
-// }
-
 bool PersonData::split_file_stream(const std::string &dest_path) {
 
     const size_t batch = 10000;
@@ -99,60 +57,49 @@ bool PersonData::split_file_stream(const std::string &dest_path) {
     File person_data_file(data_file_);
 
     std::string header;
-    if (!person_data_file.readLine(header))
-        return false;
+    if (!person_data_file.readLine(header)) return false;
 
-    std::string prefix = File(data_file_).prefix();
+    std::string prefix = person_data_file.prefix();
 
     std::string line;
-    size_t count = 0;
-    size_t file_index = 1;
-
-    File out_file("");
+    size_t      count      = 0;
+    size_t      file_index = 1;
 
     std::string buffer;
     buffer.reserve(batch * 200);
 
     while (person_data_file.readLine(line)) {
 
-        if (count % batch == 0) {
-
-            if (!buffer.empty()) {
-                out_file.write(buffer);
-                buffer.clear();
-            }
-
+        if (count % batch == 0 && count > 0) {
             std::ostringstream oss;
-            oss << dest_path << "/"
-                << prefix << "_"
-                << std::setw(4)
-                << std::setfill('0')
-                << file_index++
-                << ".prd";
+            oss << dest_path << "/" << prefix << "_" << std::setw(2) << std::setfill('0') << file_index++ << ".prd";
 
-            printf("split file: %s\n", oss.str().c_str());
-
-            out_file = File(oss.str());
-
-            if (!out_file.create())
-                return false;
-
-            out_file.write(header);
+            if (!write(oss.str(), buffer)) return false;
+            buffer.clear();
         }
 
         buffer += line;
         buffer += '\n';
 
         count++;
-
-        if (buffer.size() > 1024 * 1024) {
-            out_file.write(buffer);
-            buffer.clear();
-        }
     }
 
-    if (!buffer.empty())
-        out_file.write(buffer);
+    if (!buffer.empty()) {
+        std::ostringstream oss;
+        oss << dest_path << "/" << prefix << "_" << std::setw(2) << std::setfill('0') << file_index << ".prd";
 
+        if (!write(oss.str(), buffer)) return false;
+    }
+
+    return true;
+}
+
+bool PersonData::write(const std::string &filename, const std::string context) {
+
+    auto out_file = File(filename);
+
+    if (!out_file.create()) return false;
+
+    out_file.write(person_data_info_->header + "\n" + context);
     return true;
 }

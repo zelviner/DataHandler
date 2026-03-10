@@ -1,7 +1,6 @@
 #pragma once
 
 #include "order/order.h"
-#include "order/path.h"
 #include "order/person_data.h"
 #include "order/script.h"
 
@@ -17,8 +16,8 @@ class HandleOrder : public QThread {
     Q_OBJECT
 
   public:
-    HandleOrder(std::shared_ptr<Path> &path)
-        : path_(path) {}
+    HandleOrder(const std::string &datagram)
+        : datagram_(datagram) {}
 
   signals:
     // 信号函数，用于向外界发射信号
@@ -27,15 +26,13 @@ class HandleOrder : public QThread {
 
   protected:
     void run() override {
-        Order order(path_);
-        if (FilePath::isFile(path_->datagram)) {
+        Order order(datagram_);
+        if (FilePath::isFile(datagram_)) {
             // 订单预处理
             if (!order.preProcessing()) {
                 emit failure("订单预处理失败，请查看日志文件 'DataHandler.log' 了解详细信息");
                 return;
             }
-        } else {
-            path_->datagram_order = path_->datagram;
         }
 
         // 订单处理
@@ -53,5 +50,5 @@ class HandleOrder : public QThread {
     }
 
   private:
-    std::shared_ptr<Path> path_;
+    std::string datagram_;
 };

@@ -23,8 +23,8 @@ class PersonData {
     std::shared_ptr<PersonDataInfo> personDataInfo();
 
   private:
-    bool            split_file(const std::string &dest_path);
     bool            split_file_stream(const std::string &dest_path);
+    bool            write(const std::string &filename, const std::string context);
     zel::json::Json json_data();
 
   private:

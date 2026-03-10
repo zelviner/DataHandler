@@ -40,7 +40,6 @@ using namespace zel::file_system;
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
     , ui_(new Ui_MainWindow)
-    , path_(nullptr)
     , order_info_(nullptr)
     , person_data_info_(nullptr)
     , script_info_(nullptr)
@@ -86,14 +85,11 @@ void MainWindow::dropEvent(QDropEvent *event) {
     if (urls.empty()) return;
 
     std::string datagram_path = urls.first().toLocalFile().toStdString();
-    path_                     = std::make_shared<Path>(datagram_path);
-    path_->directory          = FilePath::dir(datagram_path);
 
     loading_->setWindowTitle("订单处理中...");
     loading_->show();
 
-    path_->order     = datagram_path;
-    auto handleOrder = new HandleOrder(path_);
+    auto handleOrder = new HandleOrder(datagram_path);
 
     // 连接信号槽
     connect(handleOrder, &HandleOrder::failure, this, &MainWindow::handleOrderFailure);
@@ -109,25 +105,13 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
     }
 }
 
-void MainWindow::openPersonalBtnClicked() {
-    std::string path = path_->script + "/" + script_info_->person_filename;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
-}
+void MainWindow::openPersonalBtnClicked() { QDesktopServices::openUrl(QUrl::fromLocalFile(QString(script_info_->person_path.c_str()))); }
 
-void MainWindow::openPostPersonalBtnClicked() {
-    std::string path = path_->script + "/" + script_info_->post_person_filename;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
-}
+void MainWindow::openPostPersonalBtnClicked() { QDesktopServices::openUrl(QUrl::fromLocalFile(QString(script_info_->post_person_path.c_str()))); }
 
-void MainWindow::openCheckBtnClicked() {
-    std::string path = path_->script + "/" + script_info_->check_filename;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
-}
+void MainWindow::openCheckBtnClicked() { QDesktopServices::openUrl(QUrl::fromLocalFile(QString(script_info_->check_path.c_str()))); }
 
-void MainWindow::openClearCardBtnClicked() {
-    std::string path = path_->script + "/" + script_info_->clear_filename;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QString(path.c_str())));
-}
+void MainWindow::openClearCardBtnClicked() { QDesktopServices::openUrl(QUrl::fromLocalFile(QString(script_info_->clear_path.c_str()))); }
 
 void MainWindow::resetCardBtnClicked() {
     ui_->current_card_line->setText(tr("正在复位..."));
@@ -198,36 +182,36 @@ void MainWindow::akaAuthBtnClicked() {
 }
 
 void MainWindow::uploadPrdBtnClicked() {
-    loading_->setWindowTitle("正在上传个人化数据...");
-    loading_->show();
+    // loading_->setWindowTitle("正在上传个人化数据...");
+    // loading_->show();
 
-    // 将个人化数据上传到FTP服务器
-    std::string remote_prd_path = ini_["path"]["remote_prd_path"].asString() + "/" + order_info_->project_name;
-    std::string local_prd_path  = path_->data;
-    auto        upload_file     = new UploadFile(ini_, local_prd_path, remote_prd_path, false, path_);
+    // // 将个人化数据上传到FTP服务器
+    // std::string remote_prd_path = ini_["path"]["remote_prd_path"].asString() + "/" + order_info_->project_name;
+    // std::string local_prd_path  = path_->data;
+    // auto        upload_file     = new UploadFile(ini_, local_prd_path, remote_prd_path, false, path_);
 
-    // 连接信号槽
-    connect(upload_file, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
-    connect(upload_file, &UploadFile::success, this, &MainWindow::uploadFileSuccess);
+    // // 连接信号槽
+    // connect(upload_file, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
+    // connect(upload_file, &UploadFile::success, this, &MainWindow::uploadFileSuccess);
 
-    // 启动工作线程
-    upload_file->start();
+    // // 启动工作线程
+    // upload_file->start();
 }
 
 void MainWindow::uploadTempBtnClicked() {
-    loading_->setWindowTitle("正在上传临时文件...");
-    loading_->show();
+    // loading_->setWindowTitle("正在上传临时文件...");
+    // loading_->show();
 
-    std::string remote_temp_path = ini_["path"]["remote_temp_path"];
-    std::string local_temp_path  = FilePath::dir(path_->temp);
-    auto        upload_prd       = new UploadFile(ini_, local_temp_path, remote_temp_path, true, path_);
+    // std::string remote_temp_path = ini_["path"]["remote_temp_path"];
+    // std::string local_temp_path  = FilePath::dir(path_->temp);
+    // auto        upload_prd       = new UploadFile(ini_, local_temp_path, remote_temp_path, true, path_);
 
-    // 连接信号槽
-    connect(upload_prd, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
-    connect(upload_prd, &UploadFile::success, this, &MainWindow::uploadFileSuccess);
+    // // 连接信号槽
+    // connect(upload_prd, &UploadFile::failure, this, &MainWindow::uploadFileFailure);
+    // connect(upload_prd, &UploadFile::success, this, &MainWindow::uploadFileSuccess);
 
-    // 启动工作线程
-    upload_prd->start();
+    // // 启动工作线程
+    // upload_prd->start();
 }
 
 void MainWindow::selectFinanceGeneratePathBtnClicked() {

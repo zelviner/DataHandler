@@ -9,13 +9,13 @@ using namespace zel::utility;
 using namespace zel::file_system;
 using namespace zel::crypto;
 
-Order::Order(std::shared_ptr<Path> path)
-    : path_(path) {}
+Order::Order(const std::string &datagram)
+    : datagram_(datagram) {}
 
 Order::~Order() {}
 
 bool Order::preProcessing() {
-    File datagram_file(path_->datagram);
+    File datagram_file(datagram_);
 
     std::string datagram_dir_name = "";
     if (datagram_file.extension() == ".pgp") {
@@ -53,8 +53,6 @@ bool Order::preProcessing() {
         datagram_dir_name = datagram_file.name();
     }
 
-    path_->datagram_order = FilePath::join(path_->directory, datagram_dir_name);
-
     return true;
 }
 
@@ -76,9 +74,9 @@ bool Order::processing() {
             // if (person_data_info_ == nullptr) {
             if (file.name().find("PostPersoData_") == std::string::npos && file.extension() == ".prd") {
                 // 跳过分割后的个人化数据文件
-                if (file.path().find("SPLITED_INP") == std::string::npos && file.path().find("INP1") == std::string::npos) {
+                if (file.dir() == "INP") {
                     // 获取首条个人化数据
-                    PersonData person_data(file.path(), path_->datagram_order + "/SPLITED_INP");
+                    PersonData person_data(file.path(), datagram_ + "/SPLITED_INP");
                     person_data_info_ = person_data.personDataInfo();
                     if (person_data_info_ == nullptr) {
                         log_error("Failed to get person data infomation.");
@@ -105,19 +103,7 @@ bool Order::processing() {
         return true;
     };
 
-    return FilePath::walk(path_->datagram_order, walkFunc, true);
-}
-
-void Order::showPath() {
-    printf("datagram_path: %s\n", path_->datagram.c_str());
-    printf("datagram_order_path: %s\n", path_->datagram_order.c_str());
-    printf("directory_path: %s\n", path_->directory.c_str());
-    printf("data_path: %s\n", path_->data.c_str());
-    printf("temp_path: %s\n", path_->temp.c_str());
-    printf("screenshot_path: %s\n", path_->screenshot.c_str());
-    printf("print_path: %s\n", path_->print.c_str());
-    printf("tag_data_path: %s\n", path_->tag_data.c_str());
-    printf("script_path: %s\n", path_->script.c_str());
+    return FilePath::walk(datagram_, walkFunc, true);
 }
 
 std::shared_ptr<OrderInfo> Order::orderInfo() { return order_info_; }

@@ -2,7 +2,7 @@
 
 #include "authenticator.h"
 #include "ui_main_window.h"
-#include "order/order.h"
+#include "order/order_parser.h"
 #include "order/person_data.h"
 #include "order/script.h"
 #include "loading.h"
@@ -119,7 +119,6 @@ class MainWindow : public QMainWindow {
     QString        current_lang_ = "zh_CN";
 
     zel::utility::Ini                     ini_;              // 配置文件
-    std::shared_ptr<Path>                 path_;             // 路径
     std::shared_ptr<OrderInfo>            order_info_;       // 订单信息
     std::shared_ptr<PersonDataInfo>       person_data_info_; // 个人化信息
     std::shared_ptr<ScriptInfo>           script_info_;      // 脚本信息

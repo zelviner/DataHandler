@@ -1,6 +1,5 @@
 #pragma once
 
-#include "path.h"
 #include "order_parser.h"
 #include "person_data.h"
 #include "script.h"
@@ -11,7 +10,7 @@
 class Order {
 
   public:
-    Order(std::shared_ptr<Path> path);
+    Order(const std::string &datagram);
     ~Order();
 
     /// @brief 预处理
@@ -30,7 +29,7 @@ class Order {
     std::shared_ptr<ScriptInfo> scriptInfo();
 
   private:
-    std::shared_ptr<Path>           path_;
+    std::string                     datagram_;
     std::shared_ptr<OrderInfo>      order_info_;
     std::shared_ptr<PersonDataInfo> person_data_info_;
     std::shared_ptr<ScriptInfo>     script_info_;
