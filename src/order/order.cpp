@@ -74,7 +74,8 @@ bool Order::processing() {
 
             // 解析个人化数据
             if (person_data_info_ == nullptr) {
-                if (file.name().find("PostPersoData_") == std::string::npos && file.extension() == ".prd") {
+                if (file.name().find("PostPersoData_") == std::string::npos && file.extension() == ".prd" && file.dirPath().find("DATA") == std::string::npos) {
+                    printf("file: %s\n", file.path().c_str());
                     // 获取首条个人化数据
                     PersonData person_data(file.path(), datagram_ + "/SPLITED_INP");
                     person_data_info_ = person_data.personDataInfo();
@@ -94,6 +95,18 @@ bool Order::processing() {
                 script_info_ = script.scriptInfo();
                 if (script_info_ == nullptr) {
                     log_error("Failed to get script infomation.");
+                    return false;
+                }
+
+                // 生成自动化预个人化脚本
+                if (!script.autoPersonScript()) {
+                    log_error("Failed to generate auto person script.");
+                    return false;
+                }
+
+                // 生成自动化后个人化脚本
+                if (!script.autoPostPersonScript()) {
+                    log_error("Failed to generate auto post person script.");
                     return false;
                 }
             }

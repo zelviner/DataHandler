@@ -87,47 +87,33 @@ bool Utils::decompressionZipFile(const std::string &file_path, const std::string
     QVector<QZipReader::FileInfo> zipAllFiles = zipReader.fileInfoList();
 
     for (const QZipReader::FileInfo &zipFileInfo : zipAllFiles) {
-        const QString currDir2File = qsave_path + "/" + zipFileInfo.filePath;
-        QFileInfo     fileInfo(currDir2File);
 
-        if (zipFileInfo.isSymLink) {
-            QString destination = QFile::decodeName(zipReader.fileData(zipFileInfo.filePath));
-            if (destination.isEmpty()) {
-                ret = false;
-                continue;
-            }
+        QString fullPath  = QDir(qsave_path).filePath(zipFileInfo.filePath);
+        QString cleanPath = QDir::cleanPath(fullPath);
 
-            if (!QFile::exists(fileInfo.absolutePath())) QDir::root().mkpath(fileInfo.absolutePath());
-            if (!QFile::link(destination, currDir2File)) {
-                ret = false;
-                continue;
-            }
+        if (!cleanPath.startsWith(QDir(qsave_path).absolutePath())) {
+            ret = false;
+            continue;
         }
 
+        QFileInfo fileInfo(cleanPath);
+
         if (zipFileInfo.isDir) {
-            QDir(qsave_path).mkpath(currDir2File);
+            QDir().mkpath(cleanPath);
+            continue;
         }
 
         if (zipFileInfo.isFile) {
-            QByteArray byteArr = zipReader.fileData(zipFileInfo.filePath);
-            if (byteArr.isEmpty()) {
+            QByteArray data = zipReader.fileData(zipFileInfo.filePath);
+            QDir().mkpath(fileInfo.absolutePath());
+            QFile file(cleanPath);
+            if (!file.open(QIODevice::WriteOnly)) {
                 ret = false;
                 continue;
             }
 
-            QFile currFile(currDir2File);
-            if (!QFileInfo(fileInfo.absolutePath()).isDir()) {
-                QDir().mkpath(fileInfo.absolutePath());
-            }
-
-            if (!currFile.open(QIODevice::WriteOnly)) {
-                ret = false;
-                continue;
-            }
-
-            currFile.write(byteArr);
-            currFile.setPermissions(zipFileInfo.permissions);
-            currFile.close();
+            file.write(data);
+            file.close();
         }
     }
     zipReader.close();
