@@ -34,7 +34,7 @@ class WriteCard : public QThread {
     void run() override {
         APP_CardReader(card_device_, reader_id_);
         APP_CardCallback(card_device_, &WriteCard::callback_thunk, this);
-        APP_PersoData(card_device_, person_data_info_->path.c_str(), script_info_->has_ds);
+        APP_PersoDataFile(card_device_, person_data_info_->path.c_str(), script_info_->has_ds);
 
         // 获取裸卡 ATR
         type_ = BARE_ATR;
