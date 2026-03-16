@@ -524,9 +524,9 @@ void MainWindow::runScriptFailure(const QString &err_msg) {
 void MainWindow::runScriptSuccess(const QString &script_name, const QString &result) {
     run_result_ = result.toStdString();
 
-    if (script_name.toStdString().find("ICCID") != std::string::npos) {
+    if (script_name.indexOf("ICCID") != -1 && result.indexOf("失败") == -1) {
         ui_->result_line_edit->setText(swap(result));
-    } else if (script_name.toStdString().find("PAN") != std::string::npos) {
+    } else if (script_name.indexOf("PAN") != -1 && result.indexOf("失败") == -1) {
         QString display_pan;
         for (int i = 0; i < result.length(); i++) {
             if (i % 4 == 0 && i != 0) {
