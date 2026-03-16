@@ -36,7 +36,7 @@ class MainWindow : public QMainWindow {
     void openClearCardBtnClicked();    // 打开清卡脚本按钮点击事件
 
     /// @brief 鉴权 Tab
-    void resetCardBtnClicked();      // 卡片复位按钮点击事件
+    void runScriptBtnClicked();      // 运行脚本按钮点击事件
     void writeCardBtnClicked();      // 写卡按钮点击事件
     void clearCardBtnClicked();      // 清卡按钮点击事件
     void openAuthScriptBtnClicked(); // 打开鉴权脚本按钮点击事件
@@ -75,8 +75,8 @@ class MainWindow : public QMainWindow {
     void generatingRecordFailure();
     void generatingRecordSuccess();
 
-    void resetCardFailure(const QString &err_msg);
-    void resetCardSuccess(const QString &atr);
+    void runScriptFailure(const QString &err_msg);
+    void runScriptSuccess(const QString &script_name, const QString &result);
 
   private:
     /// @brief 初始化窗口
@@ -103,6 +103,9 @@ class MainWindow : public QMainWindow {
     /// @brief 初始化鉴权脚本
     void init_auth_script(const std::string &auth_script_path);
 
+    /// @brief 初始化脚本信息
+    void init_script_info(const std::string &script_json);
+
     void button_disabled(bool disabled);
 
     void show_info();
@@ -110,6 +113,8 @@ class MainWindow : public QMainWindow {
     void switch_language(const QString &language_file);
 
     void retranslate_ui();
+
+    QString swap(QString str);
 
   private:
     Ui_MainWindow *ui_;            // UI界面
@@ -121,7 +126,9 @@ class MainWindow : public QMainWindow {
     zel::utility::Ini                     ini_;              // 配置文件
     std::shared_ptr<OrderInfo>            order_info_;       // 订单信息
     std::shared_ptr<PersonDataInfo>       person_data_info_; // 个人化信息
-    std::shared_ptr<ScriptInfo>           script_info_;      // 脚本信息
+    std::shared_ptr<ScriptInfo>           script_info_;      // 研发脚本信息
+    std::shared_ptr<zel::json::Json>      script_;           // 产业脚本信息
+    std::string                           run_result_;       // 运行脚本结果
     std::shared_ptr<zel::myorm::Database> finance_db_;       // 金融数据库
     std::shared_ptr<zel::myorm::Database> telecom_db_;       // 电信数据库
     CARD_DEVICE                           card_device_;      // 读卡器

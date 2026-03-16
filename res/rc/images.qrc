@@ -3,6 +3,7 @@
      <file>../image/success.png</file>
      <file>../image/failure.png</file>
      <file>../image/waiting.png</file>
+     <file>../image/mynaui--contactless.png</file>
      <file>../image/loading.gif</file>
  </qresource>
  </RCC>

@@ -1,9 +1,8 @@
 #include "main_window.h"
 
 #include "tabulation/tabulation.h"
-#include "task/upload_file.hpp"
 #include "task/handle_order.hpp"
-#include "task/reset_card.hpp"
+#include "task/run_script.hpp"
 #include "task/clear_card.hpp"
 #include "task/write_card.hpp"
 #include "task/aka_auth.hpp"
@@ -52,6 +51,9 @@ MainWindow::MainWindow(QMainWindow *parent)
     // 初始化配置
     init_config("config.ini");
 
+    // 初始化产业部脚本信息
+    init_script_info("scripts.json");
+
     // 初始化UI
     init_ui();
 
@@ -68,7 +70,7 @@ MainWindow::MainWindow(QMainWindow *parent)
     init_database();
 
     // 初始化鉴权脚本
-    init_auth_script("auth.script");
+    init_auth_script("scripts/auth.if");
 }
 
 MainWindow::~MainWindow() {
@@ -113,15 +115,25 @@ void MainWindow::openCheckBtnClicked() { QDesktopServices::openUrl(QUrl::fromLoc
 
 void MainWindow::openClearCardBtnClicked() { QDesktopServices::openUrl(QUrl::fromLocalFile(QString(script_info_->clear_path.c_str()))); }
 
-void MainWindow::resetCardBtnClicked() {
-    ui_->current_card_line->setText(tr("正在复位..."));
+void MainWindow::runScriptBtnClicked() {
+    ui_->result_line_edit->setText(tr("正在读取 ..."));
 
-    auto reset_card = new ResetCard(ui_->reader_combo_box->currentIndex(), card_device_);
+    auto        currentName = ui_->script_type_combo_box->currentText().toStdString();
+    std::string currentPath;
+    for (auto it = script_->begin(); it != script_->end(); it++) {
+        std::string name = (*it)["name"];
+        std::string path = (*it)["path"];
+        if (currentName == name) {
+            currentPath = path;
+        }
+    }
 
-    connect(reset_card, &ResetCard::resetSuccess, this, &MainWindow::resetCardSuccess);
-    connect(reset_card, &ResetCard::resetFailure, this, &MainWindow::resetCardFailure);
+    auto run_script = new RunScript(currentName, currentPath, ui_->reader_combo_box->currentIndex(), card_device_);
 
-    reset_card->start();
+    connect(run_script, &RunScript::success, this, &MainWindow::runScriptSuccess);
+    connect(run_script, &RunScript::failure, this, &MainWindow::runScriptFailure);
+
+    run_script->start();
 }
 
 void MainWindow::writeCardBtnClicked() {
@@ -504,16 +516,39 @@ void MainWindow::generatingRecordSuccess() {
     success_box.exec();
 }
 
-void MainWindow::resetCardFailure(const QString &err_msg) { QMessageBox::critical(this, "复位失败", err_msg); }
+void MainWindow::runScriptFailure(const QString &err_msg) {
+    QMessageBox::critical(this, "读取失败", err_msg);
+    ui_->result_line_edit->clear();
+}
 
-void MainWindow::resetCardSuccess(const QString &atr) {
-    ui_->current_card_line->setText(atr);
-    log_info(atr.toStdString().c_str());
+void MainWindow::runScriptSuccess(const QString &script_name, const QString &result) {
+    run_result_ = result.toStdString();
+
+    if (script_name.toStdString().find("ICCID") != std::string::npos) {
+        ui_->result_line_edit->setText(swap(result));
+    } else if (script_name.toStdString().find("PAN") != std::string::npos) {
+        QString display_pan;
+        for (int i = 0; i < result.length(); i++) {
+            if (i % 4 == 0 && i != 0) {
+                display_pan += "-";
+            }
+
+            if (i > 5 && i < 12) {
+                display_pan += "X";
+            } else {
+                display_pan += result[i];
+            }
+        }
+
+        ui_->result_line_edit->setText(display_pan);
+    } else {
+        ui_->result_line_edit->setText(result);
+    }
 }
 
 void MainWindow::init_window() {
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.4.1");
+    setWindowTitle("智能卡生产预处理软件 v3.4.2");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
@@ -572,6 +607,14 @@ void MainWindow::init_ui() {
     ui_->card_protocol_combo_box->addItem("ISO7816 (电信)");
     ui_->card_protocol_combo_box->addItem("GP (金融)");
 
+    ui_->run_btn->setIcon(QIcon(":/image/mynaui--contactless.png"));
+    ui_->run_btn->setIconSize({22, 22});
+
+    for (auto it = script_->begin(); it != script_->end(); it++) {
+        std::string name = (*it)["name"];
+        ui_->script_type_combo_box->addItem(name.c_str());
+    }
+
     ui_->clear_card_btn->setDisabled(true);
     ui_->write_card_btn->setDisabled(true);
     ui_->start_auth_btn->setDisabled(true);
@@ -601,8 +644,8 @@ void MainWindow::init_signal_slot() {
     connect(ui_->reader_type_combo_box, &QComboBox::currentTextChanged, this, &MainWindow::init_card_reader);
     connect(ui_->write_card_btn, &QPushButton::clicked, this, &MainWindow::writeCardBtnClicked);
     connect(ui_->clear_card_btn, &QPushButton::clicked, this, &MainWindow::clearCardBtnClicked);
-    connect(ui_->reset_card_btn, &QPushButton::clicked, this, &MainWindow::resetCardBtnClicked);
-    connect(ui_->open_auth_btn, &QPushButton::clicked, this, &MainWindow::openAuthScriptBtnClicked);
+    connect(ui_->run_btn, &QPushButton::clicked, this, &MainWindow::runScriptBtnClicked);
+    // connect(ui_->open_auth_btn, &QPushButton::clicked, this, &MainWindow::openAuthScriptBtnClicked);
     connect(ui_->start_auth_btn, &QPushButton::clicked, this, &MainWindow::akaAuthBtnClicked);
 
     // 上传
@@ -731,10 +774,10 @@ void MainWindow::init_card_reader() {
             ui_->reader_combo_box->addItem(readers[i]);
         }
 
-        ui_->reset_card_btn->setDisabled(false);
+        ui_->run_btn->setDisabled(false);
     } catch (std::exception &e) {
         QMessageBox::critical(this, "警告", "读卡器初始化，请检查读卡器是否连接");
-        ui_->reset_card_btn->setDisabled(true);
+        ui_->run_btn->setDisabled(true);
         return;
     }
 }
@@ -977,6 +1020,112 @@ switch result.resp.mid(0,2) {
     ofs.close();
 }
 
+void MainWindow::init_script_info(const std::string &script_json) {
+    zel::json::Json        json;
+    zel::file_system::File script(script_json);
+
+    if (!script.exists()) {
+        auto            path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "atr.if");
+        zel::json::Json atr;
+        atr["name"] = "ATR\t[通用]";
+        atr["path"] = "scripts/atr.if";
+        zel::file_system::File atr_if(path);
+        std::string            content = R"(atr = RST -> null
+print(atr))";
+        atr_if.create();
+        atr_if.write(content);
+
+        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "pan.if");
+        zel::json::Json pan;
+        pan["name"] = "PAN\t[金融]";
+        pan["path"] = "scripts/pan.if";
+        zel::file_system::File pan_if(path);
+        content = R"(RST -> null
+resp = "00A404000E325041592E5359532E4444463031" -> "*9000"
+tlvs = tlv.parse(resp.data)
+aid = tlv.find(tlvs, "4F")
+if type(aid) == "null" {
+	panic("获取AID失败")
+}
+"00A40400" + aid.length.toHexString() + aid.value -> "*9000"
+resp = "00B2051400" -> "*9000"
+tlvs = tlv.parse(resp.data)
+pan = tlv.find(tlvs, "5A")
+if type(pan) == "null" {
+	print("未查询到卡号")
+} else {
+	print(pan.value)
+})";
+        pan_if.create();
+        pan_if.write(content);
+
+        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "iccid.if");
+        zel::json::Json iccid;
+        iccid["name"] = "ICCID\t[电信]";
+        iccid["path"] = "scripts/iccid.if";
+        zel::file_system::File iccid_if(path);
+        content = R"(RST -> null
+"A0A40000023F00" -> null
+"A0A40000022FE2" -> null
+iccid = "A0B000000A" -> null
+if iccid.data == "" {
+	print("获取卡片 ICCID 失败, 返回值:", iccid.sw)
+} else {
+	print(iccid.data)
+})";
+        iccid_if.create();
+        iccid_if.write(content);
+
+        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "imsi.if");
+        zel::json::Json imsi;
+        imsi["name"] = "IMSI\t[电信]";
+        imsi["path"] = "scripts/imsi.if";
+        zel::file_system::File imsi_if(path);
+        content = R"(RST -> null
+"A0A40000027F20" -> null
+"A0A40000026F07" -> null
+imsi = "A0B0000009" -> null
+if imsi.data == "" {
+	print("获取卡片 IMSI 失败, 返回值:", imsi.sw)
+} else {
+	print(imsi.data)
+})";
+        imsi_if.create();
+        imsi_if.write(content);
+
+        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "puk.if");
+        zel::json::Json puk;
+        puk["name"] = "PUK\t[电信]";
+        puk["path"] = "scripts/puk.if";
+        zel::file_system::File puk_if(path);
+        content = R"(RST -> null
+"A0A40000022F00" -> null
+"A0A40000027F20" -> null
+"A0A40000026F78" -> null
+puk = "A0B0000002" -> null
+if puk.data == "" {
+	print("获取卡片 PUK 失败, 返回值:", puk.sw)
+} else {
+	print(puk.data)
+})";
+        puk_if.create();
+        puk_if.write(content);
+
+        zel::json::Json script_array;
+        script_array.append(atr);
+        script_array.append(pan);
+        script_array.append(iccid);
+        script_array.append(imsi);
+        script_array.append(puk);
+
+        script.create();
+        script.write(script_array.str());
+    }
+
+    json.load(script_json);
+    script_ = std::make_shared<zel::json::Json>(json);
+}
+
 void MainWindow::button_disabled(bool disabled) {
     ui_->project_number_btn->setDisabled(disabled);
     ui_->order_number_btn->setDisabled(disabled);
@@ -984,7 +1133,7 @@ void MainWindow::button_disabled(bool disabled) {
     ui_->chip_model_btn->setDisabled(disabled);
     ui_->rf_code_btn->setDisabled(disabled);
     ui_->script_package_btn->setDisabled(disabled);
-    ui_->open_auth_btn->setDisabled(disabled);
+    // ui_->open_auth_btn->setDisabled(disabled);
     ui_->upload_prd_btn->setDisabled(disabled);
     ui_->open_personal_btn->setDisabled(disabled);
     ui_->open_postpersonal_btn->setDisabled(disabled);
@@ -1023,7 +1172,7 @@ void MainWindow::show_info() {
     ui_->clear_script_line->setText(QString(script_info_->clear_filename.c_str()));
     ui_->clear_script_line->setCursorPosition(0);
 
-    ui_->auth_script_line->setText(QString("./auth.script"));
+    // ui_->auth_script_line->setText(QString("./scripts/auth.if"));
 
     ui_->c1_line->setText("0");
     ui_->c2_line->setText("1");
@@ -1054,3 +1203,20 @@ void MainWindow::switch_language(const QString &language_file) {
 }
 
 void MainWindow::retranslate_ui() { ui_->retranslateUi(this); }
+
+QString MainWindow::swap(QString str) {
+    // 长度必须为偶数
+    if (str.size() % 2 != 0) {
+        return QString(); // 返回空串表示非法
+    }
+
+    QString result = str;
+
+    for (int i = 0; i < result.size(); i += 2) {
+        QChar tmp     = result[i];
+        result[i]     = result[i + 1];
+        result[i + 1] = tmp;
+    }
+
+    return result;
+}

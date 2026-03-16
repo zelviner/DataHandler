@@ -766,22 +766,19 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_36">
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="2,10">
+              <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="3,9">
                <item>
-                <widget class="QLabel" name="pin1_8">
+                <widget class="QComboBox" name="script_type_combo_box">
                  <property name="font">
                   <font>
                    <family>微软雅黑</family>
                    <pointsize>12</pointsize>
                   </font>
                  </property>
-                 <property name="text">
-                  <string>当前 ATR</string>
-                 </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="current_card_line">
+                <widget class="QLineEdit" name="result_line_edit">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -799,7 +796,7 @@
               </layout>
              </item>
              <item>
-              <widget class="QPushButton" name="reset_card_btn">
+              <widget class="QPushButton" name="run_btn">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
@@ -807,7 +804,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>复位</string>
+                <string>读取</string>
                </property>
               </widget>
              </item>
@@ -818,7 +815,7 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_6">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="2,10">
+                <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="3,9">
                  <item>
                   <widget class="QLabel" name="pin1_2">
                    <property name="font">
@@ -851,7 +848,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2,10">
+                <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="3,9">
                  <item>
                   <widget class="QLabel" name="ki_2">
                    <property name="font">
@@ -884,7 +881,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_29" stretch="2,10">
+                <layout class="QHBoxLayout" name="horizontalLayout_29" stretch="3,9">
                  <item>
                   <widget class="QLabel" name="op_2">
                    <property name="font">
@@ -965,52 +962,6 @@
            <string>鉴权</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="1,5,0">
-             <item>
-              <widget class="QLabel" name="pin1">
-               <property name="font">
-                <font>
-                 <family>微软雅黑</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>鉴权脚本</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="auth_script_line">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="font">
-                <font>
-                 <family>微软雅黑</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="open_auth_btn">
-               <property name="font">
-                <font>
-                 <family>微软雅黑</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>打开</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_77">
              <item>
