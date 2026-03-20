@@ -105,20 +105,21 @@ bool Script::autoPersonScript() {
     auto clear_script = zel::utility::String::replace(script_info_->clear_buffer, "[ds.SYSPIN]", "0102030405060708");
 
     auto_person.create();
-    script_info_->auto_post_person_buffer += ";Clear\nRST([atr])\n";
+    script_info_->auto_person_buffer += ";Clear\nRST([atr])\n";
 
     // 清卡
     for (auto &atr : script_info_->clear_atrs) {
-        script_info_->auto_post_person_buffer += "if ([atr] == " + atr + ") {\n";
-        script_info_->auto_post_person_buffer += clear_script;
-        script_info_->auto_post_person_buffer += "}\n";
+        script_info_->auto_person_buffer += "if ([atr] == " + atr + ") {\n";
+        script_info_->auto_person_buffer += clear_script;
+        script_info_->auto_person_buffer += "\n}\n";
     }
 
     // 预个人化
-    script_info_->auto_post_person_buffer += "\n;Perso\n";
-    script_info_->auto_post_person_buffer += script_info_->person_buffer;
+    script_info_->auto_person_buffer += "\n;Perso\n";
+    script_info_->auto_person_buffer += script_info_->person_buffer;
 
-    auto_person.write(script_info_->auto_post_person_buffer);
+    auto_person.write(script_info_->auto_person_buffer);
+    script_info_->auto_person_buffer.clear();
 
     return true;
 }
@@ -137,7 +138,7 @@ bool Script::autoPostPersonScript() {
     for (auto &atr : script_info_->finished_atrs) {
         script_info_->auto_post_person_buffer += "if ([atr] == " + atr + ") {\n";
         script_info_->auto_post_person_buffer += script_info_->clear_buffer;
-        script_info_->auto_post_person_buffer += "}\n";
+        script_info_->auto_post_person_buffer += "\n}\n";
     }
 
     // 预个人化
@@ -145,12 +146,13 @@ bool Script::autoPostPersonScript() {
     for (auto &atr : script_info_->bare_atrs) {
         script_info_->auto_post_person_buffer += "RST([atr])\nif ([atr] == " + atr + ") {\n";
         script_info_->auto_post_person_buffer += script_info_->person_buffer;
-        script_info_->auto_post_person_buffer += "}\n";
+        script_info_->auto_post_person_buffer += "\n}\n";
     }
 
     // 后个人化
     script_info_->auto_post_person_buffer += "\n\n;PostPerso\n" + script_info_->post_person_buffer;
 
     auto_post_person.write(script_info_->auto_post_person_buffer);
+    script_info_->auto_post_person_buffer.clear();
     return true;
 }
