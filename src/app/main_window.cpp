@@ -614,10 +614,6 @@ void MainWindow::init_ui() {
         std::string name = (*it)["name"];
         ui_->script_type_combo_box->addItem(name.c_str());
     }
-
-    ui_->clear_card_btn->setDisabled(true);
-    ui_->write_card_btn->setDisabled(true);
-    ui_->start_auth_btn->setDisabled(true);
 }
 
 void MainWindow::init_signal_slot() {
@@ -1133,15 +1129,22 @@ void MainWindow::button_disabled(bool disabled) {
     ui_->chip_model_btn->setDisabled(disabled);
     ui_->rf_code_btn->setDisabled(disabled);
     ui_->script_package_btn->setDisabled(disabled);
-    // ui_->open_auth_btn->setDisabled(disabled);
     ui_->upload_prd_btn->setDisabled(disabled);
     ui_->open_personal_btn->setDisabled(disabled);
     ui_->open_postpersonal_btn->setDisabled(disabled);
     ui_->open_check_btn->setDisabled(disabled);
     ui_->open_clear_btn->setDisabled(disabled);
-    ui_->write_card_btn->setDisabled(disabled);
-    ui_->clear_card_btn->setDisabled(disabled);
     ui_->upload_temp_btn->setDisabled(disabled);
+
+    if (person_data_info_ != nullptr && script_info_ != nullptr) {
+        ui_->start_auth_btn->setDisabled(false);
+        ui_->write_card_btn->setDisabled(false);
+        ui_->clear_card_btn->setDisabled(false);
+    } else {
+        ui_->start_auth_btn->setDisabled(true);
+        ui_->write_card_btn->setDisabled(true);
+        ui_->clear_card_btn->setDisabled(true);
+    }
 }
 
 void MainWindow::show_info() {
@@ -1172,8 +1175,6 @@ void MainWindow::show_info() {
     ui_->clear_script_line->setText(QString(script_info_->clear_filename.c_str()));
     ui_->clear_script_line->setCursorPosition(0);
 
-    // ui_->auth_script_line->setText(QString("./scripts/auth.if"));
-
     ui_->c1_line->setText("0");
     ui_->c2_line->setText("1");
     ui_->c3_line->setText("2");
@@ -1187,7 +1188,6 @@ void MainWindow::show_info() {
     ui_->r5_line->setText("96");
 
     ui_->ds_check_box->setChecked(script_info_->has_ds);
-    ui_->start_auth_btn->setDisabled(false);
 }
 
 void MainWindow::switch_language(const QString &language_file) {

@@ -50,6 +50,9 @@ class Script {
     bool autoPostPersonScript();
 
   private:
+    std::string trim_script(const std::string &str);
+
+  private:
     std::shared_ptr<ScriptInfo> script_info_;
     std::string                 script_path_;
 };

@@ -33,7 +33,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
                 if (matches.size() > 0) {
                     script_info_->clear_atrs = zel::utility::String::split(matches[0], ",");
                 }
-                script_info_->clear_buffer   = file.read();
+                script_info_->clear_buffer   = trim_script(file.read());
                 script_info_->clear_filename = file.name();
                 script_info_->clear_path     = file.path();
             } else {
@@ -47,7 +47,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
                 if (matches.size() > 0) {
                     script_info_->finished_atrs = zel::utility::String::split(matches[0], ",");
                 }
-                script_info_->check_buffer   = file.read();
+                script_info_->check_buffer   = trim_script(file.read());
                 script_info_->check_filename = file.name();
                 script_info_->check_path     = file.path();
             } else {
@@ -61,7 +61,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
                 if (matches.size() > 0) {
                     script_info_->white_atrs = zel::utility::String::split(matches[0], ",");
                 }
-                script_info_->post_person_buffer        = file.read();
+                script_info_->post_person_buffer        = trim_script(file.read());
                 script_info_->post_person_filename      = file.name();
                 script_info_->post_person_path          = file.path();
                 script_info_->has_ds                    = script_info_->post_person_buffer.find("ds.") == std::string::npos ? false : true;
@@ -78,7 +78,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
                 if (matches.size() > 0) {
                     script_info_->bare_atrs = zel::utility::String::split(matches[0], ",");
                 }
-                script_info_->person_buffer        = file.read();
+                script_info_->person_buffer        = trim_script(file.read());
                 script_info_->person_filename      = file.name();
                 script_info_->person_path          = file.path();
                 script_info_->auto_person_filename = "Auto_" + file.name();
@@ -155,4 +155,11 @@ bool Script::autoPostPersonScript() {
     auto_post_person.write(script_info_->auto_post_person_buffer);
     script_info_->auto_post_person_buffer.clear();
     return true;
+}
+
+std::string Script::trim_script(const std::string &str) {
+    std::string result = str;
+
+    size_t pos = result.find_last_of(")");
+    return result.substr(0, pos + 1);
 }
