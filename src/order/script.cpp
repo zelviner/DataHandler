@@ -1,9 +1,15 @@
 #include "script.h"
 
 #include <memory>
-#include <zel/core.h>
 
 using namespace zel::file_system;
+
+const std::vector<Script::Rule> Script::rules_ = {
+    {{"ClearCard", "Restore", "reboot"}, Script::Type::CLEAR},
+    {{"Verify", "Check"}, Script::Type::CHECK},
+    {{"PostPerso"}, Script::Type::POST_PERSO},
+    {{"Perso"}, Script::Type::PERSO},
+};
 
 Script::Script(const std::string &script_path)
     : script_info_(nullptr)
@@ -23,69 +29,49 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
 
     std::string line;
     for (auto &file : *files) {
-        line.clear();
+        if (file.extension() != ".txt" || file.name().find("Auto_") != std::string::npos) continue;
 
-        if (file.name().find("ClearCard") != std::string::npos || file.name().find("Restore") != std::string::npos) {
-            // 请卡脚本
-            if (file.exists()) {
-                file.readLine(line);
-                auto matches = zel::utility::String::matches(line, R"(RST\(([^)]*)\))");
-                if (matches.size() > 0) {
-                    script_info_->clear_atrs = zel::utility::String::split(matches[0], ",");
-                }
-                script_info_->clear_buffer   = trim_script(file.read());
-                script_info_->clear_filename = file.name();
-                script_info_->clear_path     = file.path();
-            } else {
-                return nullptr;
-            }
-        } else if (file.name().find("Verify") != std::string::npos || file.name().find("Check") != std::string::npos) {
-            // 检测脚本
-            if (file.exists()) {
-                file.readLine(line);
-                auto matches = zel::utility::String::matches(line, R"(RST\(([^)]*)\))");
-                if (matches.size() > 0) {
-                    script_info_->finished_atrs = zel::utility::String::split(matches[0], ",");
-                }
-                script_info_->check_buffer   = trim_script(file.read());
-                script_info_->check_filename = file.name();
-                script_info_->check_path     = file.path();
-            } else {
-                return nullptr;
-            }
-        } else if (file.name().find("PostPerso") != std::string::npos) {
-            // 后个人化脚本
-            if (file.exists()) {
-                file.readLine(line);
-                auto matches = zel::utility::String::matches(line, R"(RST\(([^)]*)\))");
-                if (matches.size() > 0) {
-                    script_info_->white_atrs = zel::utility::String::split(matches[0], ",");
-                }
-                script_info_->post_person_buffer        = trim_script(file.read());
-                script_info_->post_person_filename      = file.name();
-                script_info_->post_person_path          = file.path();
-                script_info_->has_ds                    = script_info_->post_person_buffer.find("ds.") == std::string::npos ? false : true;
-                script_info_->auto_post_person_filename = "Auto_" + file.name();
-                script_info_->auto_post_person_path     = file.dirPath() + "/" + script_info_->auto_post_person_filename;
-            } else {
-                return nullptr;
-            }
-        } else if (file.name().find("Perso") != std::string::npos) {
-            // 预个人化脚本
-            if (file.exists()) {
-                file.readLine(line);
-                auto matches = zel::utility::String::matches(line, R"(RST\(([^)]*)\))");
-                if (matches.size() > 0) {
-                    script_info_->bare_atrs = zel::utility::String::split(matches[0], ",");
-                }
-                script_info_->person_buffer        = trim_script(file.read());
-                script_info_->person_filename      = file.name();
-                script_info_->person_path          = file.path();
+        auto type = match_type(file.name());
+        if (!type.has_value()) {
+            if (file.name().length() > 30) {
+                if (!process_file(file, script_info_->bare_atrs, script_info_->person_buffer, script_info_->person_filename, script_info_->person_path))
+                    return nullptr;
+
                 script_info_->auto_person_filename = "Auto_" + file.name();
                 script_info_->auto_person_path     = file.dirPath() + "/" + script_info_->auto_person_filename;
-            } else {
-                return nullptr;
             }
+            continue;
+        }
+
+        switch (*type) {
+        case Type::CLEAR:
+            if (!process_file(file, script_info_->clear_atrs, script_info_->clear_buffer, script_info_->clear_filename, script_info_->clear_path))
+                return nullptr;
+            break;
+
+        case Type::CHECK:
+            if (!process_file(file, script_info_->finished_atrs, script_info_->check_buffer, script_info_->check_filename, script_info_->check_path))
+                return nullptr;
+            break;
+
+        case Type::POST_PERSO:
+            if (!process_file(file, script_info_->white_atrs, script_info_->post_person_buffer, script_info_->post_person_filename,
+                              script_info_->post_person_path))
+                return nullptr;
+
+            script_info_->has_ds = script_info_->post_person_buffer.find("ds.") != std::string::npos;
+
+            script_info_->auto_post_person_filename = "Auto_" + file.name();
+            script_info_->auto_post_person_path     = file.dirPath() + "/" + script_info_->auto_post_person_filename;
+            break;
+
+        case Type::PERSO:
+            if (!process_file(file, script_info_->bare_atrs, script_info_->person_buffer, script_info_->person_filename, script_info_->person_path))
+                return nullptr;
+
+            script_info_->auto_person_filename = "Auto_" + file.name();
+            script_info_->auto_person_path     = file.dirPath() + "/" + script_info_->auto_person_filename;
+            break;
         }
     }
 
@@ -135,10 +121,18 @@ bool Script::autoPostPersonScript() {
     script_info_->auto_post_person_buffer += "RST([atr])\n\n;Clear\n";
 
     // 清卡
-    for (auto &atr : script_info_->finished_atrs) {
-        script_info_->auto_post_person_buffer += "if ([atr] == " + atr + ") {\n";
-        script_info_->auto_post_person_buffer += script_info_->clear_buffer;
-        script_info_->auto_post_person_buffer += "\n}\n";
+    for (auto &atr : script_info_->clear_atrs) {
+        if (atr == script_info_->finished_atrs[0]) {
+            script_info_->auto_post_person_buffer += "if ([atr] == " + atr + ") {\n";
+            script_info_->auto_post_person_buffer += script_info_->clear_buffer;
+            script_info_->auto_post_person_buffer += "\n}\n";
+        } else {
+            script_info_->auto_post_person_buffer += "if ([atr] == " + atr + ") {\n";
+            script_info_->auto_post_person_buffer +=
+                "A0A40000023F00(0000)\nA0A40000022FE2(0000)\nA0B000000A([iccid]9000)\nif ([iccid] != FFFFFFFFFFFFFFFFFFFF) {\n";
+            script_info_->auto_post_person_buffer += script_info_->clear_buffer;
+            script_info_->auto_post_person_buffer += "\n}\n}\n";
+        }
     }
 
     // 预个人化
@@ -162,4 +156,33 @@ std::string Script::trim_script(const std::string &str) {
 
     size_t pos = result.find_last_of(")");
     return result.substr(0, pos + 1);
+}
+
+bool Script::process_file(File &file, std::vector<std::string> &atrs, std::string &buffer, std::string &filename, std::string &path) {
+    if (!file.exists()) return false;
+
+    std::string line;
+    file.readLine(line);
+
+    auto matches = zel::utility::String::matches(line, R"(RST\(([^)]*)\))");
+    if (!matches.empty()) {
+        atrs = zel::utility::String::split(matches[0], ",");
+    }
+
+    buffer   = trim_script(file.read());
+    filename = file.name();
+    path     = file.path();
+
+    return true;
+}
+
+std::optional<Script::Type> Script::match_type(const std::string &name) {
+    for (const auto &rule : rules_) {
+        for (const auto &kw : rule.keywords) {
+            if (name.find(kw) != std::string::npos) {
+                return rule.type;
+            }
+        }
+    }
+    return std::nullopt;
 }

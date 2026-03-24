@@ -548,7 +548,7 @@ void MainWindow::runScriptSuccess(const QString &script_name, const QString &res
 
 void MainWindow::init_window() {
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.4.2");
+    setWindowTitle("智能卡生产预处理软件 v3.4.3");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);

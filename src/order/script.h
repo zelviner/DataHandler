@@ -3,6 +3,8 @@
 #include <memory>
 #include <qstring>
 #include <vector>
+#include <optional>
+#include <zel/core.h>
 
 struct ScriptInfo {
     std::string              person_path;     // 预个人化脚本路径
@@ -41,6 +43,13 @@ struct ScriptInfo {
 
 class Script {
   public:
+    enum class Type { CLEAR, CHECK, POST_PERSO, PERSO };
+    struct Rule {
+        std::vector<std::string> keywords;
+        Type                     type;
+    };
+
+  public:
     Script(const std::string &script_path);
     ~Script();
 
@@ -51,8 +60,11 @@ class Script {
 
   private:
     std::string trim_script(const std::string &str);
+    bool        process_file(zel::file_system::File &file, std::vector<std::string> &atrs, std::string &buffer, std::string &filename, std::string &path);
+    std::optional<Type> match_type(const std::string &name);
 
   private:
-    std::shared_ptr<ScriptInfo> script_info_;
-    std::string                 script_path_;
+    std::shared_ptr<ScriptInfo>    script_info_;
+    std::string                    script_path_;
+    static const std::vector<Rule> rules_;
 };

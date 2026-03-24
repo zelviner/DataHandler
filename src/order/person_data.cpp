@@ -10,9 +10,8 @@ using namespace zel::file_system;
 using namespace zel::crypto;
 using namespace zel::utility;
 
-PersonData::PersonData(const std::string &data_file, const std::string &dest_path)
+PersonData::PersonData(const std::string &data_file)
     : data_file_(data_file)
-    , dest_path_(dest_path)
     , person_data_info_(nullptr) {}
 
 PersonData::~PersonData() {}

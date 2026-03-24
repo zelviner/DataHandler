@@ -17,7 +17,7 @@ struct PersonDataInfo {
 class PersonData {
 
   public:
-    PersonData(const std::string &data_file, const std::string &dest_path);
+    PersonData(const std::string &data_file);
     ~PersonData();
 
     std::shared_ptr<PersonDataInfo> personDataInfo();
@@ -29,6 +29,5 @@ class PersonData {
 
   private:
     std::string                     data_file_;
-    std::string                     dest_path_;
     std::shared_ptr<PersonDataInfo> person_data_info_;
 };

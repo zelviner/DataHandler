@@ -75,9 +75,8 @@ bool Order::processing() {
             // 解析个人化数据
             if (person_data_info_ == nullptr) {
                 if (file.name().find("PostPersoData_") == std::string::npos && file.extension() == ".prd" && file.dirPath().find("DATA") == std::string::npos) {
-                    printf("file: %s\n", file.path().c_str());
                     // 获取首条个人化数据
-                    PersonData person_data(file.path(), datagram_ + "/SPLITED_INP");
+                    PersonData person_data(file.path());
                     person_data_info_ = person_data.personDataInfo();
                     if (person_data_info_ == nullptr) {
                         log_error("Failed to get person data infomation.");
@@ -89,7 +88,7 @@ bool Order::processing() {
 
         if (dir.exists()) {
             // 解析项目脚本包
-            if (dir.name().find("RD_") != std::string::npos) {
+            if (dir.name().find("RD_") != std::string::npos || dir.name().find("BT_") != std::string::npos || dir.name().find("RD_") != std::string::npos) {
                 // 获取脚本信息
                 Script script(dir.path());
                 script_info_ = script.scriptInfo();
