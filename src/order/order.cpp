@@ -6,7 +6,7 @@
 #include <zel/crypto.h>
 
 using namespace zel::utility;
-using namespace zel::file_system;
+using namespace zel::fs;
 using namespace zel::crypto;
 
 Order::Order(const std::string &datagram)
@@ -19,7 +19,7 @@ bool Order::preProcessing() {
 
     std::string datagram_dir_name = "";
     if (datagram_file.extension() == ".pgp") {
-        auto datagram_zip_path = FilePath::join(datagram_file.dirPath(), datagram_file.prefix());
+        auto datagram_zip_path = join(datagram_file.dirPath(), datagram_file.prefix());
         datagram_dir_name      = datagram_file.prefix();
         int pos                = datagram_dir_name.rfind(".zip");
         if (pos == int(std::string::npos)) return false;
@@ -35,7 +35,7 @@ bool Order::preProcessing() {
         }
 
         // 解压数据包
-        if (!Utils::decompressionZipFile(datagram_zip_path, FilePath::join(datagram_file.dirPath(), datagram_dir_name), true)) {
+        if (!Utils::decompressionZipFile(datagram_zip_path, join(datagram_file.dirPath(), datagram_dir_name), true)) {
             log_error("Failed to unzip the packet: %s", datagram_zip_path.c_str());
             return false;
         }
@@ -44,7 +44,7 @@ bool Order::preProcessing() {
         datagram_dir_name = datagram_file.prefix();
 
         // 解压数据包
-        if (!Utils::decompressionZipFile(datagram_file.path(), FilePath::join(datagram_file.dirPath(), datagram_dir_name), false)) {
+        if (!Utils::decompressionZipFile(datagram_file.path(), join(datagram_file.dirPath(), datagram_dir_name), false)) {
             log_debug("datagram_file: %s, datagram_dir_name: %s", datagram_file.path().c_str(), datagram_dir_name.c_str());
             log_error("Failed to unzip the packet: %s", datagram_file.path().c_str());
             return false;
@@ -53,15 +53,16 @@ bool Order::preProcessing() {
         datagram_dir_name = datagram_file.name();
     }
 
-    datagram_ = FilePath::join(datagram_file.dirPath(), datagram_dir_name);
+    datagram_ = join(datagram_file.dirPath(), datagram_dir_name);
 
     return true;
 }
 
 bool Order::processing() {
 
-    auto walkFunc = [=](std::string relative_path, Directory dir, File file) -> bool {
-        if (file.exists()) {
+    auto walkFunc = [=](const Entry &entry) -> bool {
+        if (entry.isFile()) {
+            auto file = entry.file();
             // 解析项目信息表
             if (file.name().find("项目信息表") != std::string::npos && file.extension() == ".pdf") {
                 OrderParser order_parser;
@@ -86,9 +87,10 @@ bool Order::processing() {
             }
         }
 
-        if (dir.exists()) {
+        if (entry.isDir()) {
+            auto dir = entry.dir();
             // 解析项目脚本包
-            if (dir.name().find("RD_") != std::string::npos || dir.name().find("BT_") != std::string::npos || dir.name().find("RD_") != std::string::npos) {
+            if (dir.name().find("RD_") != std::string::npos || dir.name().find("BT_") != std::string::npos) {
                 // 获取脚本信息
                 Script script(dir.path());
                 script_info_ = script.scriptInfo();
@@ -114,7 +116,8 @@ bool Order::processing() {
         return true;
     };
 
-    return FilePath::walk(datagram_, walkFunc, true);
+    walk(datagram_, walkFunc, true);
+    return true;
 }
 
 std::shared_ptr<OrderInfo> Order::orderInfo() { return order_info_; }

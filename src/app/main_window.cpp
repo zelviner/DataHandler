@@ -33,9 +33,6 @@
 #include <zel/core.h>
 #include <zel/myorm.h>
 
-using namespace zel::utility;
-using namespace zel::file_system;
-
 MainWindow::MainWindow(QMainWindow *parent)
     : QMainWindow(parent)
     , ui_(new Ui_MainWindow)
@@ -50,27 +47,35 @@ MainWindow::MainWindow(QMainWindow *parent)
 
     // 初始化配置
     init_config("config.ini");
+    QMessageBox::information(this, "提示", "配置文件加载成功!");
 
     // 初始化产业部脚本信息
     init_script_info("scripts.json");
+    QMessageBox::information(this, "提示", "产业化脚本文件加载成功!");
 
     // 初始化UI
     init_ui();
+
+    QMessageBox::information(this, "提示", "UI加载成功!");
 
     // 初始化信号和槽
     init_signal_slot();
 
     // 初始化日志器
     init_logger("DataHandler.log");
+    QMessageBox::information(this, "提示", "日志加载成功!");
 
     // 初始化读卡器
     init_card_reader();
+    QMessageBox::information(this, "提示", "读卡器加载成功!");
 
     // 初始化数据库
     init_database();
+    QMessageBox::information(this, "提示", "数据库加载成功!");
 
     // 初始化鉴权脚本
     init_auth_script("scripts/auth.if");
+    QMessageBox::information(this, "提示", "鉴权脚本加载成功!");
 }
 
 MainWindow::~MainWindow() {
@@ -1017,25 +1022,25 @@ switch result.resp.mid(0,2) {
 }
 
 void MainWindow::init_script_info(const std::string &script_json) {
-    zel::json::Json        json;
-    zel::file_system::File script(script_json);
+    zel::json::Json json;
+    zel::fs::File   script(script_json);
 
     if (!script.exists()) {
-        auto            path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "atr.if");
+        auto            path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "atr.if"));
         zel::json::Json atr;
         atr["name"] = "ATR\t[通用]";
         atr["path"] = "scripts/atr.if";
-        zel::file_system::File atr_if(path);
-        std::string            content = R"(atr = RST -> null
+        zel::fs::File atr_if(path);
+        std::string   content = R"(atr = RST -> null
 print(atr))";
         atr_if.create();
         atr_if.write(content);
 
-        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "pan.if");
+        path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "pan.if"));
         zel::json::Json pan;
         pan["name"] = "PAN\t[金融]";
         pan["path"] = "scripts/pan.if";
-        zel::file_system::File pan_if(path);
+        zel::fs::File pan_if(path);
         content = R"(RST -> null
 resp = "00A404000E325041592E5359532E4444463031" -> "*9000"
 tlvs = tlv.parse(resp.data)
@@ -1055,11 +1060,11 @@ if type(pan) == "null" {
         pan_if.create();
         pan_if.write(content);
 
-        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "iccid.if");
+        path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "iccif.if"));
         zel::json::Json iccid;
         iccid["name"] = "ICCID\t[电信]";
         iccid["path"] = "scripts/iccid.if";
-        zel::file_system::File iccid_if(path);
+        zel::fs::File iccid_if(path);
         content = R"(RST -> null
 "A0A40000023F00" -> null
 "A0A40000022FE2" -> null
@@ -1072,11 +1077,11 @@ if iccid.data == "" {
         iccid_if.create();
         iccid_if.write(content);
 
-        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "imsi.if");
+        path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "imsi.if"));
         zel::json::Json imsi;
         imsi["name"] = "IMSI\t[电信]";
         imsi["path"] = "scripts/imsi.if";
-        zel::file_system::File imsi_if(path);
+        zel::fs::File imsi_if(path);
         content = R"(RST -> null
 "A0A40000027F20" -> null
 "A0A40000026F07" -> null
@@ -1089,11 +1094,11 @@ if imsi.data == "" {
         imsi_if.create();
         imsi_if.write(content);
 
-        path = zel::file_system::FilePath::join(script.dirPath(), "scripts", "puk.if");
+        path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "puk.if"));
         zel::json::Json puk;
         puk["name"] = "PUK\t[电信]";
         puk["path"] = "scripts/puk.if";
-        zel::file_system::File puk_if(path);
+        zel::fs::File puk_if(path);
         content = R"(RST -> null
 "A0A40000022F00" -> null
 "A0A40000027F20" -> null

@@ -6,7 +6,7 @@
 #include <iomanip>
 
 using namespace zel::json;
-using namespace zel::file_system;
+using namespace zel::fs;
 using namespace zel::crypto;
 using namespace zel::utility;
 

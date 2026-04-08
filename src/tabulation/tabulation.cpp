@@ -188,7 +188,7 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
 }
 
 void Tabulation::generatingFinanceRecords(const std::string &template_file, const std::string &output_file) {
-    zel::file_system::File file(template_file);
+    zel::fs::File file(template_file);
     if (!file.exists()) {
         log_error("template file not exists: %s", template_file.c_str());
         return;
@@ -211,7 +211,7 @@ void Tabulation::generatingFinanceRecords(const std::string &template_file, cons
 }
 
 void Tabulation::generatingTelecomRecords(const std::string &template_file, const std::string &output_file) {
-    zel::file_system::File file(template_file);
+    zel::fs::File file(template_file);
     if (!file.exists()) {
         log_error("template file not exists: %s", template_file.c_str());
         return;

@@ -60,7 +60,7 @@ class Script {
 
   private:
     std::string trim_script(const std::string &str);
-    bool        process_file(zel::file_system::File &file, std::vector<std::string> &atrs, std::string &buffer, std::string &filename, std::string &path);
+    bool        process_file(zel::fs::File &file, std::vector<std::string> &atrs, std::string &buffer, std::string &filename, std::string &path);
     std::optional<Type> match_type(const std::string &name);
 
   private:

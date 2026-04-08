@@ -69,7 +69,7 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
 
 bool Utils::decompressionZipFile(const std::string &file_path, const std::string &save_path, bool remove) {
     // 创建解压缩后文件夹
-    zel::file_system::Directory save(save_path);
+    zel::fs::Directory save(save_path);
     save.create();
 
     QString qfile_path = QString(file_path.c_str());
@@ -155,20 +155,21 @@ void Utils::replaceStringInXlsx(const std::string &filename, const std::string &
 
 bool Utils::ftpUploadDir(const std::string &local_dir, std::string &remote_path, const std::string &userpwd) {
     // 判断local_path是否是目录
-    if (zel::file_system::FilePath::isDir(local_dir)) {
+    if (zel::fs::isDir(local_dir)) {
         // 如果是目录，执行目录上传逻辑
-        auto walkFunc = [=](std::string relative_path, zel::file_system::Directory dir, zel::file_system::File file) -> bool {
-            if (!dir.exists()) {
+        auto walkFunc = [=](const zel::fs::Entry &entry) -> bool {
+            if (!entry.isDir()) {
+                auto file           = entry.file();
                 auto local_file_gbk = zel::utility::String::utf8ToGbk(file.path());
-                auto remote_file    = zel::file_system::FilePath::join(remote_path, relative_path);
+                auto remote_file    = zel::fs::join(remote_path, file.name());
                 if (!ftpUploadFile(local_file_gbk, remote_file, userpwd)) {
                     return false;
                 }
             }
             return true;
         };
-
-        return zel::file_system::FilePath::walk(local_dir, walkFunc, true);
+        zel::fs::walk(local_dir, walkFunc, true);
+        return true;
     } else {
         // 如果是文件，执行文件上传逻辑
         auto local_file_gbk = zel::utility::String::utf8ToGbk(local_dir);

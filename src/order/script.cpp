@@ -2,7 +2,7 @@
 
 #include <memory>
 
-using namespace zel::file_system;
+using namespace zel::fs;
 
 const std::vector<Script::Rule> Script::rules_ = {
     {{"ClearCard", "Restore", "reboot"}, Script::Type::CLEAR},
@@ -82,7 +82,7 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
 }
 
 bool Script::autoPersonScript() {
-    zel::file_system::File auto_person(script_info_->auto_person_path);
+    zel::fs::File auto_person(script_info_->auto_person_path);
 
     if (auto_person.exists()) {
         return true;
@@ -111,7 +111,7 @@ bool Script::autoPersonScript() {
 }
 
 bool Script::autoPostPersonScript() {
-    zel::file_system::File auto_post_person(script_info_->auto_post_person_path);
+    zel::fs::File auto_post_person(script_info_->auto_post_person_path);
 
     if (auto_post_person.exists()) {
         return true;

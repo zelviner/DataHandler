@@ -9,7 +9,7 @@
 #include <qdebug>
 #include <qthread>
 
-using namespace zel::file_system;
+using namespace zel::fs;
 
 // 自定义的工作线程类
 class HandleOrder : public QThread {
@@ -27,7 +27,7 @@ class HandleOrder : public QThread {
   protected:
     void run() override {
         Order order(datagram_);
-        if (FilePath::isFile(datagram_)) {
+        if (isFile(datagram_)) {
             // 订单预处理
             if (!order.preProcessing()) {
                 emit failure("订单预处理失败，请查看日志文件 'DataHandler.log' 了解详细信息");

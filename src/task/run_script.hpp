@@ -30,7 +30,6 @@ class RunScript : public QThread {
         APP_CardReader(card_device_, reader_id_);
         APP_CardCallback(card_device_, &RunScript::callback_thunk, this);
 
-        // 执行清卡脚本
         if (!APP_RunFile(card_device_, script_path_.c_str(), convert_)) {
             char error[1024];
             APP_GetLastError(card_device_, error, sizeof(error));
