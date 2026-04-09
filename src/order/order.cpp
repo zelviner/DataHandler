@@ -90,25 +90,27 @@ bool Order::processing() {
         if (entry.isDir()) {
             auto dir = entry.dir();
             // 解析项目脚本包
-            if (dir.name().find("RD_") != std::string::npos || dir.name().find("BT_") != std::string::npos) {
-                // 获取脚本信息
-                Script script(dir.path());
-                script_info_ = script.scriptInfo();
-                if (script_info_ == nullptr) {
-                    log_error("Failed to get script infomation.");
-                    return false;
-                }
+            if (script_info_ == nullptr) {
+                if (dir.name().find("RD_") != std::string::npos || dir.name().find("BT_") != std::string::npos) {
+                    // 获取脚本信息
+                    Script script(dir.path());
+                    script_info_ = script.scriptInfo();
+                    if (script_info_ == nullptr) {
+                        log_error("Failed to get script infomation.");
+                        return false;
+                    }
 
-                // 生成自动化预个人化脚本
-                if (!script.autoPersonScript()) {
-                    log_error("Failed to generate auto person script.");
-                    return false;
-                }
+                    // 生成自动化预个人化脚本
+                    if (!script.autoPersonScript()) {
+                        log_error("Failed to generate auto person script.");
+                        return false;
+                    }
 
-                // 生成自动化后个人化脚本
-                if (!script.autoPostPersonScript()) {
-                    log_error("Failed to generate auto post person script.");
-                    return false;
+                    // 生成自动化后个人化脚本
+                    if (!script.autoPostPersonScript()) {
+                        log_error("Failed to generate auto post person script.");
+                        return false;
+                    }
                 }
             }
         }

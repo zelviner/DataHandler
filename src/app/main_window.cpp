@@ -47,35 +47,27 @@ MainWindow::MainWindow(QMainWindow *parent)
 
     // 初始化配置
     init_config("config.ini");
-    QMessageBox::information(this, "提示", "配置文件加载成功!");
 
     // 初始化产业部脚本信息
     init_script_info("scripts.json");
-    QMessageBox::information(this, "提示", "产业化脚本文件加载成功!");
 
     // 初始化UI
     init_ui();
-
-    QMessageBox::information(this, "提示", "UI加载成功!");
 
     // 初始化信号和槽
     init_signal_slot();
 
     // 初始化日志器
     init_logger("DataHandler.log");
-    QMessageBox::information(this, "提示", "日志加载成功!");
 
     // 初始化读卡器
     init_card_reader();
-    QMessageBox::information(this, "提示", "读卡器加载成功!");
 
     // 初始化数据库
     init_database();
-    QMessageBox::information(this, "提示", "数据库加载成功!");
 
     // 初始化鉴权脚本
     init_auth_script("scripts/auth.if");
-    QMessageBox::information(this, "提示", "鉴权脚本加载成功!");
 }
 
 MainWindow::~MainWindow() {
