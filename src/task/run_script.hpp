@@ -27,8 +27,19 @@ class RunScript : public QThread {
 
   protected:
     void run() override {
-        APP_CardReader(card_device_, reader_id_);
-        APP_CardCallback(card_device_, &RunScript::callback_thunk, this);
+        if (!APP_CardReader(card_device_, reader_id_)) {
+            char error[1024];
+            APP_GetLastError(card_device_, error, sizeof(error));
+            emit failure(error);
+            return;
+        }
+
+        if (!APP_CardCallback(card_device_, &RunScript::callback_thunk, this)) {
+            char error[1024];
+            APP_GetLastError(card_device_, error, sizeof(error));
+            emit failure(error);
+            return;
+        }
 
         if (!APP_RunFile(card_device_, script_path_.c_str(), convert_)) {
             char error[1024];
@@ -40,23 +51,29 @@ class RunScript : public QThread {
 
   private:
     static void callback_thunk(const char *run_result, int len, void *user) {
-        auto       *self = static_cast<RunScript *>(user);
-        std::string str(run_result, len);
+        auto           *self = static_cast<RunScript *>(user);
+        zel::json::Json json;
+        json.load(run_result, len);
 
-        auto pos = str.find("->");
-        if (pos == std::string::npos) {
-            QString result = QString::fromStdString(str);
-
-            QMetaObject::invokeMethod(
-                self,
-                [self, result]() {
-                    self->results_.enqueue(result); // 存队列
-                    emit self->success(QString::fromStdString(self->script_name_), self->results_.dequeue());
-                },
-                Qt::QueuedConnection);
-        } else {
-            printf("%s\n", str.c_str());
+        std::string show;
+        auto        event = json["event"];
+        if (event == "script.print") {
+            show = json["data"]["message"].asString();
+        } else if (event == "card.reset") {
+            show = "RST -> " + json["data"]["atr"].asString();
+        } else if (event == "card.apdu") {
+            show = json["data"]["command"].asString() + " -> " + json["data"]["response"].asString();
         }
+
+        log_info("%s", show.c_str());
+        QString result = QString::fromStdString(show);
+        QMetaObject::invokeMethod(
+            self,
+            [self, result]() {
+                self->results_.enqueue(result); // 存队列
+                emit self->success(QString::fromStdString(self->script_name_), self->results_.dequeue());
+            },
+            Qt::QueuedConnection);
     }
 
   private:

@@ -117,9 +117,10 @@ void MainWindow::runScriptBtnClicked() {
 
     auto        currentName = ui_->script_type_combo_box->currentText().toStdString();
     std::string currentPath;
-    for (auto it = script_->begin(); it != script_->end(); it++) {
-        std::string name = (*it)["name"];
-        std::string path = (*it)["path"];
+    for (size_t i = 0; i < script_->size(); ++i) {
+        const zel::json::Json &item = (*script_)[i];
+        std::string            name = item["name"].asString();
+        std::string            path = item["path"].asString();
         if (currentName == name) {
             currentPath = path;
         }
@@ -597,8 +598,10 @@ void MainWindow::init_ui() {
     ui_->data_line->setText(QString::fromStdString(data));
 
     // 读卡器类型
-    ui_->reader_type_combo_box->addItem("PCSC");
-    ui_->reader_type_combo_box->addItem("QSC");
+    ui_->reader_type_combo_box->addItem("PC/SC");
+    ui_->reader_type_combo_box->addItem("Q/SC");
+    ui_->reader_type_combo_box->addItem("SC/SC");
+    ui_->reader_type_combo_box->addItem("PT/SC");
 
     // 脚本运行器
     ui_->card_protocol_combo_box->addItem("ISO7816 (电信)");
@@ -607,8 +610,9 @@ void MainWindow::init_ui() {
     ui_->run_btn->setIcon(QIcon(":/image/mynaui--contactless.png"));
     ui_->run_btn->setIconSize({22, 22});
 
-    for (auto it = script_->begin(); it != script_->end(); it++) {
-        std::string name = (*it)["name"];
+    for (size_t i = 0; i < script_->size(); ++i) {
+        const zel::json::Json &item = (*script_)[i];
+        std::string            name = item["name"].asString();
         ui_->script_type_combo_box->addItem(name.c_str());
     }
 }
@@ -719,47 +723,23 @@ void MainWindow::init_card_reader() {
 
     int                      reader_type = ui_->reader_type_combo_box->currentIndex();
     std::vector<std::string> connect_infos;
-    switch (reader_type) {
-
-    case 1: {
-        int count = ini_["qsc_card_reader"]["count"];
-        for (int i = 1; i <= count; i++) {
-            std::string ip_port = ini_["qsc_card_reader"]["card_reader_" + std::to_string(i)];
-            connect_infos.push_back(ip_port);
-        }
-        break;
-    }
-
-    case 2: {
-        int count = ini_["scsc_card_reader"]["count"];
-        for (int i = 1; i <= count; i++) {
-            std::string ip_port = ini_["scsc_card_reader"]["card_reader_" + std::to_string(i)];
-            connect_infos.push_back(ip_port);
-        }
-        break;
-    }
-
-    default:
-        break;
-    }
-
-    int protocol = ui_->card_protocol_combo_box->currentIndex();
+    int                      protocol     = ui_->card_protocol_combo_box->currentIndex();
+    const char              *readers[255] = {};
+    int                      reader_count = 255;
 
     try {
-        const char *readers[16]  = {};
-        int         reader_count = connect_infos.size();
-        for (int i = 0; i < reader_count; i++) {
-            readers[i] = connect_infos[i].c_str();
-        }
-
         bool ret = APP_Initialize(card_device_, reader_type, readers, &reader_count);
         if (!ret) {
-            throw std::exception();
+            char error[1024];
+            APP_GetLastError(card_device_, error, sizeof(error));
+            throw std::exception(error);
         }
 
         ret = APP_CardProtocol(card_device_, protocol);
         if (!ret) {
-            throw std::exception();
+            char error[1024];
+            APP_GetLastError(card_device_, error, sizeof(error));
+            throw std::exception(error);
         }
 
         ui_->reader_combo_box->clear();
@@ -769,7 +749,7 @@ void MainWindow::init_card_reader() {
 
         ui_->run_btn->setDisabled(false);
     } catch (std::exception &e) {
-        QMessageBox::critical(this, "警告", "读卡器初始化，请检查读卡器是否连接");
+        QMessageBox::critical(this, "警告", "读卡器初始化，请检查读卡器是否连接, 错误信息:" + QString::fromStdString(e.what()));
         ui_->run_btn->setDisabled(true);
         return;
     }
@@ -957,7 +937,6 @@ caculate_sqn = func (AUTS, AKStar) {
 // 验证 PIN
 verify_pin = func () {
      resp = "0020000108" + ds.PIN1 -> null
-     print(resp)
      return (resp.sw == "9000" || resp.sw == "6984")
 }
 
@@ -1112,7 +1091,7 @@ if puk.data == "" {
         script_array.append(puk);
 
         script.create();
-        script.write(script_array.str());
+        script.write(script_array.dump());
     }
 
     json.load(script_json);

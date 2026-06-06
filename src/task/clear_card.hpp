@@ -62,27 +62,22 @@ class ClearCard : public QThread {
 
   private:
     static void callback_thunk(const char *run_result, int len, void *user) {
-        auto       *self = static_cast<ClearCard *>(user);
-        std::string str(run_result, len);
+        auto           *self = static_cast<ClearCard *>(user);
+        zel::json::Json json;
+        json.load(run_result, len);
 
-        auto pos  = str.find("->");
-        auto apdu = str.substr(0, pos - 1);
-        auto rsp  = str.substr(pos + 3, str.size() - pos - 4);
-
-        if (apdu.size() > 70) {
-            // 取前20个字节
-            apdu = apdu.substr(0, 30) + "...";
+        std::string show;
+        auto        event = json["event"];
+        if (event == "script.print") {
+            show = json["data"]["message"].asString();
+        } else if (event == "card.reset") {
+            show = "RST -> " + json["data"]["atr"].asString();
+        } else if (event == "card.apdu") {
+            show = json["data"]["command"].asString() + " -> " + json["data"]["response"].asString();
         }
 
-        if (rsp.size() > 70) {
-            // 取前20个字节
-            rsp = rsp.substr(0, 20) + "...";
-        }
-
-        QString result = QString::fromStdString(apdu) + " -> " + QString::fromStdString(rsp);
-
-        log_info(run_result);
-
+        log_info("%s", show.c_str());
+        QString result = QString::fromStdString(show);
         QMetaObject::invokeMethod(
             self,
             [self, result]() {
