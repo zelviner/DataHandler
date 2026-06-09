@@ -27,8 +27,8 @@ bool Order::preProcessing() {
 
         // GPG解密数据包
         try {
-            Gpg gpg("libgpgme-11.dll");
-            gpg.decryptFile(datagram_file.path(), datagram_zip_path);
+            Gpgme gpgme;
+            gpgme.decryptFile(datagram_file.path(), datagram_zip_path);
         } catch (const std::exception &e) {
             log_error("%s error: %s", datagram_file.path().c_str(), e.what());
             return false;
