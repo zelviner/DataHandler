@@ -159,10 +159,9 @@ bool Utils::ftpUploadDir(const std::string &local_dir, std::string &remote_path,
         // 如果是目录，执行目录上传逻辑
         auto walkFunc = [=](const zel::fs::Entry &entry) -> bool {
             if (!entry.isDir()) {
-                auto file           = entry.file();
-                auto local_file_gbk = zel::utility::String::utf8ToGbk(file.path());
-                auto remote_file    = zel::fs::join(remote_path, file.name());
-                if (!ftpUploadFile(local_file_gbk, remote_file, userpwd)) {
+                auto file        = entry.file();
+                auto remote_file = zel::fs::join(remote_path, file.name());
+                if (!ftpUploadFile(file.path(), remote_file, userpwd)) {
                     return false;
                 }
             }
@@ -172,8 +171,7 @@ bool Utils::ftpUploadDir(const std::string &local_dir, std::string &remote_path,
         return true;
     } else {
         // 如果是文件，执行文件上传逻辑
-        auto local_file_gbk = zel::utility::String::utf8ToGbk(local_dir);
-        if (!ftpUploadFile(local_file_gbk, remote_path, userpwd)) {
+        if (!ftpUploadFile(local_dir, remote_path, userpwd)) {
             return false;
         }
         return true;
