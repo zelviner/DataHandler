@@ -1017,9 +1017,9 @@ switch result.resp.mid(0,2) {
     )";
 
     // 写入文件
-    std::ofstream ofs(auth_script_path, std::ios::out);
-    ofs << auth_script;
-    ofs.close();
+    zel::fs::File script(auth_script_path);
+    script.create();
+    script.write(auth_script);
 }
 
 void MainWindow::init_script_info(const std::string &script_json) {
@@ -1029,7 +1029,7 @@ void MainWindow::init_script_info(const std::string &script_json) {
     if (!script.exists()) {
         auto            path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "atr.if"));
         zel::json::Json atr;
-        atr["name"] = "ATR\t[通用]";
+        atr["name"] = "ATR-[通用]";
         atr["path"] = "scripts/atr.if";
         zel::fs::File atr_if(path);
         std::string   content = R"(atr = RST -> null
@@ -1039,7 +1039,7 @@ print(atr))";
 
         path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "pan.if"));
         zel::json::Json pan;
-        pan["name"] = "PAN\t[金融]";
+        pan["name"] = "PAN-[金融]";
         pan["path"] = "scripts/pan.if";
         zel::fs::File pan_if(path);
         content = R"(RST -> null
@@ -1063,7 +1063,7 @@ if type(pan) == "null" {
 
         path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "iccif.if"));
         zel::json::Json iccid;
-        iccid["name"] = "ICCID\t[电信]";
+        iccid["name"] = "ICCID-[电信]";
         iccid["path"] = "scripts/iccid.if";
         zel::fs::File iccid_if(path);
         content = R"(RST -> null
@@ -1080,7 +1080,7 @@ if iccid.data == "" {
 
         path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "imsi.if"));
         zel::json::Json imsi;
-        imsi["name"] = "IMSI\t[电信]";
+        imsi["name"] = "IMSI-[电信]";
         imsi["path"] = "scripts/imsi.if";
         zel::fs::File imsi_if(path);
         content = R"(RST -> null
@@ -1097,7 +1097,7 @@ if imsi.data == "" {
 
         path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "puk.if"));
         zel::json::Json puk;
-        puk["name"] = "PUK\t[电信]";
+        puk["name"] = "PUK-[电信]";
         puk["path"] = "scripts/puk.if";
         zel::fs::File puk_if(path);
         content = R"(RST -> null
@@ -1113,7 +1113,7 @@ if puk.data == "" {
         puk_if.create();
         puk_if.write(content);
 
-        zel::json::Json script_array;
+        auto script_array = zel::json::Json::array();
         script_array.append(atr);
         script_array.append(pan);
         script_array.append(iccid);
