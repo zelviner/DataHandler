@@ -1048,7 +1048,7 @@ if type(pan) == "null" {
         pan_if.create();
         pan_if.write(content);
 
-        path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "iccif.if"));
+        path = zel::fs::join(script.dirPath(), zel::fs::join("scripts", "iccid.if"));
         zel::json::Json iccid;
         iccid["name"] = "ICCID-[电信]";
         iccid["path"] = "scripts/iccid.if";
