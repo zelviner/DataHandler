@@ -22,8 +22,7 @@ class AkaAuth : public QThread {
         : script_info_(script_info)
         , person_data_info_(person_data_info)
         , reader_id_(reader_id)
-        , card_device_(card_device)
-        , convert_(convert) {}
+        , card_device_(card_device) {}
 
   signals:
     // 信号函数，用于向外界发射信号
@@ -44,7 +43,7 @@ class AkaAuth : public QThread {
         type_      = AUTH;
 
         // 执行清卡脚本
-        if (!APP_RunFile(card_device_, script_info_->aka_auth_path.c_str(), convert_)) {
+        if (!APP_RunFile(card_device_, script_info_->aka_auth_path.c_str())) {
             emit failure(type_, "鉴权失败, 请检查卡片是否完成个人化操作");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
@@ -95,5 +94,4 @@ class AkaAuth : public QThread {
     QQueue<QString>                 results_; // 存储回调结果
     Type                            type_;
     std::string                     duration_;
-    bool                            convert_; // 转换为新脚本格式
 };

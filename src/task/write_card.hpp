@@ -18,11 +18,12 @@ class WriteCard : public QThread {
     enum Type { CONNECT, BARE_ATR, PREPERSONAL, WHITE_ATR, POSTPERSONAL, CHECK, FINISHED_ATR, FINISH };
 
     WriteCard(const std::shared_ptr<ScriptInfo> &script_info, const std::shared_ptr<PersonDataInfo> &person_data_info, int reader_id,
-              const CARD_DEVICE &card_device)
+              const CARD_DEVICE &card_device, bool convert = true)
         : script_info_(script_info)
         , person_data_info_(person_data_info)
         , reader_id_(reader_id)
-        , card_device_(card_device) {}
+        , card_device_(card_device)
+        , convert_(convert) {}
     ~WriteCard() {}
 
   signals:
@@ -42,10 +43,23 @@ class WriteCard : public QThread {
         APP_CardReset(card_device_, true, atr, sizeof(atr));
         emit success(type_, "", atr);
 
+        char code[1024 * 1000] = {0};
+        if (convert_) {
+            if (!APP_ScriptConvertTelecom(card_device_, script_info_->person_buffer.c_str(), code, sizeof(code))) {
+                emit failure(PREPERSONAL, "脚本转换失败, 请检查脚本");
+                char err_msg[1024];
+                APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
+                log_error(err_msg);
+                return;
+            }
+        } else {
+            snprintf(code, sizeof(code), "%s", script_info_->person_buffer.c_str());
+        }
+
         // 预个人化
         auto start = std::chrono::steady_clock::now();
         type_      = PREPERSONAL;
-        if (!APP_RunFile(card_device_, script_info_->person_path.c_str(), true)) {
+        if (!APP_RunCode(card_device_, code)) {
             emit failure(type_, "预个人化脚本执行失败");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
@@ -64,10 +78,23 @@ class WriteCard : public QThread {
         APP_CardReset(card_device_, true, atr, sizeof(atr));
         emit success(type_, QString::fromStdString(duration_), QString::fromStdString(atr));
 
+        memset(code, 0, sizeof(code));
+        if (convert_) {
+            if (!APP_ScriptConvertTelecom(card_device_, script_info_->post_person_buffer.c_str(), code, sizeof(code))) {
+                emit failure(POSTPERSONAL, "脚本转换失败, 请检查脚本");
+                char err_msg[1024];
+                APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
+                log_error(err_msg);
+                return;
+            }
+        } else {
+            snprintf(code, sizeof(code), "%s", script_info_->post_person_buffer.c_str());
+        }
+
         // 后个人化
         start = std::chrono::steady_clock::now();
         type_ = POSTPERSONAL;
-        if (!APP_RunFile(card_device_, script_info_->post_person_path.c_str(), true)) {
+        if (!APP_RunCode(card_device_, code)) {
             emit failure(type_, "后个人化脚本执行失败");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
@@ -86,10 +113,23 @@ class WriteCard : public QThread {
         APP_CardReset(card_device_, true, atr, sizeof(atr));
         emit success(type_, QString::fromStdString(duration_), QString::fromStdString(atr));
 
+        memset(code, 0, sizeof(code));
+        if (convert_) {
+            if (!APP_ScriptConvertTelecom(card_device_, script_info_->check_buffer.c_str(), code, sizeof(code))) {
+                emit failure(CHECK, "脚本转换失败, 请检查脚本");
+                char err_msg[1024];
+                APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
+                log_error(err_msg);
+                return;
+            }
+        } else {
+            snprintf(code, sizeof(code), "%s", script_info_->check_buffer.c_str());
+        }
+
         // 检测
         start = std::chrono::steady_clock::now();
         type_ = CHECK;
-        if (!APP_RunFile(card_device_, script_info_->check_path.c_str(), true)) {
+        if (!APP_RunCode(card_device_, code)) {
             emit failure(type_, "检测脚本执行失败");
             char err_msg[1024];
             APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
@@ -138,4 +178,5 @@ class WriteCard : public QThread {
     QQueue<QString>                 results_; // 存储回调结果
     Type                            type_;
     std::string                     duration_;
+    bool                            convert_; // 转换为新脚本格式
 };

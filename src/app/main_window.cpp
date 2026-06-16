@@ -182,7 +182,7 @@ void MainWindow::akaAuthBtnClicked() {
     aka_auth_loading->show();
 
     // 创建工作线程
-    auto aka_auth = new AkaAuth(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), card_device_, false);
+    auto aka_auth = new AkaAuth(script_info_, person_data_info_, ui_->reader_combo_box->currentIndex(), card_device_);
     // 连接信号槽
     connect(aka_auth, &AkaAuth::failure, aka_auth_loading, &AkaAuthLoading::failure);
     connect(aka_auth, &AkaAuth::success, aka_auth_loading, &AkaAuthLoading::success);

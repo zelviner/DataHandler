@@ -36,6 +36,19 @@ class ClearCard : public QThread {
         APP_CardCallback(card_device_, &ClearCard::callback_thunk, this);
         APP_PersoDataFile(card_device_, person_data_info_->path.c_str(), script_info_->has_ds);
 
+        char code[1024 * 200] = {0};
+        if (convert_) {
+            if (!APP_ScriptConvertTelecom(card_device_, script_info_->clear_buffer.c_str(), code, sizeof(code))) {
+                emit failure(START, "脚本转换失败, 请检查脚本");
+                char err_msg[1024];
+                APP_GetLastError(card_device_, err_msg, sizeof(err_msg));
+                log_error(err_msg);
+                return;
+            }
+        } else {
+            snprintf(code, sizeof(code), "%s", script_info_->clear_buffer.c_str());
+        }
+
         // 清卡
         emit success(START, QString::fromStdString(duration_), "");
 
@@ -44,7 +57,7 @@ class ClearCard : public QThread {
         type_      = CLEAR;
 
         // 执行清卡脚本
-        if (!APP_RunFile(card_device_, script_info_->clear_path.c_str(), convert_)) {
+        if (!APP_RunCode(card_device_, code)) {
             emit failure(type_, "清卡脚本执行失败");
             char error[1024];
             APP_GetLastError(card_device_, error, sizeof(error));

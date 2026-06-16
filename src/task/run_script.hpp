@@ -13,12 +13,11 @@ class RunScript : public QThread {
   public:
     enum Type { CONNECT, START, CLEAR, FINISH };
 
-    RunScript(const std::string &script_name, const std::string &script_path, int reader_id, const CARD_DEVICE &card_device, bool convert = false)
+    RunScript(const std::string &script_name, const std::string &script_path, int reader_id, const CARD_DEVICE &card_device)
         : script_name_(script_name)
         , script_path_(script_path)
         , reader_id_(reader_id)
-        , card_device_(card_device)
-        , convert_(convert) {}
+        , card_device_(card_device) {}
 
   signals:
     // 信号函数，用于向外界发射信号
@@ -41,7 +40,7 @@ class RunScript : public QThread {
             return;
         }
 
-        if (!APP_RunFile(card_device_, script_path_.c_str(), convert_)) {
+        if (!APP_RunFile(card_device_, script_path_.c_str())) {
             char error[1024];
             APP_GetLastError(card_device_, error, sizeof(error));
             emit failure(error);
@@ -82,5 +81,4 @@ class RunScript : public QThread {
     int             reader_id_;
     CARD_DEVICE     card_device_;
     QQueue<QString> results_; // 存储回调结果
-    bool            convert_; // 转换为新脚本格式
 };
