@@ -5,6 +5,16 @@
      <file>../image/waiting.png</file>
      <file>../image/mynaui--contactless.png</file>
      <file>../image/loading.gif</file>
+     <file>../image/copy.svg</file>
+     <file>../image/credit-card.svg</file>
+     <file>../image/eraser.svg</file>
+     <file>../image/file-spreadsheet.svg</file>
+     <file>../image/folder-open.svg</file>
+     <file>../image/play.svg</file>
+     <file>../image/save.svg</file>
+     <file>../image/trash-2.svg</file>
+     <file>../image/upload.svg</file>
+     <file>../image/LUCIDE_LICENSE.txt</file>
  </qresource>
  </RCC>
 

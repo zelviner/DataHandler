@@ -16,6 +16,7 @@
 #include <qaction.h>
 #include <qdesktopservices.h>
 #include <qfiledialog.h>
+#include <qicon.h>
 #include <qmainwindow.h>
 #include <qmessagebox.h>
 #include <qpushbutton.h>
@@ -546,7 +547,7 @@ void MainWindow::runScriptSuccess(const QString &script_name, const QString &res
 
 void MainWindow::init_window() {
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.4.3");
+    setWindowTitle("智能卡生产预处理软件 v3.5.0");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
@@ -559,6 +560,36 @@ void MainWindow::init_ui() {
     // setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 
     button_disabled(true);
+    const QSize button_icon_size(16, 16);
+    auto        set_button_icon = [&](QPushButton *button, const char *icon_path) {
+        button->setIcon(QIcon(icon_path));
+        button->setIconSize(button_icon_size);
+    };
+
+    set_button_icon(ui_->project_number_btn, ":/image/copy.svg");
+    set_button_icon(ui_->order_number_btn, ":/image/copy.svg");
+    set_button_icon(ui_->project_name_btn, ":/image/copy.svg");
+    set_button_icon(ui_->chip_model_btn, ":/image/copy.svg");
+    set_button_icon(ui_->rf_code_btn, ":/image/copy.svg");
+    set_button_icon(ui_->script_package_btn, ":/image/copy.svg");
+    set_button_icon(ui_->open_personal_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->open_postpersonal_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->open_check_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->open_clear_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->write_card_btn, ":/image/credit-card.svg");
+    set_button_icon(ui_->clear_card_btn, ":/image/eraser.svg");
+    set_button_icon(ui_->start_auth_btn, ":/image/play.svg");
+    set_button_icon(ui_->upload_prd_btn, ":/image/upload.svg");
+    set_button_icon(ui_->upload_temp_btn, ":/image/upload.svg");
+    set_button_icon(ui_->finance_select_generate_file_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->finance_generating_btn, ":/image/file-spreadsheet.svg");
+    set_button_icon(ui_->telecom_delete_order_btn, ":/image/trash-2.svg");
+    set_button_icon(ui_->telecom_select_generate_file_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->telecom_generating_btn, ":/image/file-spreadsheet.svg");
+    set_button_icon(ui_->select_finance_template_file_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->select_telecom_template_file_btn, ":/image/folder-open.svg");
+    set_button_icon(ui_->save_btn, ":/image/save.svg");
+
     std::string mysql_host             = ini_["mysql"]["host"];
     int         mysql_port             = ini_["mysql"]["port"];
     std::string mysql_username         = ini_["mysql"]["username"];
@@ -607,8 +638,7 @@ void MainWindow::init_ui() {
     ui_->card_protocol_combo_box->addItem("ISO7816 (电信)");
     ui_->card_protocol_combo_box->addItem("GP (金融)");
 
-    ui_->run_btn->setIcon(QIcon(":/image/mynaui--contactless.png"));
-    ui_->run_btn->setIconSize({22, 22});
+    set_button_icon(ui_->run_btn, ":/image/play.svg");
 
     for (size_t i = 0; i < script_->size(); ++i) {
         const zel::json::Json &item = (*script_)[i];

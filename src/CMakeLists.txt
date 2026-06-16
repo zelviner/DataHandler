@@ -17,7 +17,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # [4] 查找 Qt5 组件 ---------------------------------------------------
-find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Svg Widgets REQUIRED)
 find_package(Qt5LinguistTools REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(xlnt CONFIG REQUIRED)
@@ -53,6 +53,7 @@ target_compile_definitions(${APP_NAME} PUBLIC
 target_link_libraries(${APP_NAME} PRIVATE
     Qt5::Core
     Qt5::Gui
+    Qt5::Svg
     Qt5::Widgets
     fmt::fmt
     xlnt::xlnt

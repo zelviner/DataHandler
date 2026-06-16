@@ -17,14 +17,15 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QApplication a(argc, argv);
+    a.setStyle("Fusion");
     MainWindow   w;
 
-    // // 设置全局样式
-    // QFile file(":/qss/windows.qss");
-    // file.open(QFile::ReadOnly);
-    // QString style = QLatin1String(file.readAll());
-    // a.setStyleSheet(style);
-    // file.close();
+    // 设置全局样式
+    QFile file(":/qss/windows.qss");
+    if (file.open(QFile::ReadOnly | QFile::Text)) {
+        a.setStyleSheet(QString::fromUtf8(file.readAll()));
+        file.close();
+    }
 
     w.show();
     return a.exec();
