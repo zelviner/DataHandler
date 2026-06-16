@@ -70,6 +70,7 @@ bool Utils::compressionZipFile(const std::string &file_path, const std::string &
 bool Utils::decompressionZipFile(const std::string &file_path, const std::string &save_path, bool remove) {
     // 创建解压缩后文件夹
     zel::fs::Directory save(save_path);
+    delete_file_or_folder(save_path);
     save.create();
 
     QString qfile_path = QString(file_path.c_str());

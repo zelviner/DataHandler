@@ -306,9 +306,9 @@ QPushButton#telecom_select_generate_file_btn {
     border: 1px solid #B9CAE4;
 }
 
-QPushButton#project_number_btn:hover,
 QPushButton#order_number_btn:hover,
 QPushButton#project_name_btn:hover,
+QPushButton#product_type_btn:hover,
 QPushButton#chip_model_btn:hover,
 QPushButton#rf_code_btn:hover,
 QPushButton#script_package_btn:hover,
