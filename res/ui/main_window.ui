@@ -89,7 +89,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="project_number_btn">
+                   <widget class="QPushButton" name="order_number_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -135,7 +135,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="order_number_btn">
+                   <widget class="QPushButton" name="project_name_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -181,7 +181,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="project_name_btn">
+                   <widget class="QPushButton" name="product_type_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -227,7 +227,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="chip_model_btn">
+                   <widget class="QPushButton" name="rf_code_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -273,7 +273,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="rf_code_btn">
+                   <widget class="QPushButton" name="script_package_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -319,7 +319,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="script_package_btn">
+                   <widget class="QPushButton" name="chip_model_btn">
                     <property name="font">
                      <font>
                       <family>微软雅黑</family>
@@ -1345,155 +1345,6 @@
            </item>
           </layout>
          </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_5">
-       <attribute name="title">
-        <string>上传</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_15">
-        <item>
-         <widget class="QGroupBox" name="groupBox_6">
-          <property name="font">
-           <font>
-            <family>微软雅黑</family>
-            <pointsize>18</pointsize>
-           </font>
-          </property>
-          <property name="title">
-           <string>上传FTP服务器</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_14">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_23" stretch="7,1,2">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="2,7">
-               <item>
-                <widget class="QLabel" name="label_6">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>PRD 路径</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="prd_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_18">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="upload_prd_btn">
-               <property name="font">
-                <font>
-                 <family>微软雅黑</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>上传</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_33" stretch="7,1,2">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_30" stretch="2,7">
-               <item>
-                <widget class="QLabel" name="label_9">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>标签路径</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="temp_line">
-                 <property name="font">
-                  <font>
-                   <family>微软雅黑</family>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_31">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="upload_temp_btn">
-               <property name="font">
-                <font>
-                 <family>微软雅黑</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>上传</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>420</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>

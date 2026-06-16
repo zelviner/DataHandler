@@ -369,8 +369,6 @@ void MainWindow::saveBtnClicked() {
     int         ftp_port               = ui_->ftp_port_line->text().toInt();
     std::string ftp_username           = ui_->ftp_username_line->text().toStdString();
     std::string ftp_password           = ui_->ftp_password_line->text().toStdString();
-    std::string remote_prd_path        = ui_->prd_line->text().toStdString();
-    std::string remote_temp_path       = ui_->temp_line->text().toStdString();
     // std::string local_backup_path      = ui_->backup_line->text().toStdString();
     std::string finance_path   = ui_->finance_path_line->text().toStdString();
     std::string telecom_path   = ui_->telecom_path_line->text().toStdString();
@@ -388,8 +386,6 @@ void MainWindow::saveBtnClicked() {
     ini_.set("ftp", "port", ftp_port);
     ini_.set("ftp", "username", ftp_username);
     ini_.set("ftp", "password", ftp_password);
-    ini_.set("path", "remote_prd_path", remote_prd_path);
-    ini_.set("path", "remote_temp_path", remote_temp_path);
     // ini_.set("path", "local_backup_path", local_backup_path);
     ini_.set("template", "finance_path", finance_path);
     ini_.set("template", "telecom_path", telecom_path);
@@ -447,7 +443,6 @@ void MainWindow::uploadFileFailure(const QString &err_type, const QString &err_m
 }
 
 void MainWindow::uploadFileSuccess() {
-    ui_->upload_temp_btn->setDisabled(false);
     loading_->hide();
 
     QMessageBox success_box(this);
@@ -566,12 +561,12 @@ void MainWindow::init_ui() {
         button->setIconSize(button_icon_size);
     };
 
-    set_button_icon(ui_->project_number_btn, ":/image/copy.svg");
     set_button_icon(ui_->order_number_btn, ":/image/copy.svg");
     set_button_icon(ui_->project_name_btn, ":/image/copy.svg");
-    set_button_icon(ui_->chip_model_btn, ":/image/copy.svg");
+    set_button_icon(ui_->product_type_btn, ":/image/copy.svg");
     set_button_icon(ui_->rf_code_btn, ":/image/copy.svg");
     set_button_icon(ui_->script_package_btn, ":/image/copy.svg");
+    set_button_icon(ui_->chip_model_btn, ":/image/copy.svg");
     set_button_icon(ui_->open_personal_btn, ":/image/folder-open.svg");
     set_button_icon(ui_->open_postpersonal_btn, ":/image/folder-open.svg");
     set_button_icon(ui_->open_check_btn, ":/image/folder-open.svg");
@@ -579,8 +574,6 @@ void MainWindow::init_ui() {
     set_button_icon(ui_->write_card_btn, ":/image/credit-card.svg");
     set_button_icon(ui_->clear_card_btn, ":/image/eraser.svg");
     set_button_icon(ui_->start_auth_btn, ":/image/play.svg");
-    set_button_icon(ui_->upload_prd_btn, ":/image/upload.svg");
-    set_button_icon(ui_->upload_temp_btn, ":/image/upload.svg");
     set_button_icon(ui_->finance_select_generate_file_btn, ":/image/folder-open.svg");
     set_button_icon(ui_->finance_generating_btn, ":/image/file-spreadsheet.svg");
     set_button_icon(ui_->telecom_delete_order_btn, ":/image/trash-2.svg");
@@ -619,8 +612,6 @@ void MainWindow::init_ui() {
     ui_->ftp_port_line->setText(QString::number(ftp_port));
     ui_->ftp_username_line->setText(QString::fromStdString(ftp_username));
     ui_->ftp_password_line->setText(QString::fromStdString(ftp_password));
-    ui_->prd_line->setText(QString::fromStdString(remote_prd_path));
-    ui_->temp_line->setText(QString::fromStdString(remote_temp_path));
     // ui_->backup_line->setText(QString::fromStdString(local_backup_path));
     ui_->finance_path_line->setText(QString::fromStdString(finance_path));
     ui_->telecom_path_line->setText(QString::fromStdString(telecom_path));
@@ -654,12 +645,12 @@ void MainWindow::init_signal_slot() {
     connect(ui_->english_action, &QAction::triggered, this, &MainWindow::englishLanguageAction);
 
     // 信息 - 订单信息
-    connect(ui_->project_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_name.c_str())); });
     connect(ui_->order_number_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->order_number.c_str())); });
     connect(ui_->project_name_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->project_name.c_str())); });
-    connect(ui_->chip_model_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->chip_model.c_str())); });
+    connect(ui_->product_type_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->product_type.c_str())); });
     connect(ui_->rf_code_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->rf_code.c_str())); });
     connect(ui_->script_package_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->script_package.c_str())); });
+    connect(ui_->chip_model_btn, &QPushButton::clicked, [=]() { clip->setText(QString(order_info_->chip_model.c_str())); });
 
     // 信息 - 脚本包信息
     connect(ui_->open_personal_btn, &QPushButton::clicked, this, &MainWindow::openPersonalBtnClicked);
@@ -674,10 +665,6 @@ void MainWindow::init_signal_slot() {
     connect(ui_->run_btn, &QPushButton::clicked, this, &MainWindow::runScriptBtnClicked);
     // connect(ui_->open_auth_btn, &QPushButton::clicked, this, &MainWindow::openAuthScriptBtnClicked);
     connect(ui_->start_auth_btn, &QPushButton::clicked, this, &MainWindow::akaAuthBtnClicked);
-
-    // 上传
-    connect(ui_->upload_prd_btn, &QPushButton::clicked, this, &MainWindow::uploadPrdBtnClicked);
-    connect(ui_->upload_temp_btn, &QPushButton::clicked, this, &MainWindow::uploadTempBtnClicked);
 
     // 制表
     connect(ui_->finance_select_generate_file_btn, &QPushButton::clicked, this, &MainWindow::selectFinanceGeneratePathBtnClicked);
@@ -1129,18 +1116,16 @@ if puk.data == "" {
 }
 
 void MainWindow::button_disabled(bool disabled) {
-    ui_->project_number_btn->setDisabled(disabled);
     ui_->order_number_btn->setDisabled(disabled);
     ui_->project_name_btn->setDisabled(disabled);
-    ui_->chip_model_btn->setDisabled(disabled);
+    ui_->product_type_btn->setDisabled(disabled);
     ui_->rf_code_btn->setDisabled(disabled);
     ui_->script_package_btn->setDisabled(disabled);
-    ui_->upload_prd_btn->setDisabled(disabled);
+    ui_->chip_model_btn->setDisabled(disabled);
     ui_->open_personal_btn->setDisabled(disabled);
     ui_->open_postpersonal_btn->setDisabled(disabled);
     ui_->open_check_btn->setDisabled(disabled);
     ui_->open_clear_btn->setDisabled(disabled);
-    ui_->upload_temp_btn->setDisabled(disabled);
 
     if (person_data_info_ != nullptr && script_info_ != nullptr) {
         ui_->start_auth_btn->setDisabled(false);

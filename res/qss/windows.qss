@@ -287,9 +287,9 @@ QPushButton#telecom_generating_btn:hover {
     border-color: #0E6B4D;
 }
 
-QPushButton#project_number_btn,
 QPushButton#order_number_btn,
 QPushButton#project_name_btn,
+QPushButton#product_type_btn,
 QPushButton#chip_model_btn,
 QPushButton#rf_code_btn,
 QPushButton#script_package_btn,
