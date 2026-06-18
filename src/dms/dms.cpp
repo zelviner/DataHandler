@@ -77,8 +77,7 @@ bool Dms::order_info() {
         return false;
     }
 
-    auto data_table_name = dbl_all[0]("Uuid").asString();
-    String::toLower(data_table_name);
+    auto data_table_name              = String::toLower(dbl_all[0]("Uuid").asString());
     order_info_.perso_data_table_name = data_table_name;
 
     log_info("order_no: %s, order_id: %d, batch_list_id: %d, perso_script_path: %s, verify_script_path: %s, clear_script_path: %s, perso_data_table_name: %s",
@@ -89,8 +88,7 @@ bool Dms::order_info() {
 }
 
 bool Dms::delete_record() {
-    std::string order_no = order_info_.order_no;
-    String::toLower(order_no);
+    std::string order_no = String::toLower(order_info_.order_no);
 
     // delete dms_remake_record table
     DmsRemakeRecord dms_remake_record(*db_, order_no, "ID");
@@ -118,8 +116,7 @@ bool Dms::delete_record() {
 }
 
 bool Dms::delete_production_data() {
-    std::string order_no = order_info_.order_no;
-    String::toLower(order_no);
+    std::string order_no = String::toLower(order_info_.order_no);
 
     // delete dms_remake table
     DmsRemake   dms_remake(*db_, order_no, "ID");
@@ -136,8 +133,7 @@ bool Dms::delete_production_data() {
 }
 
 bool Dms::delete_order_data() {
-    std::string data_table_name = order_info_.perso_data_table_name;
-    String::toLower(data_table_name);
+    std::string data_table_name = String::toLower(order_info_.perso_data_table_name);
 
     // delete perso_data table
     DmsPersoData dms_perso_data(*db_, data_table_name, "ID");

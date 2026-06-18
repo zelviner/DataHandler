@@ -84,7 +84,7 @@ bool Tabulation::financeRecords(const std::string &order_number, const std::stri
             data.filename = data.filename.substr(0, data.filename.length() - 4);
         }
 
-        String::toLower(data.filename);
+        data.filename      = String::toLower(data.filename);
         std::string sql    = fmt::format("SELECT COUNT(*), {}, {} FROM `{}`", min_data_field, max_data_field, data.filename);
         auto        result = finance_db_->query(sql);
         data.quantity      = result[0].find("COUNT(*)")->second.asInt();
@@ -130,7 +130,6 @@ bool Tabulation::telecomRecords(const std::string &order_number, const std::stri
     }
 
     auto data_table = dbl_all[0]("Uuid").asString();
-    // String::toLower(data_table);
 
     // 创建索引，加速查询
     std::string sql = fmt::format("CREATE INDEX idx_file_id ON `{}` (File, ID)", data_table);
