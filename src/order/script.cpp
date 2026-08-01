@@ -1,8 +1,40 @@
 #include "script.h"
 
+#include <algorithm>
 #include <memory>
 
 using namespace zel::fs;
+
+namespace {
+
+bool contains_atr(const std::vector<std::string> &atrs, const std::string &atr) {
+    return std::find(atrs.begin(), atrs.end(), atr) != atrs.end();
+}
+
+std::string join_atrs(const std::vector<std::string> &atrs) {
+    std::string result;
+    for (const auto &atr : atrs) {
+        if (!result.empty()) result += ",";
+        result += atr;
+    }
+    return result;
+}
+
+void append_if_atr(std::string &script, const std::string &atr, const std::string &content) {
+    script += "if ([atr] == " + atr + ") {\n";
+    script += content;
+    script += "\n}\n";
+}
+
+bool recreate_file(File &file) {
+    if (file.exists()) {
+        file.clear();
+        return true;
+    }
+    return file.create();
+}
+
+} // namespace
 
 const std::vector<Script::Rule> Script::rules_ = {
     {{"ClearCard", "Restore", "reboot"}, Script::Type::CLEAR},
@@ -15,8 +47,6 @@ Script::Script(const std::string &script_path)
     : script_info_(nullptr)
     , script_path_(script_path) {}
 
-Script::~Script() {}
-
 std::shared_ptr<ScriptInfo> Script::scriptInfo() {
     script_info_ = std::make_shared<ScriptInfo>();
     Directory script_dir(script_path_);
@@ -27,7 +57,6 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
 
     auto files = script_dir.files(true);
 
-    std::string line;
     for (auto &file : *files) {
         if (file.extension() != ".txt" || file.name().find("Auto_") != std::string::npos) continue;
 
@@ -82,94 +111,88 @@ std::shared_ptr<ScriptInfo> Script::scriptInfo() {
 }
 
 bool Script::autoPersonScript() {
-    zel::fs::File auto_person(script_info_->auto_person_path);
-
-    if (auto_person.exists()) {
-        return true;
+    if (script_info_ == nullptr || script_info_->bare_atrs.empty() || script_info_->white_atrs.empty() || script_info_->finished_atrs.empty() ||
+        script_info_->clear_atrs.empty()) {
+        return false;
     }
 
+    zel::fs::File auto_person(script_info_->auto_person_path);
     auto clear_script = zel::utility::String::replace(script_info_->clear_buffer, "[ds.SYSPIN]", "0102030405060708");
 
-    auto_person.create();
-    script_info_->auto_person_buffer += ";Clear\nRST([atr])\n";
+    if (!recreate_file(auto_person)) return false;
 
-    // 清卡
+    std::string script = ";Clear\nRST([atr])\n";
+
+    // 预个人化机只清可用固定 SYSPIN 清卡的中间态。
+    // 成卡不能使用固定 SYSPIN 清卡，必须在最终 ATR 校验处报错。
     for (auto &atr : script_info_->clear_atrs) {
-        script_info_->auto_person_buffer += "if ([atr] == " + atr + ") {\n";
-        script_info_->auto_person_buffer += clear_script;
-        script_info_->auto_person_buffer += "\n}\n";
-    }
-
-    // 预个人化
-    script_info_->auto_person_buffer += "\n;Perso\n";
-    script_info_->auto_person_buffer += script_info_->person_buffer;
-
-    auto_person.write(script_info_->auto_person_buffer);
-    script_info_->auto_person_buffer.clear();
-
-    return true;
-}
-
-bool Script::autoPostPersonScript() {
-    zel::fs::File auto_post_person(script_info_->auto_post_person_path);
-
-    if (auto_post_person.exists()) {
-        return true;
-    }
-
-    auto_post_person.create();
-    script_info_->auto_post_person_buffer += "RST([atr])\n\n;Clear\n";
-
-    // 清卡
-    for (auto &atr : script_info_->clear_atrs) {
-        if (atr == script_info_->finished_atrs[0]) {
-            script_info_->auto_post_person_buffer += "if ([atr] == " + atr + ") {\n";
-            script_info_->auto_post_person_buffer += script_info_->clear_buffer;
-            script_info_->auto_post_person_buffer += "\n}\n";
-        } else {
-            script_info_->auto_post_person_buffer += "if ([atr] == " + atr + ") {\n";
-            script_info_->auto_post_person_buffer +=
-                "A0A40000023F00(0000)\nA0A40000022FE2(0000)\nA0B000000A([iccid]9000)\nif ([iccid] != FFFFFFFFFFFFFFFFFFFF) {\n";
-            script_info_->auto_post_person_buffer += script_info_->clear_buffer;
-            script_info_->auto_post_person_buffer += "\n}\n}\n";
+        if (!contains_atr(script_info_->white_atrs, atr) && !contains_atr(script_info_->finished_atrs, atr)) {
+            append_if_atr(script, atr, clear_script);
         }
     }
 
-    // 预个人化
-    script_info_->auto_post_person_buffer += "\n;Perso\n";
+    script += "\n;Perso\nRST([atr])\n";
     for (auto &atr : script_info_->bare_atrs) {
-        script_info_->auto_post_person_buffer += "RST([atr])\nif ([atr] == " + atr + ") {\n";
-        script_info_->auto_post_person_buffer += script_info_->person_buffer;
-        script_info_->auto_post_person_buffer += "\n}\n";
+        append_if_atr(script, atr, script_info_->person_buffer);
+    }
+    script += "\n;Verify\nRST(" + join_atrs(script_info_->white_atrs) + ")\n";
+
+    return auto_person.write(script);
+}
+
+bool Script::autoPostPersonScript() {
+    if (script_info_ == nullptr || script_info_->bare_atrs.empty() || script_info_->white_atrs.empty() || script_info_->finished_atrs.empty() ||
+        script_info_->clear_atrs.empty()) {
+        return false;
     }
 
-    // 后个人化
-    script_info_->auto_post_person_buffer += "\n\n;PostPerso\n" + script_info_->post_person_buffer;
+    zel::fs::File auto_post_person(script_info_->auto_post_person_path);
 
-    auto_post_person.write(script_info_->auto_post_person_buffer);
-    script_info_->auto_post_person_buffer.clear();
-    return true;
+    if (!recreate_file(auto_post_person)) return false;
+
+    std::string script = "RST([atr])\n\n;Clear\n";
+
+    // 预个人化完成卡直接后个人化；中间态和成卡先清卡后重做。
+    for (auto &atr : script_info_->clear_atrs) {
+        if (!contains_atr(script_info_->white_atrs, atr)) {
+            append_if_atr(script, atr, script_info_->clear_buffer);
+        }
+    }
+
+    script += "\n;Perso\nRST([atr])\n";
+    for (auto &atr : script_info_->bare_atrs) {
+        append_if_atr(script, atr, script_info_->person_buffer);
+    }
+
+    script += "\n;PostPerso\nRST([atr])\n";
+    for (auto &atr : script_info_->white_atrs) {
+        append_if_atr(script, atr, script_info_->post_person_buffer);
+    }
+    script += "\n;Verify\nRST(" + join_atrs(script_info_->finished_atrs) + ")\n";
+
+    return auto_post_person.write(script);
 }
 
 std::string Script::trim_script(const std::string &str) {
-    std::string result = str;
-
-    size_t pos = result.find_last_of(")");
-    return result.substr(0, pos + 1);
+    size_t pos = str.find_last_of(")");
+    if (pos == std::string::npos) return {};
+    return str.substr(0, pos + 1);
 }
 
 bool Script::process_file(File &file, std::vector<std::string> &atrs, std::string &buffer, std::string &filename, std::string &path) {
     if (!file.exists()) return false;
 
-    std::string line;
-    file.readLine(line);
+    buffer = trim_script(file.read());
+    if (buffer.empty()) return false;
 
-    auto matches = zel::utility::String::matches(line, R"(RST\(([^)]*)\))");
-    if (!matches.empty()) {
-        atrs = zel::utility::String::split(matches[0], ",");
-    }
+    auto line_end = buffer.find_first_of("\r\n");
+    auto first_line = buffer.substr(0, line_end);
+    auto matches = zel::utility::String::matches(first_line, R"(RST\(([^)]*)\))");
+    if (matches.empty() || matches[0].find_first_of("[]") != std::string::npos) return false;
 
-    buffer   = trim_script(file.read());
+    atrs = zel::utility::String::split(matches[0], ",");
+    if (atrs.empty()) return false;
+
     filename = file.name();
     path     = file.path();
 

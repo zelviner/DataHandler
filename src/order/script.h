@@ -1,9 +1,8 @@
 #pragma once
 
 #include <memory>
-#include <qstring>
-#include <vector>
 #include <optional>
+#include <vector>
 #include <zel/core.h>
 
 struct ScriptInfo {
@@ -15,7 +14,7 @@ struct ScriptInfo {
     std::string              post_person_path;     // 后个人化脚本路径
     std::string              post_person_filename; // 后个人化脚本文件名
     std::string              post_person_buffer;   // 后个人化脚本
-    std::vector<std::string> white_atrs;           // 白卡ATR列表
+    std::vector<std::string> white_atrs;           // 预个人化完成ATR列表
 
     std::string              check_path;     // 检测脚本路径
     std::string              check_filename; // 检测脚本文件名
@@ -32,11 +31,9 @@ struct ScriptInfo {
 
     std::string auto_person_path;     // 自动个人化脚本路径
     std::string auto_person_filename; // 自动个人化脚本文件名
-    std::string auto_person_buffer;   // 自动预个人化脚本
 
     std::string auto_post_person_path;     // 自动后个人化脚本路径
     std::string auto_post_person_filename; // 自动后个人化脚本文件名
-    std::string auto_post_person_buffer;   // 自动后个人化脚本
 
     bool has_ds; // 是否有ds标识符
 };
@@ -51,7 +48,6 @@ class Script {
 
   public:
     Script(const std::string &script_path);
-    ~Script();
 
     std::shared_ptr<ScriptInfo> scriptInfo();
 
