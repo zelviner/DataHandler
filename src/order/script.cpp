@@ -152,9 +152,18 @@ bool Script::autoPostPersonScript() {
 
     std::string script = "RST([atr])\n\n;Clear\n";
 
-    // 预个人化完成卡直接后个人化；中间态和成卡先清卡后重做。
+    // 中间态和成卡先清卡后重做。
+    // ATR 仍为预个人化完成态但 ICCID 已写入，表示后个人化中途失败，也必须清卡。
     for (auto &atr : script_info_->clear_atrs) {
-        if (!contains_atr(script_info_->white_atrs, atr)) {
+        if (contains_atr(script_info_->white_atrs, atr)) {
+            script += "if ([atr] == " + atr + ") {\n";
+            script += "A0A40000023F00(0000)\n";
+            script += "A0A40000022FE2(0000)\n";
+            script += "A0B000000A([iccid]9000)\n";
+            script += "if ([iccid] != FFFFFFFFFFFFFFFFFFFF) {\n";
+            script += script_info_->clear_buffer;
+            script += "\n}\n}\n";
+        } else {
             append_if_atr(script, atr, script_info_->clear_buffer);
         }
     }
