@@ -1,11 +1,17 @@
 #include "script.h"
 
 #include <algorithm>
+#include <cctype>
 #include <memory>
 
 using namespace zel::fs;
 
 namespace {
+
+std::string normalize_atr(std::string atr) {
+    std::transform(atr.begin(), atr.end(), atr.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+    return atr;
+}
 
 bool contains_atr(const std::vector<std::string> &atrs, const std::string &atr) {
     return std::find(atrs.begin(), atrs.end(), atr) != atrs.end();
@@ -123,10 +129,10 @@ bool Script::autoPersonScript() {
 
     std::string script = ";Clear\nRST([atr])\n";
 
-    // 预个人化机只清可用固定 SYSPIN 清卡的中间态。
+    // 预个人化机清可用固定 SYSPIN 清卡的中间态和预个人化完成卡，随后重新预个人化。
     // 成卡不能使用固定 SYSPIN 清卡，必须在最终 ATR 校验处报错。
     for (auto &atr : script_info_->clear_atrs) {
-        if (!contains_atr(script_info_->white_atrs, atr) && !contains_atr(script_info_->finished_atrs, atr)) {
+        if (!contains_atr(script_info_->finished_atrs, atr)) {
             append_if_atr(script, atr, clear_script);
         }
     }
@@ -200,6 +206,7 @@ bool Script::process_file(File &file, std::vector<std::string> &atrs, std::strin
     if (matches.empty() || matches[0].find_first_of("[]") != std::string::npos) return false;
 
     atrs = zel::utility::String::split(matches[0], ",");
+    std::transform(atrs.begin(), atrs.end(), atrs.begin(), normalize_atr);
     if (atrs.empty()) return false;
 
     filename = file.name();
