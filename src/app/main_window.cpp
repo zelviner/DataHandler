@@ -542,7 +542,7 @@ void MainWindow::runScriptSuccess(const QString &script_name, const QString &res
 
 void MainWindow::init_window() {
     // 设置窗口标题
-    setWindowTitle("智能卡生产预处理软件 v3.5.0");
+    setWindowTitle("智能卡生产预处理软件 v3.5.1");
 
     ui_->add_dir_widget->setAcceptDrops(false);
     setAcceptDrops(true);
@@ -811,25 +811,24 @@ void MainWindow::init_database() {
 }
 
 void MainWindow::init_auth_script(const std::string &auth_script_path) {
-    std::string auth_script = R"(
-// run_gp_apdu 对APDU返回值进行特殊处理
-run_gp_apdu = func (apdu) {
+    std::string auth_script = R"(// run_gp_apdu 对APDU返回值进行特殊处理
+run_gp_apdu = func(apdu) {
     resp = apdu -> null // 运行APDU命令, 返回 hash = {"data": "xxxx", "sw1": "90", "sw2": "00", "sw": "9000"}
 
     if resp.sw1 == "61" {
-        gr = "00C00000" + resp.sw2 -> "*9000" 
-        return gr       
+        gr = "00C00000" + resp.sw2 -> "*9000"
+        return gr
     }
 
     if resp.sw == "9000" {
         return resp
     }
 
-   return panic("Unknown response:" + resp)
+    return panic("Unknown response:" + resp)
 }
 
 // xor 异或运算 a: 字节数组, b: 字节数组
-xor = func (a, b) {
+xor = func(a, b) {
     for i = 0; i < a.len(); i++ {
         a[i] ^= b[i]
     }
@@ -837,7 +836,7 @@ xor = func (a, b) {
 }
 
 // hex_to_bytes 将十六进制字符串转换为字节数组
-hex_to_bytes = func (hex) {
+hex_to_bytes = func(hex) {
     bytes = []
 
     // 初始化字节数组
@@ -853,7 +852,7 @@ hex_to_bytes = func (hex) {
 }
 
 // bytes_to_hex 将字节数组转换为十六进制字符串
-bytes_to_hex = func (bytes) {
+bytes_to_hex = func(bytes) {
     hex = ""
     for b in bytes {
         hex += b.toHexString()
@@ -862,48 +861,48 @@ bytes_to_hex = func (bytes) {
 }
 
 // authentication 鉴权过程
-authentication = func (SQN) {
+authentication = func(SQN) {
     atr = RST -> null
 
     // 1. 选择 MF
-    run_gp_apdu("00A40004023F00") 
+    run_gp_apdu("00A40004023F00")
 
     // 2. 选择 EF.DIR
     resp = run_gp_apdu("00A40004022F00")
 
     // 2.1 读取 EF.DIR
-    tlvs = tlv.parse(resp.data)
-    file_descriptor = tlv.find(tlvs, "82").value
-    record_length = file_descriptor.mid(6,2)
+    tlvs = Tlv.parse(resp.data)
+    file_descriptor = Tlv.find(tlvs, "82").value
+    record_length = file_descriptor.mid(6, 2)
     resp = "00B20104" + record_length -> "*9000"
 
     // 3. 获取 USIM AID
-    /* tlv.parse(tlv_data) 解析TLV数据, 返回列表 
-        tlvs = [
-            {"value": "4F10A0000000871002FF49FFFF89040B00FF50045553494D", "length": 24, "tag": "61"}, 
-            {"value": "A0000000871002FF49FFFF89040B00FF", "length": 16, "tag": "4F"}, 
-            {"value": "5553494D", "length": 4, "tag": "50"}
-        ] 
+    /* Tlv.parse(tlv_data) 解析TLV数据, 返回列表
+    tlvs = [
+    {"value": "4F10A0000000871002FF49FFFF89040B00FF50045553494D", "length": 24, "tag": "61"},
+    {"value": "A0000000871002FF49FFFF89040B00FF", "length": 16, "tag": "4F"},
+    {"value": "5553494D", "length": 4, "tag": "50"}
+    ]
     */
-    tlvs = tlv.parse(resp.data)
-    AID = tlv.find(tlvs, "4F")
+    tlvs = Tlv.parse(resp.data)
+    AID = Tlv.find(tlvs, "4F")
     run_gp_apdu("00A40404" + AID.length.toHexString() + AID.value)
 
     // 5. AKA 鉴权
-    RAND = crypto.randomHex(32)
+    RAND = Crypto.randomHex(32)
     AMF = "0000"
 
-    /* crypto.milenage(KI, OPC, RAND, SQN, AMF) 计算 Milenage 值, 返回 hash
+    /* Crypto.milenage(KI, OPC, RAND, SQN, AMF) 计算 Milenage 值, 返回 hash
     output = {
-        "MacA": "6F619D641724807F", 
-        "AK": "3341F0BAD810", 
-        "MacS": "6040C2CD484C027C", 
-        "IK": "7A41C1B0719D3B6F81FEB6DF74877B84", 
-        "RES": "82AF78C2D3E4C090", 
-        "CK": "86A565BEFDE46FB2A4F38A0DAE51585C", 
-        "AKStar": "7E9AC6C597FA"
+    "MacA": "6F619D641724807F",
+    "AK": "3341F0BAD810",
+    "MacS": "6040C2CD484C027C",
+    "IK": "7A41C1B0719D3B6F81FEB6DF74877B84",
+    "RES": "82AF78C2D3E4C090",
+    "CK": "86A565BEFDE46FB2A4F38A0DAE51585C",
+    "AKStar": "7E9AC6C597FA"
     }*/
-    output = crypto.milenage(ds.KI, ds.OPC, RAND, SQN, AMF)
+    output = Crypto.milenage(ds.KI, ds.OPC, RAND, SQN, AMF)
 
     // 6. 构建鉴权命令
     sqn_bytes = hex_to_bytes(SQN)
@@ -926,14 +925,14 @@ authentication = func (SQN) {
 }
 
 // caculate_sqn 计算 SQN
-caculate_sqn = func (AUTS, AKStar) {
+caculate_sqn = func(AUTS, AKStar) {
     auts_bytes = hex_to_bytes(AUTS.mid(0, 12))
     akstar_bytes = hex_to_bytes(AKStar)
 
     // SQN_MS = SQNxorAKs XOR AKStar
     /* sqn_ms_bytes = []
-     for i = 0; i < 6; i++ {
-        sqn_ms_bytes.append(auts_bytes[i] ^ akstar_bytes[i])
+    for i = 0; i < 6; i++ {
+    sqn_ms_bytes.append(auts_bytes[i] ^ akstar_bytes[i])
     }*/
     sqn_ms_bytes = xor(auts_bytes, akstar_bytes)
 
@@ -952,56 +951,56 @@ caculate_sqn = func (AUTS, AKStar) {
 }
 
 // 验证 PIN
-verify_pin = func () {
-     resp = "0020000108" + ds.PIN1 -> null
-     return (resp.sw == "9000" || resp.sw == "6984")
+verify_pin = func() {
+    resp = "0020000108" + ds.PIN1 -> null
+    print(resp)
+    return(resp.sw == "9000" || resp.sw == "6984")
 }
 
-// 激活 PIN 
-activate_pin = func () {
+// 激活 PIN
+activate_pin = func() {
     resp = "0028000108" + ds.PIN1 -> null
     print(resp)
-    return (resp.sw == "9000")
+    return(resp.sw == "9000")
 }
 
 // ------------------------------------------ 脚本开始 ------------------------------
 atr = RST -> null
-if atr.mid(atr.len() -4, 4) == "9000" {
+if atr.mid(atr.len() - 4, 4) == "9000" {
     panic("The cards are not personalized")
 }
 
-if !verify_pin() {
+if ! verify_pin() {
     panic("PIN verification failed")
-} 
+}
 
 // 首次鉴权
 SQN = "000000000020"
 result = authentication(SQN)
-switch result.resp.mid(0,2) {
-    case "DB": {
-        print("Authentication successful")
-        break
-    }
-
-    case "DC": {
-        // 计算 SQN
-        SQN = caculate_sqn(result.resp.mid(4, result.resp.len() - 4), result.AKStar)
-
-        // 重试鉴权
-        if authentication(SQN).resp.mid(0,2) != "DB" {
-            panic("Authentication failed")
-        } else {
-            print("Authentication successful")
-        }
-        break
-    }
-
-    default: {
-        panic("Unknown error")
-        break
-    }
+switch result.resp.mid(0, 2) {
+case "DB": {
+    print("Authentication successful")
+    break
 }
-    )";
+
+case "DC": {
+    // 计算 SQN
+    SQN = caculate_sqn(result.resp.mid(4, result.resp.len() - 4), result.AKStar)
+
+    // 重试鉴权
+    if authentication(SQN).resp.mid(0, 2) != "DB" {
+        panic("Authentication failed")
+    } else {
+        print("Authentication successful")
+    }
+    break
+}
+
+default: {
+    panic("Unknown error")
+    break
+}
+})";
 
     // 写入文件
     zel::fs::File script(auth_script_path);
