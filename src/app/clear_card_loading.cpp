@@ -1,4 +1,5 @@
 #include "clear_card_loading.h"
+#include "loading_result.h"
 
 #include <qdebug>
 #include <qmessagebox>
@@ -40,7 +41,7 @@ void ClearCardLoading::start_clear() {
     movie->start();
 }
 
-void ClearCardLoading::clear(const QString &apdu_response) { ui_->clear_duration_label->setText(apdu_response); }
+void ClearCardLoading::clear(const QString &apdu_response) { LoadingResult::setText(ui_->clear_duration_label, apdu_response); }
 
 void ClearCardLoading::finish(const QString &duration) {
 
@@ -48,7 +49,7 @@ void ClearCardLoading::finish(const QString &duration) {
     QPixmap pixmap(":/image/success.png");
     ui_->clear_label->setPixmap(pixmap);
 
-    ui_->clear_duration_label->setText(duration);
+    LoadingResult::setText(ui_->clear_duration_label, duration);
 }
 
 void ClearCardLoading::failure(ClearCard::Type type, const QString &err_msg) {
@@ -63,7 +64,7 @@ void ClearCardLoading::failure(ClearCard::Type type, const QString &err_msg) {
 
     case ClearCard::CLEAR: {
         ui_->clear_label->setPixmap(QPixmap(":/image/failure.png"));
-        ui_->clear_duration_label->setText(err_msg);
+        LoadingResult::setText(ui_->clear_duration_label, err_msg);
         break;
     }
 

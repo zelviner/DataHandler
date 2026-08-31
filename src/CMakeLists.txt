@@ -22,6 +22,7 @@ find_package(Qt5LinguistTools REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(xlnt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(zel COMPONENTS myorm REQUIRED)
 find_package(card_device CONFIG REQUIRED)
 
 # [5] UI 搜索路径 -----------------------------------------------------
@@ -58,6 +59,7 @@ target_link_libraries(${APP_NAME} PRIVATE
     fmt::fmt
     xlnt::xlnt
     CURL::libcurl
+    zel::myorm
     card_device::card_device
     libmupdf
 )

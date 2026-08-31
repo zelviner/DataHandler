@@ -1,4 +1,5 @@
 #include "aka_auth_loading.h"
+#include "loading_result.h"
 
 #include <qdebug>
 #include <qmessagebox>
@@ -40,7 +41,7 @@ void AkaAuthLoading::start_auth() {
     movie->start();
 }
 
-void AkaAuthLoading::auth(const QString &apdu_response) { ui_->aka_auth_duration_label->setText(apdu_response); }
+void AkaAuthLoading::auth(const QString &apdu_response) { LoadingResult::setText(ui_->aka_auth_duration_label, apdu_response); }
 
 void AkaAuthLoading::finish(const QString &duration) {
 
@@ -48,7 +49,7 @@ void AkaAuthLoading::finish(const QString &duration) {
     QPixmap pixmap(":/image/success.png");
     ui_->aka_auth_label->setPixmap(pixmap);
 
-    ui_->aka_auth_duration_label->setText(duration);
+    LoadingResult::setText(ui_->aka_auth_duration_label, duration);
 }
 
 void AkaAuthLoading::failure(AkaAuth::Type type, const QString &err_msg) {
@@ -63,7 +64,7 @@ void AkaAuthLoading::failure(AkaAuth::Type type, const QString &err_msg) {
 
     case AkaAuth::AUTH: {
         ui_->aka_auth_label->setPixmap(QPixmap(":/image/failure.png"));
-        ui_->aka_auth_duration_label->setText(err_msg);
+        LoadingResult::setText(ui_->aka_auth_duration_label, err_msg);
         break;
     }
 

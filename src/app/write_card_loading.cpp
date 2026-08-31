@@ -1,4 +1,5 @@
 #include "write_card_loading.h"
+#include "loading_result.h"
 
 #include <qdebug>
 #include <qmessagebox>
@@ -44,7 +45,9 @@ void WriteCardLoading::start_pre_personal(const QString &duration, const QString
     emit    bareAtr(str);
 }
 
-void WriteCardLoading::pre_personal(const QString &duration, const QString &apdu_response) { ui_->prepersonal_duration_label->setText(apdu_response); }
+void WriteCardLoading::pre_personal(const QString &duration, const QString &apdu_response) {
+    LoadingResult::setText(ui_->prepersonal_duration_label, apdu_response);
+}
 
 void WriteCardLoading::start_post_personal(const QString &duration, const QString &atr) {
 
@@ -59,12 +62,14 @@ void WriteCardLoading::start_post_personal(const QString &duration, const QStrin
     movie->setScaledSize(QSize(32, 32));
     movie->start();
 
-    ui_->prepersonal_duration_label->setText(duration);
+    LoadingResult::setText(ui_->prepersonal_duration_label, duration);
     QString str = atr;
     emit    whiteAtr(str);
 }
 
-void WriteCardLoading::post_personal(const QString &duration, const QString &apdu_response) { ui_->postpersonal_duration_label->setText(apdu_response); }
+void WriteCardLoading::post_personal(const QString &duration, const QString &apdu_response) {
+    LoadingResult::setText(ui_->postpersonal_duration_label, apdu_response);
+}
 
 void WriteCardLoading::start_check(const QString &duration, const QString &atr) {
 
@@ -79,12 +84,12 @@ void WriteCardLoading::start_check(const QString &duration, const QString &atr) 
     movie->setScaledSize(QSize(32, 32));
     movie->start();
 
-    ui_->postpersonal_duration_label->setText(duration);
+    LoadingResult::setText(ui_->postpersonal_duration_label, duration);
 
     emit finishedAtr(atr);
 }
 
-void WriteCardLoading::check(const QString &duration, const QString &apdu_response) { ui_->check_duration_label->setText(apdu_response); }
+void WriteCardLoading::check(const QString &duration, const QString &apdu_response) { LoadingResult::setText(ui_->check_duration_label, apdu_response); }
 
 void WriteCardLoading::finish(const QString &duration) {
 
@@ -92,7 +97,7 @@ void WriteCardLoading::finish(const QString &duration) {
     QPixmap pixmap(":/image/success.png");
     ui_->check_label->setPixmap(pixmap);
 
-    ui_->check_duration_label->setText(duration);
+    LoadingResult::setText(ui_->check_duration_label, duration);
 }
 
 void WriteCardLoading::failure(WriteCard::Type type, const QString &err_msg) {
@@ -107,19 +112,19 @@ void WriteCardLoading::failure(WriteCard::Type type, const QString &err_msg) {
 
     case WriteCard::PREPERSONAL: {
         ui_->prepersonal_label->setPixmap(QPixmap(":/image/failure.png"));
-        ui_->prepersonal_duration_label->setText(err_msg);
+        LoadingResult::setText(ui_->prepersonal_duration_label, err_msg);
         break;
     }
 
     case WriteCard::POSTPERSONAL: {
         ui_->postpersonal_label->setPixmap(QPixmap(":/image/failure.png"));
-        ui_->postpersonal_duration_label->setText(err_msg);
+        LoadingResult::setText(ui_->postpersonal_duration_label, err_msg);
         break;
     }
 
     case WriteCard::CHECK: {
         ui_->check_label->setPixmap(QPixmap(":/image/failure.png"));
-        ui_->check_duration_label->setText(err_msg);
+        LoadingResult::setText(ui_->check_duration_label, err_msg);
         break;
     }
 
